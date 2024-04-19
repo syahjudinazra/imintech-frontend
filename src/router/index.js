@@ -13,14 +13,21 @@ const routes = [
       {
         path: '/dashboard',
         name: 'Dashboard',
-        // route level code-splitting
-        // this generates a separate chunk (about.[hash].js) for this route
-        // which is lazy-loaded when the route is visited.
         component: () =>
-          import(
-            /* webpackChunkName: "dashboard" */ '@/views/dashboard/Dashboard.vue'
-          ),
+          import(/* webpackChunkName: "dashboard" */ '@/views/dashboard/Dashboard.vue'),
+        meta: { requiresAuth: true },
+        beforeEnter: (to, from, next) => {
+          const isLoggedIn = localStorage.getItem('token')
+          if (isLoggedIn) {
+            // Proceed to the route
+            next()
+          } else {
+            // Redirect to the login page
+            next({ name: 'LoginPage' })
+          }
+        },
       },
+
       {
         path: '/theme',
         name: 'Theme',
@@ -290,8 +297,8 @@ const routes = [
       },
       {
         path: 'login',
-        name: 'Login',
-        component: () => import('@/views/pages/Login'),
+        name: 'LoginPage',
+        component: () => import('@/views/pages/LoginPage'),
       },
       {
         path: 'register',
@@ -303,7 +310,7 @@ const routes = [
 ]
 
 const router = createRouter({
-  history: createWebHashHistory(process.env.BASE_URL),
+  history: createWebHashHistory(),
   routes,
   scrollBehavior() {
     // always scroll to top
