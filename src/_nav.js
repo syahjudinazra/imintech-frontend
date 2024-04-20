@@ -132,7 +132,7 @@ export default [
   {
     component: 'CNavItem',
     name: 'Firmwares',
-    to: '/Firmwares',
+    to: '/firmwares',
     icon: 'cil-notes',
   },
   {
