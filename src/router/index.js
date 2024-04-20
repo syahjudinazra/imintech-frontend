@@ -13,142 +13,58 @@ const routes = [
       {
         path: '/dashboard',
         name: 'Dashboard',
-        component: () =>
-          import(/* webpackChunkName: "dashboard" */ '@/views/dashboard/Dashboard.vue'),
-        meta: { requiresAuth: true },
-        beforeEnter: (to, from, next) => {
-          const isLoggedIn = localStorage.getItem('token')
-          if (isLoggedIn) {
-            // Proceed to the route
-            next()
-          } else {
-            // Redirect to the login page
-            next({ name: 'LoginPage' })
-          }
-        },
+        component: () => import('@/views/dashboard/Dashboard.vue'),
       },
 
       {
-        path: '/theme',
-        name: 'Theme',
-        redirect: '/theme/typography',
+        path: '/stocks',
+        name: 'Stocks',
+        redirect: '/stocks/monitor',
       },
       {
-        path: '/theme/colors',
-        name: 'Colors',
-        component: () => import('@/views/theme/Colors.vue'),
+        path: '/stocks/monitor',
+        name: 'Monitor',
+        component: () => import('@/views/stocks/MonitorStocks.vue'),
       },
       {
-        path: '/theme/typography',
-        name: 'Typography',
-        component: () => import('@/views/theme/Typography.vue'),
+        path: '/stocks/gudang',
+        name: 'Gudang',
+        component: () => import('@/views/stocks/GudangStocks.vue'),
       },
       {
-        path: '/base',
-        name: 'Base',
+        path: '/stocks/service',
+        name: 'Diservice',
+        component: () => import('@/views/stocks/DiserviceStocks.vue'),
+      },
+      {
+        path: '/stocks/pinjam',
+        name: 'Dipinjam',
+        component: () => import('@/views/stocks/DipinjamStocks.vue'),
+      },
+      {
+        path: '/stocks/terjual',
+        name: 'Terjual',
+        component: () => import('@/views/stocks/TerjualStocks.vue'),
+      },
+      {
+        path: '/pinjam',
+        name: 'Pinjam',
         component: {
           render() {
             return h(resolveComponent('router-view'))
           },
         },
-        redirect: '/base/breadcrumbs',
+        redirect: '/pinjam/dipinjamkan',
         children: [
           {
-            path: '/base/accordion',
-            name: 'Accordion',
-            component: () => import('@/views/base/Accordion.vue'),
+            path: '/pinjam/dipinjamkan',
+            name: 'Dipinjamkan',
+            component: () => import('@/views/pinjam/DipinjamkanPinjam.vue'),
           },
           {
-            path: '/base/breadcrumbs',
-            name: 'Breadcrumbs',
-            component: () => import('@/views/base/Breadcrumbs.vue'),
-          },
-          {
-            path: '/base/cards',
-            name: 'Cards',
-            component: () => import('@/views/base/Cards.vue'),
-          },
-          {
-            path: '/base/carousels',
-            name: 'Carousels',
-            component: () => import('@/views/base/Carousels.vue'),
-          },
-          {
-            path: '/base/collapses',
-            name: 'Collapses',
-            component: () => import('@/views/base/Collapses.vue'),
-          },
-          {
-            path: '/base/list-groups',
-            name: 'List Groups',
-            component: () => import('@/views/base/ListGroups.vue'),
-          },
-          {
-            path: '/base/navs',
-            name: 'Navs',
-            component: () => import('@/views/base/Navs.vue'),
-          },
-          {
-            path: '/base/paginations',
-            name: 'Paginations',
-            component: () => import('@/views/base/Paginations.vue'),
-          },
-          {
-            path: '/base/placeholders',
-            name: 'Placeholders',
-            component: () => import('@/views/base/Placeholders.vue'),
-          },
-          {
-            path: '/base/popovers',
-            name: 'Popovers',
-            component: () => import('@/views/base/Popovers.vue'),
-          },
-          {
-            path: '/base/progress',
-            name: 'Progress',
-            component: () => import('@/views/base/Progress.vue'),
-          },
-          {
-            path: '/base/spinners',
-            name: 'Spinners',
-            component: () => import('@/views/base/Spinners.vue'),
-          },
-          {
-            path: '/base/tables',
-            name: 'Tables',
-            component: () => import('@/views/base/Tables.vue'),
-          },
-          {
-            path: '/base/tooltips',
-            name: 'Tooltips',
-            component: () => import('@/views/base/Tooltips.vue'),
-          },
-        ],
-      },
-      {
-        path: '/buttons',
-        name: 'Buttons',
-        component: {
-          render() {
-            return h(resolveComponent('router-view'))
-          },
-        },
-        redirect: '/buttons/standard-buttons',
-        children: [
-          {
-            path: '/buttons/standard-buttons',
-            name: 'Buttons',
-            component: () => import('@/views/buttons/Buttons.vue'),
-          },
-          {
-            path: '/buttons/dropdowns',
-            name: 'Dropdowns',
-            component: () => import('@/views/buttons/Dropdowns.vue'),
-          },
-          {
-            path: '/buttons/button-groups',
-            name: 'Button Groups',
-            component: () => import('@/views/buttons/ButtonGroups.vue'),
+            path: '/pinjam/dikembalikan',
+            name: 'Dikembalikan',
+            component: () => import('@/views/pinjam/DikembalikanPinjam.vue'),
           },
         ],
       },
@@ -313,9 +229,20 @@ const router = createRouter({
   history: createWebHashHistory(),
   routes,
   scrollBehavior() {
-    // always scroll to top
     return { top: 0 }
   },
+})
+
+router.beforeEach((to, from, next) => {
+  const isLoggedIn = localStorage.getItem('token')
+
+  if (to.name === 'LoginPage' && isLoggedIn) {
+    next({ name: 'Dashboard' })
+  } else if (to.meta.requiresAuth && !isLoggedIn) {
+    next({ name: 'LoginPage' })
+  } else {
+    next()
+  }
 })
 
 export default router

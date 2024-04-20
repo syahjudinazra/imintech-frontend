@@ -15,9 +15,15 @@
   >
     <CSidebarHeader class="border-bottom">
       <RouterLink custom to="/" v-slot="{ href, navigate }">
-        <CSidebarBrand v-bind="$attrs" as="a" :href="href" @click="navigate">
-          <CIcon custom-class-name="sidebar-brand-full" :icon="logo" :height="32" />
-          <CIcon custom-class-name="sidebar-brand-narrow" :icon="sygnet" :height="32" />
+        <CSidebarBrand
+          class="text-decoration-none"
+          v-bind="$attrs"
+          as="a"
+          :href="href"
+          @click="navigate"
+        >
+          <img custom-class-name="sidebar-brand-full" :src="iminlogo" :height="40" />
+          <sup class="subTextLogo font-weight-bold">Tech</sup>
         </CSidebarBrand>
       </RouterLink>
       <CCloseButton class="d-lg-none" dark @click="$store.commit('toggleSidebar')" />
@@ -34,8 +40,7 @@ import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
 import { useStore } from 'vuex'
 import { AppSidebarNav } from './AppSidebarNav'
-import { logo } from '@/assets/brand/logo'
-import { sygnet } from '@/assets/brand/sygnet'
+import iminlogo from '@/assets/brand/iminlogo.png'
 export default {
   name: 'AppSidebar',
   components: {
@@ -45,11 +50,17 @@ export default {
   setup() {
     const store = useStore()
     return {
-      logo,
-      sygnet,
+      iminlogo,
       sidebarUnfoldable: computed(() => store.state.sidebarUnfoldable),
       sidebarVisible: computed(() => store.state.sidebarVisible),
     }
   },
 }
 </script>
+
+<style scoped>
+.subTextLogo {
+  font-size: 1rem;
+  font-weight: 500;
+}
+</style>

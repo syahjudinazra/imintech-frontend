@@ -4,8 +4,8 @@
       <CRow class="justify-content-center">
         <CCol :md="8">
           <CCardGroup>
-            <CCard class="p-4">
-              <CCardBody>
+            <CCard>
+              <CCardBody class="p-4">
                 <CForm @submit.prevent="login">
                   <h1>Login</h1>
                   <p class="text-body-secondary">Sign In to your account</p>
@@ -13,22 +13,31 @@
                     <CInputGroupText>
                       <CIcon icon="cil-user" />
                     </CInputGroupText>
-                    <CFormInput v-model="name" type="text" placeholder="Name" autocomplete="name" />
+                    <CFormInput
+                      class="shadow-none"
+                      v-model="name"
+                      type="text"
+                      placeholder="Name"
+                      autocomplete="name"
+                      required
+                    />
                   </CInputGroup>
                   <CInputGroup class="mb-4">
                     <CInputGroupText>
                       <CIcon icon="cil-lock-locked" />
                     </CInputGroupText>
                     <CFormInput
+                      class="shadow-none"
                       v-model="password"
                       type="password"
                       placeholder="Password"
                       autocomplete="current-password"
+                      required
                     />
                   </CInputGroup>
                   <CRow>
                     <CCol :xs="6">
-                      <CButton color="primary" class="px-4" type="submit">Login</CButton>
+                      <CButton color="danger" class="px-4 text-white" type="submit">Login</CButton>
                     </CCol>
                     <CCol :xs="6" class="text-right">
                       <CButton color="link" class="px-0">Forgot password?</CButton>
@@ -37,16 +46,9 @@
                 </CForm>
               </CCardBody>
             </CCard>
-            <CCard class="text-white bg-primary py-5" style="width: 44%">
-              <CCardBody class="text-center">
-                <div>
-                  <h2>Sign up</h2>
-                  <p>
-                    Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor
-                    incididunt ut labore et dolore magna aliqua.
-                  </p>
-                  <CButton color="light" variant="outline" class="mt-3">Register Now!</CButton>
-                </div>
+            <CCard class="text-white">
+              <CCardBody class="card-login text-center">
+                <img :src="bgLogin" class="bg-login" alt="D4-Pro" />
               </CCardBody>
             </CCard>
           </CCardGroup>
@@ -59,6 +61,7 @@
 <script>
 import axios from 'axios'
 import Swal from 'sweetalert2'
+import bgLogin from '@/assets/images/D4-Pro.jpg'
 
 export default {
   name: 'LoginPage',
@@ -66,6 +69,7 @@ export default {
     return {
       name: '',
       password: '',
+      bgLogin,
     }
   },
   methods: {
@@ -117,3 +121,14 @@ export default {
   },
 }
 </script>
+
+<style scoped>
+.bg-login {
+  height: -webkit-fill-available;
+  width: -webkit-fill-available;
+}
+
+.card-login {
+  padding: 0 !important;
+}
+</style>
