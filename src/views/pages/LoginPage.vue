@@ -80,7 +80,9 @@ export default {
           password: this.password,
         })
         const token = response.data.token
+        const user = JSON.stringify(response.data.user)
         localStorage.setItem('token', token)
+        localStorage.setItem('user', user)
         console.log('Login successful:', response.data)
         this.showNotification('success', response.data.message)
         this.authenticated = true
@@ -91,6 +93,7 @@ export default {
         this.clearInput()
       }
     },
+
     showNotification(type, message) {
       return new Promise((resolve) => {
         const toast = Swal.mixin({
