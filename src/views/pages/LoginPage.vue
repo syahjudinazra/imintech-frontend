@@ -83,7 +83,6 @@ export default {
         const user = JSON.stringify(response.data.user)
         localStorage.setItem('token', token)
         localStorage.setItem('user', user)
-        console.log('Login successful:', response.data)
         this.showNotification('success', response.data.message)
         this.authenticated = true
         this.$router.push({ name: 'Dashboard' })

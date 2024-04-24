@@ -1,19 +1,35 @@
+<script setup>
+let viewForm
+
+onMounted(() => {
+  viewForm = new Modal(document.getElementById('viewForm'), {})
+})
+
+function openModal() {
+  viewForm.show()
+}
+
+function closeModal() {
+  viewForm.hide()
+}
+</script>
+
 <template>
   <!-- Button trigger modal -->
-  <button type="button" class="btn btn-danger text-white" @click="openModal">Tambah Data</button>
+  <a href="#" class="head-text text-decoration-none" @click="openModal">Lihat</a>
 
   <!-- Modal -->
   <div
     class="modal fade"
-    id="addForm"
+    id="viewForm"
     tabindex="-1"
-    aria-labelledby="addForm_label"
+    aria-labelledby="viewForm_label"
     aria-hidden="true"
   >
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="addForm_label">Tambah Data</h5>
+          <h5 class="modal-title" id="viewForm_label">Lihat Data</h5>
           <button type="button" class="btn-close" aria-label="Close" @click="closeModal"></button>
         </div>
         <div class="modal-body">
@@ -70,86 +86,48 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" @click="closeModal">Close</button>
-          <button type="button" class="btn btn-primary" @click="AddDataSpareparts">Submit</button>
         </div>
       </div>
     </div>
   </div>
 </template>
 
-<script setup>
-import { ref, onMounted } from 'vue'
-import { Modal } from 'bootstrap'
+<script>
 import axios from 'axios'
-import Swal from 'sweetalert2'
+import { Modal } from 'bootstrap'
+import { onMounted } from 'vue'
 
-const spareparts = ref({
-  nosparepart: '',
-  tipe: '',
-  nama: '',
-  quantity: '',
-  harga: '',
-})
-
-let addForm
-
-onMounted(() => {
-  addForm = new Modal(document.getElementById('addForm'), {})
-})
-
-function openModal() {
-  addForm.show()
-}
-
-function closeModal() {
-  addForm.hide()
-}
-
-async function AddDataSpareparts() {
-  if (
-    !spareparts.value.nosparepart ||
-    !spareparts.value.tipe ||
-    !spareparts.value.nama ||
-    !spareparts.value.quantity ||
-    !spareparts.value.harga
-  ) {
-    showNotification('error', 'All fields are required')
-    return
-  }
-
-  try {
-    const response = await axios.post('addspareparts', spareparts.value)
-    console.log('Data saved:', response.data)
-    showNotification('success', response.data.message)
-    location.reload()
-    closeModal()
-  } catch (error) {
-    console.error('Error saving data:', error)
-    showNotification('error', error.response.data.message)
-  }
-}
-
-function showNotification(type, message) {
-  return new Promise((resolve) => {
-    const toast = Swal.mixin({
-      toast: true,
-      position: 'top-end',
-      showConfirmButton: false,
-      timer: 2000,
-      timerProgressBar: true,
-      didOpen: (toast) => {
-        toast.addEventListener('mouseenter', Swal.stopTimer)
-        toast.addEventListener('mouseleave', Swal.resumeTimer)
+export default {
+  data() {
+    return {
+      spareparts: {
+        nosparepart: '',
+        tipe: '',
+        nama: '',
+        quantity: '',
+        harga: '',
       },
-    })
-    toast
-      .fire({
-        icon: type,
-        title: message,
-      })
-      .then(() => {
-        resolve()
-      })
-  })
+      // id: this.$route.params.id,
+    }
+  },
+  methods: {
+    async ViewDataSpareparts() {
+      try {
+        const response = await axios.get(`viewspareparts/${this.id}`)
+        this.spareparts = response.data.data
+        console.log('Data Berhasil didapat:', this.spareparts)
+        this.closeModal()
+      } catch (error) {
+        console.error('Error fetching data:', error)
+      }
+    },
+    closeModal() {},
+  },
+  // Call ViewDataSpareparts method when component is mounted
+  mounted() {
+    this.ViewDataSpareparts(this.$route.params.id)
+  },
 }
 </script>
+
+<style scoped></style>
