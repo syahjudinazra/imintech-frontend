@@ -18,15 +18,9 @@
             <th>Action</th>
           </tr>
         </thead>
-        <tbody>
-          <tr v-if="loading">
-            <td colspan="7" class="text-center">Loading...</td>
-          </tr>
-          <tr v-else-if="!spareparts || spareparts.length === 0">
-            <td colspan="7" class="text-center">No spare parts available.</td>
-          </tr>
-          <tr v-else v-for="sparepart in spareparts.data" :key="sparepart.id">
-            <td>{{ sparepart.id }}</td>
+        <tbody v-if="spareparts.length > 0">
+          <tr v-for="(sparepart, index) in this.spareparts" :key="index">
+            <td>{{ index + 1 }}</td>
             <td>{{ sparepart.nosparepart }}</td>
             <td>{{ sparepart.tipe }}</td>
             <td>{{ sparepart.nama }}</td>
@@ -53,6 +47,11 @@
             </td>
           </tr>
         </tbody>
+        <tbody v-else>
+          <tr>
+            <td colspan="7">Loading...</td>
+          </tr>
+        </tbody>
       </table>
     </div>
   </div>
@@ -75,7 +74,6 @@ export default {
   data() {
     return {
       spareparts: [],
-      loading: true,
     }
   },
   methods: {
@@ -85,8 +83,6 @@ export default {
         this.spareparts = response.data.data
       } catch (error) {
         console.error('fetch data failed:', error)
-      } finally {
-        this.loading = false
       }
     },
   },

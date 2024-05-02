@@ -135,4 +135,31 @@ export default [
     to: '/firmwares',
     icon: 'cil-notes',
   },
+  {
+    component: 'CNavTitle',
+    name: 'List Devices',
+  },
+  {
+    component: 'CNavGroup',
+    name: 'Devices',
+    to: '/devices',
+    icon: 'cil-calculator',
+    items: [
+      {
+        component: 'CNavItem',
+        name: 'Devices Stocks',
+        to: '/devices/devicesstocks',
+      },
+      {
+        component: 'CNavItem',
+        name: 'Devices Pinjam',
+        to: '/devices/devicespinjam',
+      },
+      {
+        component: 'CNavItem',
+        name: 'Devices Services',
+        to: '/devices/devicesservices',
+      },
+    ],
+  },
 ]

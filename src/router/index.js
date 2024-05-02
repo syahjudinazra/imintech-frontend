@@ -164,6 +164,37 @@ const routes = [
         meta: { requiresAuth: true },
       },
       {
+        path: '/devices',
+        name: 'Devices',
+        component: {
+          render() {
+            return h(resolveComponent('router-view'))
+          },
+        },
+        redirect: '/devices/devicesstocks',
+        meta: { requiresAuth: true },
+        children: [
+          {
+            path: '/devices/devicesstocks',
+            name: 'Devices Stocks',
+            component: () => import('@/views/devices/DevicesStocks.vue'),
+            meta: { requiresAuth: true },
+          },
+          {
+            path: '/devices/devicespinjam',
+            name: 'Devices Pinjam',
+            component: () => import('@/views/devices/DevicesPinjam.vue'),
+            meta: { requiresAuth: true },
+          },
+          {
+            path: '/devices/devicesservices',
+            name: 'Devices Services',
+            component: () => import('@/views/devices/DevicesServices.vue'),
+            meta: { requiresAuth: true },
+          },
+        ],
+      },
+      {
         path: '/widgets',
         name: 'Widgets',
         component: () => import('@/views/widgets/Widgets.vue'),

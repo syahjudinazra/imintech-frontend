@@ -107,7 +107,7 @@ export default {
         quantity: '',
         harga: '',
       },
-      // id: this.$route.params.id,
+      id: 0,
     }
   },
   methods: {
@@ -121,11 +121,9 @@ export default {
         console.error('Error fetching data:', error)
       }
     },
-    closeModal() {},
   },
-  // Call ViewDataSpareparts method when component is mounted
   mounted() {
-    this.ViewDataSpareparts(this.$route.params.id)
+    this.ViewDataSpareparts()
   },
 }
 </script>
