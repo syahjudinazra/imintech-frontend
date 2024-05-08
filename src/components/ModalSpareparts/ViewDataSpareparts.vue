@@ -100,14 +100,8 @@ import { onMounted } from 'vue'
 export default {
   data() {
     return {
-      spareparts: {
-        nosparepart: '',
-        tipe: '',
-        nama: '',
-        quantity: '',
-        harga: '',
-      },
-      id: 0,
+      spareparts: [],
+      id: this.$route.params.id,
     }
   },
   methods: {
@@ -118,7 +112,7 @@ export default {
         console.log('Data Berhasil didapat:', this.spareparts)
         this.closeModal()
       } catch (error) {
-        console.error('Error fetching data:', error)
+        console.error(error, this.spareparts)
       }
     },
   },

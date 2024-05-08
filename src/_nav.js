@@ -17,7 +17,7 @@ export default [
     component: 'CNavGroup',
     name: 'Stocks',
     to: '/stocks',
-    icon: 'cil-cursor',
+    icon: 'cil-inbox',
     items: [
       {
         component: 'CNavItem',
@@ -72,7 +72,7 @@ export default [
     component: 'CNavGroup',
     name: 'Services',
     to: '/service',
-    icon: 'cil-puzzle',
+    icon: 'cil-cog',
     items: [
       {
         component: 'CNavItem',
@@ -133,7 +133,7 @@ export default [
     component: 'CNavItem',
     name: 'Firmwares',
     to: '/firmwares',
-    icon: 'cil-notes',
+    icon: 'cil-fork',
   },
   {
     component: 'CNavTitle',
@@ -143,7 +143,7 @@ export default [
     component: 'CNavGroup',
     name: 'Devices',
     to: '/devices',
-    icon: 'cil-calculator',
+    icon: 'cil-devices',
     items: [
       {
         component: 'CNavItem',

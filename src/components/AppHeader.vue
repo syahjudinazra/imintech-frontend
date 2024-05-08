@@ -5,6 +5,12 @@
         <CIcon icon="cil-menu" size="lg" />
       </CHeaderToggler>
       <CHeaderNav>
+        <a
+          href="https://oss-sg.imin.sg/docs/en/index.html#"
+          class="d-flex text-decoration-none align-items-center"
+          target="_blank"
+          >Developer</a
+        >
         <li class="nav-item py-1">
           <div class="vr h-100 mx-2 text-body text-opacity-75"></div>
         </li>
@@ -89,3 +95,5 @@ export default {
   },
 }
 </script>
+
+<style scoped></style>

@@ -1,6 +1,8 @@
 <template>
+  <!-- Button trigger modal -->
   <button type="button" class="btn btn-danger text-white" @click="openModal">Tambah Data</button>
 
+  <!-- Modal -->
   <div
     class="modal fade"
     id="addForm"
@@ -14,24 +16,22 @@
           <h5 class="modal-title" id="addForm_label">Tambah Data</h5>
           <button type="button" class="btn-close" aria-label="Close" @click="closeModal"></button>
         </div>
-        <form @submit.prevent="addStocks">
-          <div class="modal-body">
-            <div class="mb-3">
-              <label for="name" class="form-label fw-bold">Nama</label>
-              <input
-                v-model="stocksdevices.name"
-                type="text"
-                class="form-control shadow-none"
-                id="name"
-                placeholder="Masukan Nama Device"
-              />
-            </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="name" class="form-label fw-bold">Nama</label>
+            <input
+              v-model="servicesdevices.name"
+              type="text"
+              class="form-control shadow-none"
+              id="name"
+              placeholder="Masukan Nama Device"
+            />
           </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" @click="closeModal">Close</button>
-            <button type="submit" class="btn btn-primary">Submit</button>
-          </div>
-        </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" @click="closeModal">Close</button>
+          <button type="button" class="btn btn-primary" @click="AddServicesDevices">Submit</button>
+        </div>
       </div>
     </div>
   </div>
@@ -43,7 +43,7 @@ import { Modal } from 'bootstrap'
 import axios from 'axios'
 import Swal from 'sweetalert2'
 
-const stocksdevices = ref({
+const servicesdevices = ref({
   name: '',
 })
 
@@ -61,28 +61,21 @@ function closeModal() {
   addForm.hide()
 }
 
-const clearInput = () => {
-  stocksdevices.value = ''
-}
-
-const addStocks = async () => {
-  if (!stocksdevices.value.name) {
+async function AddServicesDevices() {
+  if (!servicesdevices.value.name) {
     showNotification('error', 'Masukan Nama Device')
     return
   }
 
   try {
-    const response = await axios.post('addsliststocks', stocksdevices.value)
-    console.log('Data berhasil ditambahkan:', response.data)
+    const response = await axios.post('addslistservices', servicesdevices.value)
+    console.log('Data saved:', response.data)
     showNotification('success', response.data.message)
     closeModal()
   } catch (error) {
-    console.error('Data gagal ditambahkan', error)
+    console.error('Error saving data:', error)
     showNotification('error', error.response.data.message)
-    closeModal()
   }
-
-  clearInput()
 }
 
 function showNotification(type, message) {
