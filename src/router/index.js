@@ -160,8 +160,26 @@ const routes = [
       {
         path: '/firmwares',
         name: 'Firmwares',
-        component: () => import('@/views/firmwares/FirmwaresImin.vue'),
+        component: {
+          render() {
+            return h(resolveComponent('router-view'))
+          },
+        },
+        redirect: '/firmwares',
         meta: { requiresAuth: true },
+        children: [
+          {
+            path: '/firmwares',
+            component: () => import('@/views/firmwares/FirmwaresImin.vue'),
+            meta: { requiresAuth: true },
+          },
+          {
+            path: '/firmwares/table',
+            name: 'Firmwares Table',
+            component: () => import('@/views/firmwares/FirmwaresTable.vue'),
+            meta: { requiresAuth: true },
+          },
+        ],
       },
       {
         path: '/devices',

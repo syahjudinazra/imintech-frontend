@@ -1,79 +1,46 @@
 <template>
-  <div class="container-fluid">
-    <AddFirmwares />
-    <div class="table-responsive">
-      <table class="table caption-top">
-        <caption class="fw-bold">
-          List of Firmwares
-        </caption>
-        <thead class="table-dark">
-          <tr>
-            <th>No</th>
-            <th>Tipe</th>
-            <th>Versi</th>
-            <th>Android</th>
-            <th>Flash</th>
-            <th>Ota</th>
-            <th>Kategori</th>
-            <th>Gambar</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody v-if="firmwares.length > 0">
-          <tr v-for="(firmware, index) in this.firmwares" :key="index">
-            <td>{{ index + 1 }}</td>
-            <td>{{ firmware.tipe }}</td>
-            <td>{{ firmware.versi }}</td>
-            <td>{{ firmware.android }}</td>
-            <td>{{ firmware.flash }}</td>
-            <td>{{ firmware.ota }}</td>
-            <td>{{ firmware.kategori }}</td>
-            <td>{{ firmware.gambar }}</td>
-            <td class="d-flex gap-2">
-              <a href="#">Edit</a>
-              <a href="#">Hapus</a>
-            </td>
-          </tr>
-        </tbody>
-        <tbody v-else>
-          <tr>
-            <td colspan="3">Loading...</td>
-          </tr>
-        </tbody>
-      </table>
+  <CContainer fluid>
+    <div class="firmwares-title">
+      <h2>Firmwares</h2>
     </div>
-  </div>
+    <CRow :xs="{ cols: 1, gutter: 4 }" :md="{ cols: 3 }">
+      <CCol xs>
+        <CCard v-for="firmware in firmwares" :key="firmware.id">
+          <CCardImage orientation="top" :src="firmware.gambar" />
+          <CCardBody>
+            <CCardTitle class="bg-danger text-center text-white rounded-pill">{{
+              firmware.tipe
+            }}</CCardTitle>
+            <CCardText>Firmware: {{ firmware.versi }}</CCardText>
+            <CCardText>Android: {{ firmware.android }}</CCardText>
+            <CCardText>Flash: {{ firmware.flash }}</CCardText>
+            <CCardText>OTA: {{ firmware.ota }}</CCardText>
+          </CCardBody>
+          <CCardFooter
+            ><small class="text-body-secondary">Last updated 3 mins ago</small></CCardFooter
+          >
+        </CCard>
+      </CCol>
+    </CRow>
+  </CContainer>
 </template>
 
-<script>
-import AddFirmwares from '../../components/ModalFirmwares/AddFirmwares.vue'
+<script setup>
+import { ref } from 'vue'
 import axios from 'axios'
 
-export default {
-  name: 'FirmwaresImin',
-  components: {
-    AddFirmwares,
-  },
-  data() {
-    return {
-      firmwares: [],
-    }
-  },
-  created() {
-    this.getFirmwares()
-  },
-  methods: {
-    getFirmwares() {
-      axios
-        .get('getfirmwares')
-        .then((response) => {
-          this.firmwares = response.data.data
-          console.log(this.firmwares)
-        })
-        .catch((error) => {
-          console.error('Gagal mendapatkan data', error)
-        })
-    },
-  },
+const firmwares = ref([])
+
+function getFirmwares() {
+  axios
+    .get('getfirmwares')
+    .then((response) => {
+      firmwares.value = response.data.data
+    })
+    .catch((error) => {
+      console.error('Failed to fetch data', error)
+    })
 }
+
+getFirmwares()
 </script>

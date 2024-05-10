@@ -67,21 +67,17 @@
           />
         </div>
         <div class="form-group mb-3">
-          <label class="fw-bold" for="device">Tipe Device</label>
+          <label class="fw-bold" for="servicesdevice_id">Tipe Device</label>
           <select
             class="form-select form-control-chosen shadow-none"
-            name="device"
-            id="device"
+            name="servicesdevice_id"
+            id="servicesdevice_id"
             v-model="services.servicesdevice_id"
             required
           >
-            <option value="Null">Pilih Tipe Device</option>
-            <option
-              v-for="servicedevice in servicesdevice"
-              :value="servicedevice.id"
-              :key="servicedevice.id"
-            >
-              {{ servicedevice.name }}
+            <option value="Null" selected>Pilih Tipe Device</option>
+            <option v-for="device in servicesdevice" :value="device.id" :key="device.id">
+              {{ device.name }}
             </option>
           </select>
         </div>
@@ -94,7 +90,7 @@
             v-model="services.pemakaian"
             required
           >
-            <option value="Null">Pilih Lama Pemakaian</option>
+            <option value="Null" selected>Pilih Lama Pemakaian</option>
             <option value="Baru Di Unboxing">Baru Di Unboxing</option>
             <option value="7 Hari Kurang">7 Hari Kurang</option>
             <option value="1 Tahun Kurang">1 Tahun Kurang</option>
@@ -122,10 +118,7 @@
             name="catatan"
             v-model="services.catatan"
             required
-          >
-Tanggal Pembelian:
-Kelengkapan:</textarea
-          >
+          ></textarea>
         </div>
         <button type="submit" class="btn btn-primary">Submit</button>
       </form>
@@ -142,15 +135,14 @@ const services = ref({
   serialnumber: '',
   tanggalmasuk: '',
   pemilik: '',
-  status: '',
   pelanggan: '',
-  servicesdevice_id: null,
+  servicesdevice_id: '',
   pemakaian: '',
   kerusakan: '',
   catatan: '',
 })
 
-const servicesdevice = ref([]) // Array to hold options for Tipe Device
+const servicesdevice = ref([])
 
 async function addServices() {
   try {
@@ -166,9 +158,7 @@ async function addServices() {
 async function fetchDevices() {
   try {
     const response = await axios.get('getlistservices')
-    console.log('Data ditemukan:', response.data)
-    // Update servicesdevice array with fetched data
-    servicesdevice.value = response.data
+    servicesdevice.value = response.data.data
   } catch (error) {
     console.error('Error fetching data:', error)
   }

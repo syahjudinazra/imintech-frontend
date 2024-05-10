@@ -130,10 +130,22 @@ export default [
     ],
   },
   {
-    component: 'CNavItem',
+    component: 'CNavGroup',
     name: 'Firmwares',
     to: '/firmwares',
     icon: 'cil-fork',
+    items: [
+      {
+        component: 'CNavItem',
+        name: 'Firmwares',
+        to: '/firmwares',
+      },
+      {
+        component: 'CNavItem',
+        name: 'Firmwares Table',
+        to: '/firmwares/table',
+      },
+    ],
   },
   {
     component: 'CNavTitle',
@@ -162,4 +174,10 @@ export default [
       },
     ],
   },
+  // {
+  //   component: 'CNavItem',
+  //   name: 'Firmwares',
+  //   to: '/firmwares',
+  //   icon: 'cil-fork',
+  // },
 ]
