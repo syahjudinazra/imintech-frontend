@@ -5,7 +5,7 @@
         <h1 class="h3 mb-3 text-gray-800">Tambah Data Service</h1>
       </div>
       <hr style="width: -webkit-fill-available" />
-      <form @submit.prevent="addServices" class="mb-4" enctype="multipart/form-data">
+      <form @submit.prevent="addNewServices" class="mb-4" enctype="multipart/form-data">
         <div class="form-group mb-3">
           <label class="fw-bold" for="serialnumber">Serial Number</label>
           <input
@@ -75,7 +75,7 @@
             v-model="services.servicesdevice_id"
             required
           >
-            <option value="Null" selected>Pilih Tipe Device</option>
+            <option value="" disabled selected>Pilih Tipe Device</option>
             <option v-for="device in servicesdevice" :value="device.id" :key="device.id">
               {{ device.name }}
             </option>
@@ -90,7 +90,7 @@
             v-model="services.pemakaian"
             required
           >
-            <option value="Null" selected>Pilih Lama Pemakaian</option>
+            <option value="" disabled selected>Pilih Lama Pemakaian</option>
             <option value="Baru Di Unboxing">Baru Di Unboxing</option>
             <option value="7 Hari Kurang">7 Hari Kurang</option>
             <option value="1 Tahun Kurang">1 Tahun Kurang</option>
@@ -126,69 +126,90 @@
   </div>
 </template>
 
-<script setup>
-import { ref } from 'vue'
+<script>
 import axios from 'axios'
 import Swal from 'sweetalert2'
 
-const services = ref({
-  serialnumber: '',
-  tanggalmasuk: '',
-  pemilik: '',
-  pelanggan: '',
-  servicesdevice_id: '',
-  pemakaian: '',
-  kerusakan: '',
-  catatan: '',
-})
-
-const servicesdevice = ref([])
-
-async function addServices() {
-  try {
-    const response = await axios.post('addservices', services.value)
-    console.log('Data saved:', response.data)
-    showNotification('success', response.data.message)
-  } catch (error) {
-    console.error('Error saving data:', error)
-    showNotification('error', error.response.data.message)
-  }
-}
-
-async function fetchDevices() {
-  try {
-    const response = await axios.get('getlistservices')
-    servicesdevice.value = response.data.data
-  } catch (error) {
-    console.error('Error fetching data:', error)
-  }
-}
-
-function showNotification(type, message) {
-  return new Promise((resolve) => {
-    const toast = Swal.mixin({
-      toast: true,
-      position: 'top-end',
-      showConfirmButton: false,
-      timer: 2000,
-      timerProgressBar: true,
-      didOpen: (toast) => {
-        toast.addEventListener('mouseenter', Swal.stopTimer)
-        toast.addEventListener('mouseleave', Swal.resumeTimer)
+export default {
+  data() {
+    return {
+      services: {
+        serialnumber: '',
+        tanggalmasuk: '',
+        pemilik: '',
+        pelanggan: '',
+        servicesdevice_id: '',
+        pemakaian: '',
+        kerusakan: '',
+        catatan: '',
       },
-    })
-    toast
-      .fire({
+      servicesdevice: [],
+      token: localStorage.getItem('token'),
+    }
+  },
+  methods: {
+    addNewServices() {
+      axios
+        .post('addservices', this.services, {
+          headers: {
+            Authorization: `bearer ${this.token}`,
+          },
+        })
+        .then((response) => {
+          this.services = response.data.data
+          this.showNotification('success', 'Data berhasil ditambahkan')
+          this.services = {
+            serialnumber: '',
+            tanggalmasuk: '',
+            pemilik: '',
+            pelanggan: '',
+            servicesdevice_id: '',
+            pemakaian: '',
+            kerusakan: '',
+            catatan: '',
+          }
+        })
+        .catch((error) => {
+          console.log(error)
+          this.showNotification('error', 'Data gagal ditambahkan')
+        })
+    },
+    fetchDevices() {
+      axios
+        .get('getlistservices', {
+          headers: {
+            Authorization: `bearer ${this.token}`,
+          },
+        })
+        .then((response) => {
+          this.servicesdevice = response.data.data
+        })
+        .catch((error) => {
+          console.log(error)
+        })
+    },
+    showNotification(type, message) {
+      const toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        didOpen: (toast) => {
+          toast.addEventListener('mouseenter', Swal.stopTimer)
+          toast.addEventListener('mouseleave', Swal.resumeTimer)
+        },
+      })
+      toast.fire({
         icon: type,
         title: message,
       })
-      .then(() => {
-        resolve()
-      })
-  })
+    },
+  },
+  created() {
+    this.fetchDevices()
+  },
 }
-
-fetchDevices()
 </script>
 
 <style scoped>

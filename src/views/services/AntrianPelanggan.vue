@@ -321,6 +321,7 @@ function deleteModal(service) {
 }
 
 function closeModal() {
+  editForm.hide()
   viewForm.hide()
   deleteForm.hide()
 }
