@@ -1,42 +1,37 @@
 <template>
   <div class="container-fluid">
     <AddServicesDevices />
-    <div class="table-responsive">
-      <table class="table caption-top">
-        <caption class="fw-bold">
-          List of Services Device
-        </caption>
-        <thead class="table-dark">
+    <div class="mt-2">
+      <EasyDataTable
+        :headers="headers"
+        :items="servicesdevices"
+        :loading="loading"
+        :theme-color="baseColor"
+        :rows-per-page="10"
+        table-class-name="head-table"
+        alternating
+        show-index
+        border-cell
+        buttons-pagination
+      >
+        <template #loading>
+          <div class="loader"></div>
+        </template>
+        <template #empty-message>
+          <p>Data tidak ditemukan</p>
+        </template>
+        <template #items="{ item }">
           <tr>
-            <th>No</th>
-            <th>Nama</th>
-            <th>Action</th>
+            <td>{{ item.name }}</td>
           </tr>
-        </thead>
-        <tbody v-if="servicesdevices.length > 0">
-          <tr v-for="(servicesdevice, index) in servicesdevices" :key="index">
-            <td>{{ index + 1 }}</td>
-            <td>{{ servicesdevice.name }}</td>
-            <td class="d-flex gap-2">
-              <a href="#" type="button" class="btn btn-primary" @click="editModal(servicesdevice)"
-                >Edit</a
-              >
-              <a
-                href="#"
-                type="button"
-                class="btn btn-danger text-white"
-                @click="deleteModal(servicesdevice)"
-                >Hapus</a
-              >
-            </td>
-          </tr>
-        </tbody>
-        <tbody v-else>
-          <tr>
-            <td colspan="3">Loading...</td>
-          </tr>
-        </tbody>
-      </table>
+        </template>
+        <template #item-action="item">
+          <div class="d-flex gap-2">
+            <a href="#" class="head-text text-decoration-none" @click="editModal(item)">Ubah</a>
+            <a href="#" class="head-text text-decoration-none" @click="deleteModal(item)">Hapus</a>
+          </div>
+        </template>
+      </EasyDataTable>
     </div>
   </div>
 
@@ -109,9 +104,16 @@ import AddServicesDevices from '../../components/ModalServicesDevices/AddService
 let editForm
 let deleteForm
 const editedServicesDevice = ref({})
+const loading = ref(true)
 const servicesdevices = ref([])
 const id = ref(null)
 
+// Constants
+const baseColor = '#e55353'
+const headers = ref([
+  { text: 'Nama Device', value: 'name' },
+  { text: 'Action', value: 'action' },
+])
 onMounted(() => {
   editForm = new Modal(document.getElementById('editForm'), {})
   deleteForm = new Modal(document.getElementById('deleteForm'), {})
@@ -133,45 +135,41 @@ function closeModal() {
   deleteForm.hide()
 }
 
-function updateServices() {
-  axios
-    .put(`updatelistservices/${id.value}`, editedServicesDevice.value)
-    .then((response) => {
-      servicesdevices.value = response.data.data
-      showNotification('success', response.data.message)
-      closeModal()
-    })
-    .catch((error) => {
-      console.error('Failed to update data', error)
-      showNotification('error', error.response.data.message)
-      closeModal()
-    })
+const updateServices = async () => {
+  try {
+    const response = await axios.put(`updatelistservices/${id.value}`, editedServicesDevice.value)
+    servicesdevices.value = response.data.data
+    showNotification('success', response.data.message)
+    closeModal()
+  } catch (error) {
+    console.error('Data gagal diubah', error)
+    showNotification('error', 'Data gagal diubah.')
+    closeModal()
+  }
 }
 
-function deleteServices() {
-  axios
-    .delete(`destroylistservices/${id.value}`)
-    .then((response) => {
-      servicesdevices.value = response.data.data
-      showNotification('success', response.data.message)
-      closeModal()
-    })
-    .catch((error) => {
-      console.error('Failed to delete data', error)
-      showNotification('error', error.response.data.message)
-      closeModal()
-    })
+const deleteServices = async () => {
+  try {
+    const response = await axios.delete(`destroylistservices/${id.value}`)
+    servicesdevices.value = response.data.data
+    showNotification('success', response.data.message)
+    closeModal()
+  } catch (error) {
+    console.error('Data gagal dihapus', error)
+    showNotification('error', 'Data gagal dihapus.')
+    closeModal()
+  }
 }
 
-function getDevicesServices() {
-  axios
-    .get('getlistservices')
-    .then((response) => {
-      servicesdevices.value = response.data.data
-    })
-    .catch((error) => {
-      console.error('Failed to fetch data', error)
-    })
+const getDevicesServices = async () => {
+  try {
+    const response = await axios.get('getlistservices')
+    servicesdevices.value = response.data.data
+  } catch (error) {
+    console.error('Data gagal ditemukan', error)
+  } finally {
+    loading.value = false
+  }
 }
 
 function showNotification(type, message) {
@@ -203,3 +201,50 @@ function showNotification(type, message) {
 
 getDevicesServices()
 </script>
+
+<style scoped>
+.head-table {
+  --easy-table-border: 1px solid #445269;
+  --easy-table-row-border: 1px solid #445269;
+
+  --easy-table-header-font-size: 14px;
+  --easy-table-header-height: 50px;
+  --easy-table-header-font-color: #c1cad4;
+}
+input:focus {
+  border-color: #d22c36;
+}
+
+textarea:focus {
+  border-color: #d22c36;
+}
+.loader {
+  width: 50px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  padding: 6px;
+  background: conic-gradient(from 135deg at top, currentColor 90deg, #0000 0) 0 calc(50% - 4px) /
+      17px 8.5px,
+    radial-gradient(
+        farthest-side at bottom left,
+        #0000 calc(100% - 6px),
+        currentColor calc(100% - 5px) 99%,
+        #0000
+      )
+      top right/50% 50% content-box content-box,
+    radial-gradient(
+        farthest-side at top,
+        #0000 calc(100% - 6px),
+        currentColor calc(100% - 5px) 99%,
+        #0000
+      )
+      bottom / 100% 50% content-box content-box;
+  background-repeat: no-repeat;
+  animation: l11 1s infinite linear;
+}
+@keyframes l11 {
+  100% {
+    transform: rotate(1turn);
+  }
+}
+</style>

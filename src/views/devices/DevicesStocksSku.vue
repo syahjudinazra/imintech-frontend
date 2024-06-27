@@ -1,6 +1,6 @@
 <template>
   <CContainer fluid>
-    <AddStocksDevices />
+    <AddStocksSku />
     <div class="mt-2">
       <EasyDataTable
         :headers="headers"
@@ -99,7 +99,7 @@ import { Modal } from 'bootstrap'
 import axios from 'axios'
 import Swal from 'sweetalert2'
 
-import AddStocksDevices from '../../components/ModalStocksDevices/AddStocksDevices.vue'
+import AddStocksSku from '../../components/ModalStocksSkuDevices/AddStockSku.vue'
 import { CContainer } from '@coreui/vue'
 
 let editForm
@@ -139,7 +139,7 @@ function closeModal() {
 
 const updateStocks = async () => {
   try {
-    const response = await axios.put(`updateliststocks/${id.value}`, editedStocksDevice.value)
+    const response = await axios.put(`updateliststockssku/${id.value}`, editedStocksDevice.value)
     stocksdevices.value = response.data.data
     showNotification('success', response.data.message)
     closeModal()
@@ -151,7 +151,7 @@ const updateStocks = async () => {
 }
 const deleteStocks = async () => {
   try {
-    const response = await axios.delete(`destroyliststocks/${id.value}`)
+    const response = await axios.delete(`destroyliststockssku/${id.value}`)
     stocksdevices.value = response.data.data
     showNotification('success', response.data.message)
     closeModal()
@@ -164,7 +164,7 @@ const deleteStocks = async () => {
 
 const getDevicesStocks = async () => {
   try {
-    const response = await axios.get('getliststocks')
+    const response = await axios.get('getliststockssku')
     stocksdevices.value = response.data.data
   } catch (error) {
     console.error('Data gagal ditemukan', error)

@@ -102,7 +102,7 @@ const routes = [
           },
           {
             path: '/services/validasipelanggan',
-            name: 'Checks & Radios',
+            name: 'Validasi Pelanggan',
             component: () => import('@/views/services/ValidasiPelanggan.vue'),
             meta: { requiresAuth: true },
           },
@@ -165,11 +165,11 @@ const routes = [
             return h(resolveComponent('router-view'))
           },
         },
-        redirect: '/firmwares',
+        redirect: '/firmwares/information',
         meta: { requiresAuth: true },
         children: [
           {
-            path: '/firmwares',
+            path: '/firmwares/information',
             component: () => import('@/views/firmwares/FirmwaresImin.vue'),
             meta: { requiresAuth: true },
           },
@@ -196,6 +196,12 @@ const routes = [
             path: '/devices/devicesstocks',
             name: 'Devices Stocks',
             component: () => import('@/views/devices/DevicesStocks.vue'),
+            meta: { requiresAuth: true },
+          },
+          {
+            path: '/devices/devicesstockssku',
+            name: 'Devices Stocks SKU',
+            component: () => import('@/views/devices/DevicesStocksSku.vue'),
             meta: { requiresAuth: true },
           },
           {

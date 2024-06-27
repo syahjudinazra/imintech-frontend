@@ -138,7 +138,7 @@ export default [
       {
         component: 'CNavItem',
         name: 'Firmwares',
-        to: '/firmwares',
+        to: '/firmwares/information',
       },
       {
         component: 'CNavItem',
@@ -161,6 +161,11 @@ export default [
         component: 'CNavItem',
         name: 'Devices Stocks',
         to: '/devices/devicesstocks',
+      },
+      {
+        component: 'CNavItem',
+        name: 'Devices Stocks SKU',
+        to: '/devices/devicesstockssku',
       },
       {
         component: 'CNavItem',

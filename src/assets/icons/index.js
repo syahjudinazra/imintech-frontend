@@ -27,6 +27,7 @@ import {
   cilInbox,
   cilCog,
   cilFork,
+  cilLockUnlocked,
 } from '@coreui/icons'
 import { cifUs, cifBr, cifIn, cifFr, cifEs, cifPl } from '@coreui/icons'
 import {
@@ -125,6 +126,7 @@ export const iconsSet = Object.assign(
     cilList,
     cilLocationPin,
     cilLockLocked,
+    cilLockUnlocked,
     cilMagnifyingGlass,
     cilMediaPlay,
     cilMenu,

@@ -3,6 +3,14 @@
     <div class="row addDataForms">
       <div class="d-flex justify-content-between mb-2">
         <h1 class="h3 mb-3 text-gray-800">Tambah Data Service</h1>
+        <button
+          @click.prevent="exportService"
+          :class="['btn btn-success btn-sm fw-bold text-white', { disabled: isLoading }]"
+          :aria-disabled="isLoading"
+        >
+          <span v-if="isLoading">Downloading...</span>
+          <span v-else>Download Excel</span>
+        </button>
       </div>
       <hr style="width: -webkit-fill-available" />
       <form @submit.prevent="addNewServices" class="mb-4" enctype="multipart/form-data">
@@ -120,102 +128,165 @@
             required
           ></textarea>
         </div>
+        <div class="form-group mb-3" hidden>
+          <label for="status" class="form-label fw-bold">Status</label>
+          <div class="d-flex gap-2">
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                id="status"
+                v-model="services.status"
+              />
+              <label class="form-check-label" for="status">Antrian</label>
+            </div>
+          </div>
+        </div>
         <button type="submit" class="btn btn-primary">Submit</button>
       </form>
     </div>
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, onMounted } from 'vue'
 import axios from 'axios'
 import Swal from 'sweetalert2'
 
-export default {
-  data() {
-    return {
-      services: {
-        serialnumber: '',
-        tanggalmasuk: '',
-        pemilik: '',
-        pelanggan: '',
-        servicesdevice_id: '',
-        pemakaian: '',
-        kerusakan: '',
-        catatan: '',
-      },
-      servicesdevice: [],
-      token: localStorage.getItem('token'),
-    }
-  },
-  methods: {
-    addNewServices() {
-      axios
-        .post('addservices', this.services, {
-          headers: {
-            Authorization: `bearer ${this.token}`,
-          },
-        })
-        .then((response) => {
-          this.services = response.data.data
-          this.showNotification('success', 'Data berhasil ditambahkan')
-          this.services = {
-            serialnumber: '',
-            tanggalmasuk: '',
-            pemilik: '',
-            pelanggan: '',
-            servicesdevice_id: '',
-            pemakaian: '',
-            kerusakan: '',
-            catatan: '',
-          }
-        })
-        .catch((error) => {
-          console.log(error)
-          this.showNotification('error', 'Data gagal ditambahkan')
-        })
-    },
-    fetchDevices() {
-      axios
-        .get('getlistservices', {
-          headers: {
-            Authorization: `bearer ${this.token}`,
-          },
-        })
-        .then((response) => {
-          this.servicesdevice = response.data.data
-        })
-        .catch((error) => {
-          console.log(error)
-        })
-    },
-    showNotification(type, message) {
-      const toast = Swal.mixin({
-        toast: true,
-        position: 'top-end',
-        showConfirmButton: false,
-        timer: 3000,
-        timerProgressBar: true,
-        didOpen: (toast) => {
-          toast.addEventListener('mouseenter', Swal.stopTimer)
-          toast.addEventListener('mouseleave', Swal.resumeTimer)
-        },
-      })
-      toast.fire({
-        icon: type,
-        title: message,
-      })
-    },
-  },
-  created() {
-    this.fetchDevices()
-  },
+const services = ref({
+  serialnumber: '',
+  tanggalmasuk: '',
+  pemilik: '',
+  pelanggan: '',
+  servicesdevice_id: '',
+  pemakaian: '',
+  kerusakan: '',
+  catatan: 'Tanggal Pembelian:\nKelengkapan:',
+  status: 'Antrian',
+})
+
+const servicesdevice = ref([])
+const isLoading = ref(false)
+
+const fetchDevices = () => {
+  axios
+    .get('getlistservices')
+    .then((response) => {
+      servicesdevice.value = response.data.data
+    })
+    .catch((error) => {
+      console.log(error)
+    })
 }
+
+const addNewServices = () => {
+  axios
+    .post('addservices', services.value)
+    .then((response) => {
+      console.log(response)
+      services.value = response.data.data
+      showNotification('success', 'Data berhasil ditambahkan')
+      clearInput()
+    })
+    .catch((error) => {
+      console.log(error)
+      showNotification('error', 'Data gagal ditambahkan')
+    })
+}
+
+const clearInput = () => {
+  services.value = {
+    serialnumber: '',
+    tanggalmasuk: '',
+    pemilik: '',
+    pelanggan: '',
+    servicesdevice_id: '',
+    pemakaian: '',
+    kerusakan: '',
+    catatan: '',
+  }
+}
+
+const exportService = () => {
+  isLoading.value = true
+  axios
+    .get('services/export', { responseType: 'blob' })
+    .then((response) => {
+      const url = window.URL.createObjectURL(new Blob([response.data]))
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute('download', 'services.xlsx')
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+
+      showNotification('success', 'Export Excel Berhasil')
+    })
+    .catch((error) => {
+      console.log(error)
+      showNotification('error', 'Export Excel Gagal')
+    })
+    .finally(() => {
+      isLoading.value = false
+    })
+}
+
+const showNotification = (type, message) => {
+  const toast = Swal.mixin({
+    toast: true,
+    position: 'top-end',
+    showConfirmButton: false,
+    timer: 1000,
+    timerProgressBar: true,
+    didOpen: (toast) => {
+      toast.addEventListener('mouseenter', Swal.stopTimer)
+      toast.addEventListener('mouseleave', Swal.resumeTimer)
+    },
+  })
+  toast.fire({
+    icon: type,
+    title: message,
+  })
+}
+
+const handleRadioChange = (isStock) => {
+  services.value.pelanggan = isStock ? 'iMin ID' : null
+}
+
+onMounted(() => {
+  const stockRadio = document.getElementById('stock')
+  const customerRadio = document.getElementById('customer')
+
+  // Add event listeners to radio buttons
+  stockRadio.addEventListener('change', () => {
+    handleRadioChange(stockRadio.checked)
+  })
+
+  customerRadio.addEventListener('change', () => {
+    handleRadioChange(!customerRadio.checked)
+  })
+
+  fetchDevices()
+})
 </script>
 
 <style scoped>
+input:focus {
+  border-color: #d22c36;
+}
+
+textarea:focus {
+  border-color: #d22c36;
+}
+
 .addDataForms {
   background-color: #ffffff;
   border-radius: 1rem;
   padding: 1rem;
+}
+
+.disabled {
+  pointer-events: none;
+  opacity: 0.65;
 }
 </style>

@@ -1,7 +1,10 @@
 <template>
   <div>
-    <h1>Ini Monitor Stocks</h1>
+    <h1>Monitor Stocks</h1>
+    <AddStocks />
   </div>
 </template>
 
-<script></script>
+<script setup>
+import AddStocks from '@/components/Stocks/AddStocks.vue'
+</script>

@@ -106,26 +106,15 @@ function closeModal() {
 }
 
 async function AddDataSpareparts() {
-  if (
-    !spareparts.value.nosparepart ||
-    !spareparts.value.tipe ||
-    !spareparts.value.nama ||
-    !spareparts.value.quantity ||
-    !spareparts.value.harga
-  ) {
-    showNotification('error', 'All fields are required')
-    return
-  }
-
   try {
     const response = await axios.post('addspareparts', spareparts.value)
     console.log('Data saved:', response.data)
     showNotification('success', response.data.message)
-    location.reload()
     closeModal()
   } catch (error) {
     console.error('Error saving data:', error)
     showNotification('error', error.response.data.message)
+    closeModal()
   }
 }
 
@@ -140,6 +129,9 @@ function showNotification(type, message) {
       didOpen: (toast) => {
         toast.addEventListener('mouseenter', Swal.stopTimer)
         toast.addEventListener('mouseleave', Swal.resumeTimer)
+      },
+      didClose: () => {
+        window.location.reload()
       },
     })
     toast

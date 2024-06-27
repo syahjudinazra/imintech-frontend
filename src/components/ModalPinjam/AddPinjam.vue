@@ -131,7 +131,7 @@
                 placeholder="Masukan Kelengkapan Kirim"
               ></textarea>
             </div>
-            <div class="mb-3">
+            <div class="mb-3" hidden>
               <label for="status" class="form-label fw-bold">Status</label>
               <div class="form-check">
                 <input
@@ -140,7 +140,8 @@
                   id="status"
                   v-model="pinjams.status"
                   :true-value="'Dipinjamkan'"
-                  :false-value="'Null'"
+                  :false-value="'Dipinjamkan'"
+                  checked
                 />
                 <label class="form-check-label" for="status">Dipinjamkan</label>
               </div>
@@ -174,7 +175,7 @@ const pinjams = ref({
   no_telp: '',
   pengirim: '',
   kelengkapankirim: '',
-  status: '',
+  status: 'Dipinjamkan',
 })
 
 const pinjamsdevice = ref([])
@@ -211,7 +212,6 @@ const addPinjam = async () => {
 const fetchDevice = async () => {
   try {
     const response = await axios.get('getlistpinjam')
-    console.log('Data berhasil ditemukan:', response.data.data)
     pinjamsdevice.value = response.data.data
   } catch (error) {
     console.error('Data gagal ditemukan', error)
@@ -245,3 +245,13 @@ function showNotification(type, message) {
   })
 }
 </script>
+
+<style scoped>
+input:focus {
+  border-color: #d22c36;
+}
+
+textarea:focus {
+  border-color: #d22c36;
+}
+</style>
