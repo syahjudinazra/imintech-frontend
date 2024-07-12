@@ -177,7 +177,11 @@ const routes = [
             path: '/firmwares/table',
             name: 'Firmwares Table',
             component: () => import('@/views/firmwares/FirmwaresTable.vue'),
-            meta: { requiresAuth: true },
+          },
+          {
+            path: '/firmwares/information/m2-202',
+            name: 'M2-202',
+            component: () => import('@/components/Firmwares/M2-202.vue'),
           },
         ],
       },

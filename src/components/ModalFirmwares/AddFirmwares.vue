@@ -68,31 +68,6 @@
                 placeholder="Masukan Ota"
               />
             </div>
-            <div class="mb-3">
-              <label for="kategori" class="form-label fw-bold">Kategori</label>
-              <div class="d-flex gap-2">
-                <div class="form-check" v-for="kategori in kategories" :key="kategori">
-                  <input
-                    class="form-check-input"
-                    type="radio"
-                    :id="kategori"
-                    :value="kategori"
-                    v-model="firmwares.kategori"
-                  />
-                  <label class="form-check-label" :for="kategori">{{ kategori }}</label>
-                </div>
-              </div>
-            </div>
-            <div class="mb-3">
-              <label for="gambar" class="form-label fw-bold">Gambar</label>
-              <input
-                @change="handleImageUpload"
-                type="file"
-                class="form-control shadow-none"
-                id="gambar"
-                accept="image/*"
-              />
-            </div>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" @click="closeModal">Close</button>
@@ -116,12 +91,9 @@ const firmwares = ref({
   android: '',
   flash: '',
   ota: '',
-  kategori: '',
-  gambar: null,
 })
 
 let addForm
-const kategories = ref(['Desktop', 'Mobile', 'KIOSK'])
 
 onMounted(() => {
   addForm = new Modal(document.getElementById('addForm'), {})
@@ -135,12 +107,6 @@ function closeModal() {
   addForm.hide()
 }
 
-// Handle image upload
-function handleImageUpload(event) {
-  const file = event.target.files[0]
-  firmwares.value.gambar = file
-}
-
 const addFirmwares = async () => {
   try {
     // Prepare form data
@@ -150,10 +116,6 @@ const addFirmwares = async () => {
     formData.append('android', firmwares.value.android)
     formData.append('flash', firmwares.value.flash)
     formData.append('ota', firmwares.value.ota)
-    formData.append('kategori', firmwares.value.kategori)
-    if (firmwares.value.gambar) {
-      formData.append('gambar', firmwares.value.gambar)
-    }
 
     const response = await axios.post('addfirmwares', formData, {
       headers: {

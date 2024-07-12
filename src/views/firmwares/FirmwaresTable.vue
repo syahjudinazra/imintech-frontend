@@ -10,7 +10,6 @@
           <option value="android">Android</option>
           <option value="flash">Flash</option>
           <option value="ota">Ota</option>
-          <option value="kategori">Kategori</option>
         </select>
       </div>
 
@@ -56,10 +55,6 @@
             <td>{{ item.android }}</td>
             <td>{{ item.flash }}</td>
             <td>{{ item.ota }}</td>
-            <td>{{ item.kategori }}</td>
-            <td>
-              <img :src="item.gambar" alt="Firmware Image" />
-            </td>
           </tr>
         </template>
         <template #item-action="item">
@@ -143,31 +138,6 @@
                 placeholder="Masukan Ota"
               />
             </div>
-            <div class="mb-3">
-              <label for="kategori" class="form-label fw-bold">Kategori</label>
-              <div class="d-flex gap-2">
-                <div class="form-check" v-for="kategori in kategories" :key="kategori">
-                  <input
-                    class="form-check-input"
-                    type="radio"
-                    :id="kategori"
-                    :value="kategori"
-                    v-model="editFirmwaresForm.kategori"
-                  />
-                  <label class="form-check-label" :for="kategori">{{ kategori }}</label>
-                </div>
-              </div>
-            </div>
-            <div class="mb-3">
-              <label for="gambar" class="form-label fw-bold">Gambar</label>
-              <input
-                @change="handleImageUpload"
-                type="file"
-                class="form-control shadow-none"
-                id="gambar"
-                accept="image/*"
-              />
-            </div>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" @click="closeModal">Close</button>
@@ -222,7 +192,6 @@ const editFirmwaresForm = ref({})
 const searchField = ref('Cari berdasarkan kolom')
 const searchValue = ref('')
 const id = ref(null)
-const kategories = ref(['Desktop', 'Mobile', 'KIOSK'])
 
 // Constants
 const baseColor = '#e55353'
@@ -232,8 +201,6 @@ const headers = ref([
   { text: 'Android', value: 'android' },
   { text: 'Flash', value: 'flash' },
   { text: 'Ota', value: 'ota' },
-  { text: 'Kategori', value: 'kategori' },
-  { text: 'Gambar', value: 'gambar' },
   { text: 'Action', value: 'action' },
 ])
 
@@ -280,10 +247,6 @@ const updateFirmwares = async () => {
     formData.append('android', editFirmwaresForm.value.android)
     formData.append('flash', editFirmwaresForm.value.flash)
     formData.append('ota', editFirmwaresForm.value.ota)
-    formData.append('kategori', editFirmwaresForm.value.kategori)
-    if (editFirmwaresForm.value.gambar) {
-      formData.append('gambar', editFirmwaresForm.value.gambar)
-    }
 
     const response = await axios.put(`updatefirmwares/${id.value}`, formData, {
       headers: {
@@ -329,12 +292,6 @@ function closeModal() {
   deleteForm.hide()
 }
 
-// Handle image upload
-function handleImageUpload(event) {
-  const file = event.target.files[0]
-  editFirmwaresForm.value.gambar = file
-}
-
 function showNotification(type, message) {
   Swal.fire({
     icon: type,
@@ -344,9 +301,9 @@ function showNotification(type, message) {
     showConfirmButton: false,
     timer: 1000,
     timerProgressBar: true,
-    // didClose: () => {
-    //   window.location.reload()
-    // },
+    didClose: () => {
+      window.location.reload()
+    },
   })
 }
 </script>
