@@ -229,10 +229,6 @@ const updateFirmwares = async () => {
     formData.append('android', editFirmwaresForm.value.android)
     formData.append('flash', editFirmwaresForm.value.flash)
     formData.append('ota', editFirmwaresForm.value.ota)
-    formData.append('kategori', editFirmwaresForm.value.kategori)
-    if (editFirmwaresForm.value.gambar) {
-      formData.append('gambar', editFirmwaresForm.value.gambar)
-    }
 
     const response = await axios.put(`updatefirmwares/${id.value}`, formData, {
       headers: {
@@ -287,9 +283,9 @@ function showNotification(type, message) {
     showConfirmButton: false,
     timer: 1000,
     timerProgressBar: true,
-    didClose: () => {
-      window.location.reload()
-    },
+    // didClose: () => {
+    //   window.location.reload()
+    // },
   })
 }
 </script>
@@ -302,5 +298,50 @@ function showNotification(type, message) {
 .sidebar-content {
   flex-grow: 1;
   padding: 20px;
+}
+
+.head-table {
+  --easy-table-border: 1px solid #445269;
+  --easy-table-row-border: 1px solid #445269;
+
+  --easy-table-header-font-size: 14px;
+  --easy-table-header-height: 50px;
+  --easy-table-header-font-color: #c1cad4;
+}
+input:focus {
+  border-color: #d22c36;
+}
+
+textarea:focus {
+  border-color: #d22c36;
+}
+.loader {
+  width: 50px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  padding: 6px;
+  background: conic-gradient(from 135deg at top, currentColor 90deg, #0000 0) 0 calc(50% - 4px) /
+      17px 8.5px,
+    radial-gradient(
+        farthest-side at bottom left,
+        #0000 calc(100% - 6px),
+        currentColor calc(100% - 5px) 99%,
+        #0000
+      )
+      top right/50% 50% content-box content-box,
+    radial-gradient(
+        farthest-side at top,
+        #0000 calc(100% - 6px),
+        currentColor calc(100% - 5px) 99%,
+        #0000
+      )
+      bottom / 100% 50% content-box content-box;
+  background-repeat: no-repeat;
+  animation: l11 1s infinite linear;
+}
+@keyframes l11 {
+  100% {
+    transform: rotate(1turn);
+  }
 }
 </style>

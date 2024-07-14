@@ -13,8 +13,6 @@ export const mockClientItems = async function (itemsNumber = 100) {
       android: firmwares[i % firmwares.length].android,
       flash: firmwares[i % firmwares.length].flash,
       ota: firmwares[i % firmwares.length].ota,
-      kategori: firmwares[i % firmwares.length].kategori,
-      gambar: firmwares[i % firmwares.length].gambar,
     })
   }
   return mockItems
