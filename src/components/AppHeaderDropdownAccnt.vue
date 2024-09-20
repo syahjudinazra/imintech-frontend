@@ -30,9 +30,9 @@ export default {
   methods: {
     async handleLogout() {
       localStorage.removeItem('token')
-      localStorage.removeItem('user')
+      localStorage.removeItem('users')
       this.token = null
-      this.user = null
+      this.users = null
       this.authenticated = false
       this.users = {}
       window.location.reload('/')

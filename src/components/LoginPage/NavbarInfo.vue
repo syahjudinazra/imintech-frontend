@@ -3,17 +3,6 @@
     <nav class="navbar navbar-expand-lg navbar-light">
       <div class="container-fluid mt-2">
         <img :src="iminLogo" class="logoImin" alt="" />
-        <button
-          class="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarNav"
-          aria-controls="navbarNav"
-          aria-expanded="false"
-          aria-label="Toggle navigation"
-        >
-          <span class="navbar-toggler-icon"></span>
-        </button>
         <div class="collapse navbar-collapse d-flex justify-content-end" id="navbarNav">
           <ul class="navbar-nav fw-bold">
             <li class="nav-item">
@@ -54,5 +43,11 @@ export default {
 <style scoped>
 .logoImin {
   max-width: 100px;
+}
+
+@media (max-width: 575.98px) {
+  .collapse {
+    margin-top: -2.5rem;
+  }
 }
 </style>

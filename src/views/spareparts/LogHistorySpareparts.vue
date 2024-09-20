@@ -1,89 +1,97 @@
 <template>
   <div class="container-fluid">
-    <AddDataSpareparts />
-    <div class="d-flex align-items-end justify-content-between">
-      <caption class="fw-bold">
-        List of Data History Spareparts
-      </caption>
-      <div class="input-group mb-2 w-auto">
+    <div class="Historyspareparts-title">
+      <h2>History Spareparts</h2>
+    </div>
+    <div class="d-flex gap-2 align-items-center justify-content-end">
+      <div class="div">
+        <select v-model="searchField" class="form-select shadow-none" id="searchField">
+          <option disabled value="">Cari berdasarkan kolom</option>
+          <option value="causer.name">User</option>
+          <option value="subject.nosparepart">No Sparepart</option>
+          <option value="subject.tipe">Tipe</option>
+        </select>
+      </div>
+
+      <br />
+
+      <div class="search">
         <input
+          v-model="searchValue"
           type="text"
           class="form-control shadow-none"
-          placeholder="Search..."
-          aria-label="Search..."
-          aria-describedby="search"
-          v-model="searchQuery"
-        />
-        <button
-          @click="searchSpareparts"
-          class="btn btn-outline-danger shadow-none"
-          type="button"
           id="search"
-        >
-          Submit
-        </button>
+          placeholder="Cari..."
+        />
       </div>
     </div>
-    <div class="table-responsive">
-      <table class="table caption-top">
-        <thead class="table-dark">
+    <div class="mt-2">
+      <EasyDataTable
+        :headers="headers"
+        :items="filteredActivities"
+        :search-field="searchField"
+        :search-value="searchValue"
+        :loading="loading"
+        :theme-color="baseColor"
+        :rows-per-page="3"
+        table-class-name="head-table"
+        alternating
+        show-index
+        border-cell
+        buttons-pagination
+      >
+        <template #loading>
+          <div class="loader"></div>
+        </template>
+        <template #empty-message>
+          <p>Data tidak ditemukan</p>
+        </template>
+        <template #items="{ item }">
           <tr>
-            <th>User</th>
-            <th>No Spareparts</th>
-            <th>Tipe</th>
-            <th>Before</th>
-            <th>After</th>
-            <th>Description</th>
-            <th>Date Changes</th>
+            <td>{{ item.causer.name }}</td>
+            <td>{{ item.subject.nosparepart }}</td>
+            <td>{{ item.subject.tipe }}</td>
+            <td>{{ item.properties.old }}</td>
+            <td>{{ item.properties.attributes }}</td>
+            <td>{{ item.description }}</td>
+            <td>{{ formatDate(item.created_at) }}</td>
           </tr>
-        </thead>
-        <tbody v-if="loading">
-          <tr>
-            <td colspan="7" class="text-center">
-              <div class="d-flex justify-content-center align-items-center">
-                <div class="loader"></div>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-        <tbody v-else-if="activities.length > 0">
-          <tr v-for="activity in activities" :key="activity.id">
-            <td>{{ activity.causer }}</td>
-            <td>{{ activity.subject.nosparepart }}</td>
-            <td>{{ activity.subject.tipe }}</td>
-            <td>{{ activity.properties.old }}</td>
-            <td>{{ activity.properties.attributes }}</td>
-            <td>{{ activity.description }}</td>
-            <td>{{ formatDate(activity.created_at) }}</td>
-          </tr>
-        </tbody>
-        <tbody v-else>
-          <tr>
-            <td colspan="7" class="text-center">Data tidak ditemukan</td>
-          </tr>
-        </tbody>
-      </table>
+        </template>
+      </EasyDataTable>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import axios from 'axios'
+import moment from 'moment'
 
 const activities = ref([])
 const loading = ref(true)
-const searchQuery = ref('')
+const searchField = ref('')
+const searchValue = ref('')
 const token = localStorage.getItem('token')
 
-const fetchActivities = async (query = '') => {
+// Constants
+const baseColor = '#e55353'
+const headers = ref([
+  { text: 'User', value: 'causer.name' },
+  { text: 'No Sparepart', value: 'subject.nosparepart' },
+  { text: 'Tipe', value: 'subject.tipe' },
+  { text: 'Before', value: 'properties.old' },
+  { text: 'After', value: 'properties.attributes' },
+  { text: 'Description', value: 'description' },
+  { text: 'Created At', value: 'created_at' },
+])
+
+const fetchActivities = async () => {
   loading.value = true
   try {
     const response = await axios.get('getlogspareparts', {
       headers: {
         Authorization: `Bearer ${token}`,
       },
-      params: { search: query },
     })
     activities.value = response.data
   } catch (error) {
@@ -93,13 +101,18 @@ const fetchActivities = async (query = '') => {
   }
 }
 
-const searchSpareparts = () => {
-  fetchActivities(searchQuery.value)
-}
+const filteredActivities = computed(() => {
+  if (!searchField.value || !searchValue.value) {
+    return activities.value
+  }
+  return activities.value.filter((activity) =>
+    activity[searchField.value].toLowerCase().includes(searchValue.value.toLowerCase()),
+  )
+})
 
-function formatDate(dateString) {
-  const date = new Date(dateString)
-  return date.toLocaleString('en-GB', { timeZone: 'Asia/Jakarta' })
+const formatDate = (date) => {
+  // Convert to a moment object and format it
+  return moment(date).tz('Asia/Jakarta').format('DD-MM-YYYY HH:mm:ss')
 }
 
 onMounted(() => {
@@ -108,21 +121,47 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.head-table {
+  --easy-table-border: 1px solid #445269;
+  --easy-table-row-border: 1px solid #445269;
+
+  --easy-table-header-font-size: 14px;
+  --easy-table-header-height: 50px;
+  --easy-table-header-font-color: #c1cad4;
+}
+input:focus {
+  border-color: #d22c36;
+}
+
+textarea:focus {
+  border-color: #d22c36;
+}
 .loader {
-  width: 30px;
-  padding: 8px;
+  width: 50px;
   aspect-ratio: 1;
   border-radius: 50%;
-  background: #000;
-  --_m: conic-gradient(#0000 10%, #000), linear-gradient(#000 0 0) content-box;
-  -webkit-mask: var(--_m);
-  mask: var(--_m);
-  -webkit-mask-composite: source-out;
-  mask-composite: subtract;
-  animation: l3 1s infinite linear;
+  padding: 6px;
+  background: conic-gradient(from 135deg at top, currentColor 90deg, #0000 0) 0 calc(50% - 4px) /
+      17px 8.5px,
+    radial-gradient(
+        farthest-side at bottom left,
+        #0000 calc(100% - 6px),
+        currentColor calc(100% - 5px) 99%,
+        #0000
+      )
+      top right/50% 50% content-box content-box,
+    radial-gradient(
+        farthest-side at top,
+        #0000 calc(100% - 6px),
+        currentColor calc(100% - 5px) 99%,
+        #0000
+      )
+      bottom / 100% 50% content-box content-box;
+  background-repeat: no-repeat;
+  animation: l11 1s infinite linear;
 }
-@keyframes l3 {
-  to {
+@keyframes l11 {
+  100% {
     transform: rotate(1turn);
   }
 }

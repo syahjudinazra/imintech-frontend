@@ -11,7 +11,7 @@
         <div class="d-flex justify-content-center align-items-center">
           <div class="card shadow-lg p-3 mb-5 login-card">
             <div class="card-body">
-              <h5 class="card-title text-center mb-4">Login</h5>
+              <h5 class="card-title text-center mb-4">Find Password</h5>
               <form @submit.prevent="handleSubmit">
                 <div class="mb-3">
                   <div class="input-group">
@@ -19,33 +19,12 @@
                       type="text"
                       class="form-control shadow-none"
                       :class="{ 'is-invalid': submitted && emailError }"
-                      placeholder="Please enter account ID/email address"
+                      placeholder="Please enter email address"
                       v-model="email"
-                      autocomplete="email"
                     />
                   </div>
                   <div class="invalid-feedback">
                     {{ emailError }}
-                  </div>
-                </div>
-
-                <div class="mb-3">
-                  <div class="input-group">
-                    <input
-                      :type="passwordVisible ? 'text' : 'password'"
-                      class="form-control shadow-none"
-                      :class="{ 'is-invalid': submitted && passwordError }"
-                      placeholder="Please enter password"
-                      v-model="password"
-                    />
-                    <span class="input-group-text" @click="togglePasswordVisibility">
-                      <i
-                        :class="passwordVisible ? 'fa-regular fa-eye' : 'fa-regular fa-eye-slash'"
-                      ></i>
-                    </span>
-                  </div>
-                  <div class="invalid-feedback">
-                    {{ passwordError }}
                   </div>
                 </div>
 
@@ -56,15 +35,6 @@
                   </button>
                 </div>
               </form>
-
-              <div class="d-flex justify-content-between mt-3">
-                <router-link to="/pages/register" class="text-primary text-decoration-none"
-                  >Register</router-link
-                >
-                <router-link to="/pages/forgotpassword" class="text-primary text-decoration-none"
-                  >Forgot password</router-link
-                >
-              </div>
             </div>
           </div>
         </div>
@@ -104,96 +74,26 @@
 
 <script setup>
 import { ref } from 'vue'
-import axios from 'axios'
-import Swal from 'sweetalert2'
 import loginbg3 from '@/assets/images/loginbg3.png'
-import { useRouter } from 'vue-router'
 import NavbarInfo from '../../components/LoginPage/NavbarInfo.vue'
 
 const email = ref('')
-const password = ref('')
 const loading = ref(false)
 const submitted = ref(false)
-const passwordVisible = ref(false)
 const emailError = ref('')
-const passwordError = ref('')
-const router = useRouter()
 
 const handleSubmit = () => {
   submitted.value = true
   emailError.value = ''
-  passwordError.value = ''
 
   if (!validateEmail(email.value)) {
     emailError.value = 'Please enter a valid email address'
-  }
-
-  if (!validatePassword(password.value)) {
-    passwordError.value = 'Password must be at least 6 characters long'
-  }
-
-  if (!emailError.value && !passwordError.value) {
-    getLogin()
   }
 }
 
 const validateEmail = (email) => {
   const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
   return re.test(email)
-}
-
-const validatePassword = (password) => {
-  return password.length >= 6
-}
-
-const togglePasswordVisibility = () => {
-  passwordVisible.value = !passwordVisible.value
-}
-
-const getLogin = async () => {
-  try {
-    loading.value = true
-
-    const response = await axios.post('login', {
-      email: email.value,
-      password: password.value,
-    })
-    const token = response.data.token
-    const user = JSON.stringify(response.data.users)
-    localStorage.setItem('token', token)
-    localStorage.setItem('users', user)
-    await showNotification('success', response.data.message)
-    router.push({ name: 'Dashboard' })
-  } catch (error) {
-    console.error('Login failed:', error)
-    showNotification('error', error.response?.data?.message || 'Login failed')
-    clearInput()
-  } finally {
-    loading.value = false
-  }
-}
-
-const showNotification = async (type, message) => {
-  const toast = Swal.mixin({
-    toast: true,
-    position: 'top-end',
-    showConfirmButton: false,
-    timer: 2000,
-    timerProgressBar: true,
-    didOpen: (toast) => {
-      toast.addEventListener('mouseenter', Swal.stopTimer)
-      toast.addEventListener('mouseleave', Swal.resumeTimer)
-    },
-  })
-  await toast.fire({
-    icon: type,
-    title: message,
-  })
-}
-
-const clearInput = () => {
-  email.value = ''
-  password.value = ''
 }
 </script>
 
@@ -209,9 +109,7 @@ const clearInput = () => {
   height: auto;
   width: 50rem;
 }
-.input-group-text {
-  background-color: white;
-}
+
 .card {
   border-radius: 12px;
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);

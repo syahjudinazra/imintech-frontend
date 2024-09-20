@@ -48,18 +48,51 @@ export default [
   },
   {
     component: 'CNavGroup',
-    name: 'Pinjam',
+    name: 'Delivery',
+    to: '/delivery',
+    icon: 'cil-truck',
+    items: [
+      {
+        component: 'CNavItem',
+        name: 'Customer Delivery',
+        to: '/delivery/customer',
+      },
+      {
+        component: 'CNavItem',
+        name: 'Warehouse Delivery',
+        to: '/delivery/warehouse',
+      },
+      {
+        component: 'CNavItem',
+        name: 'Service Delivery',
+        to: '/delivery/service',
+      },
+      {
+        component: 'CNavItem',
+        name: 'Loan Delivery',
+        to: '/delivery/loan',
+      },
+      {
+        component: 'CNavItem',
+        name: 'Sold Delivery',
+        to: '/delivery/sold',
+      },
+    ],
+  },
+  {
+    component: 'CNavGroup',
+    name: 'Loan',
     to: '/pinjam',
     icon: 'cil-pencil',
     items: [
       {
         component: 'CNavItem',
-        name: 'Dipinjamkan',
+        name: 'On Loan',
         to: '/pinjam/dipinjamkan',
       },
       {
         component: 'CNavItem',
-        name: 'Dikembalikan',
+        name: 'Returned',
         to: '/pinjam/dikembalikan',
       },
     ],
@@ -133,7 +166,7 @@ export default [
     component: 'CNavGroup',
     name: 'Firmwares',
     to: '/firmwares',
-    icon: 'cil-fork',
+    icon: 'cil-memory',
     items: [
       {
         component: 'CNavItem',
@@ -149,7 +182,7 @@ export default [
   },
   {
     component: 'CNavTitle',
-    name: 'List Devices',
+    name: 'List',
   },
   {
     component: 'CNavGroup',
@@ -159,30 +192,110 @@ export default [
     items: [
       {
         component: 'CNavItem',
-        name: 'Devices Stocks',
+        name: 'Stocks Devices',
         to: '/devices/devicesstocks',
       },
       {
         component: 'CNavItem',
-        name: 'Devices Stocks SKU',
+        name: 'Stocks SKU Devices',
         to: '/devices/devicesstockssku',
       },
       {
         component: 'CNavItem',
-        name: 'Devices Pinjam',
+        name: 'Loan Devices',
         to: '/devices/devicespinjam',
       },
       {
         component: 'CNavItem',
-        name: 'Devices Services',
+        name: 'Services Devices',
         to: '/devices/devicesservices',
+      },
+      {
+        component: 'CNavItem',
+        name: 'SpareParts Devices',
+        to: '/devices/spareparts',
+      },
+      {
+        component: 'CNavItem',
+        name: 'Firmwares Devices',
+        to: '/devices/firmwares',
       },
     ],
   },
-  // {
-  //   component: 'CNavItem',
-  //   name: 'Firmwares',
-  //   to: '/firmwares',
-  //   icon: 'cil-fork',
-  // },
+  {
+    component: 'CNavGroup',
+    name: 'Components',
+    to: '/components',
+    icon: 'cil-fork',
+    items: [
+      {
+        component: 'CNavItem',
+        name: 'RAM',
+        to: '/components/ram',
+      },
+      {
+        component: 'CNavItem',
+        name: 'Android',
+        to: '/components/android',
+      },
+    ],
+  },
+  {
+    component: 'CNavGroup',
+    name: 'Technician',
+    to: '/technician',
+    icon: 'cil-user-plus',
+    items: [
+      {
+        component: 'CNavItem',
+        name: 'List Technician',
+        to: '/list/technician',
+      },
+    ],
+  },
+  {
+    component: 'CNavGroup',
+    name: 'Location',
+    to: '/location',
+    icon: 'cil-location-pin',
+    items: [
+      {
+        component: 'CNavItem',
+        name: 'List Stocks Location',
+        to: '/list/location',
+      },
+    ],
+  },
+  {
+    component: 'CNavGroup',
+    name: 'Sales',
+    to: '/sales',
+    icon: 'cil-people',
+    items: [
+      {
+        component: 'CNavItem',
+        name: 'List Sales',
+        to: '/list/sales',
+      },
+    ],
+  },
+  {
+    component: 'CNavGroup',
+    name: 'Customers',
+    to: '/customers',
+    icon: 'cil-address-book',
+    items: [
+      {
+        component: 'CNavItem',
+        name: 'List Customers',
+        to: '/list/customers',
+      },
+    ],
+  },
+  {
+    component: 'CNavItem',
+    name: 'UsersManagement',
+    to: '/users/management',
+    icon: 'cil-user',
+  },
 ]

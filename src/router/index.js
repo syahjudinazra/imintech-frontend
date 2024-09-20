@@ -223,9 +223,9 @@ const routes = [
         ],
       },
       {
-        path: '/widgets',
-        name: 'Widgets',
-        component: () => import('@/views/widgets/Widgets.vue'),
+        path: '/users/management',
+        name: 'UsersManagement',
+        component: () => import('@/views/users/UsersManagement.vue'),
         meta: { requiresAuth: true },
       },
     ],
@@ -258,7 +258,12 @@ const routes = [
       {
         path: 'register',
         name: 'Register',
-        component: () => import('@/views/pages/Register'),
+        component: () => import('@/views/pages/RegisterPage'),
+      },
+      {
+        path: 'forgotpassword',
+        name: 'ForgotPassword',
+        component: () => import('@/views/pages/ForgotPassword'),
       },
     ],
   },

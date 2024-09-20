@@ -503,9 +503,9 @@ function showNotification(type, message) {
     showConfirmButton: false,
     timer: 2000,
     timerProgressBar: true,
-    didClose: () => {
-      window.location.reload()
-    },
+    // didClose: () => {
+    //   window.location.reload()
+    // },
   })
 }
 

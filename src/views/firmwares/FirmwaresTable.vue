@@ -1,30 +1,6 @@
 <template>
   <div class="container-fluid">
     <AddFirmwares />
-    <div class="d-flex gap-2 align-items-center justify-content-end">
-      <div class="div">
-        <select v-model="searchField" class="form-select shadow-none" id="searchField">
-          <option selected>Cari berdasarkan kolom</option>
-          <option value="tipe">Tipe</option>
-          <option value="versi">Versi</option>
-          <option value="android">Android</option>
-          <option value="flash">Flash</option>
-          <option value="ota">Ota</option>
-        </select>
-      </div>
-
-      <br />
-
-      <div class="search">
-        <input
-          v-model="searchValue"
-          type="text"
-          class="form-control shadow-none"
-          id="search"
-          placeholder="Cari..."
-        />
-      </div>
-    </div>
     <div class="mt-2">
       <EasyDataTable
         v-model:server-options="serverOptions"
@@ -32,8 +8,6 @@
         :headers="headers"
         :items="firmwares"
         :loading="loading"
-        :search-field="searchField"
-        :search-value="searchValue"
         :theme-color="baseColor"
         :rows-per-page="3"
         table-class-name="head-table"
@@ -48,7 +22,7 @@
         <template #empty-message>
           <p>Data tidak ditemukan</p>
         </template>
-        <template #items="{ item }">
+        <template #items="item">
           <tr>
             <td>{{ item.tipe }}</td>
             <td>{{ item.versi }}</td>
@@ -189,8 +163,6 @@ let deleteForm
 const firmwares = ref([])
 const loading = ref(true)
 const editFirmwaresForm = ref({})
-const searchField = ref('Cari berdasarkan kolom')
-const searchValue = ref('')
 const id = ref(null)
 
 // Constants
@@ -301,9 +273,9 @@ function showNotification(type, message) {
     showConfirmButton: false,
     timer: 1000,
     timerProgressBar: true,
-    didClose: () => {
-      window.location.reload()
-    },
+    // didClose: () => {
+    //   window.location.reload()
+    // },
   })
 }
 </script>

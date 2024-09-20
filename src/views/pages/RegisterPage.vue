@@ -1,17 +1,17 @@
 <template>
-  <div class="bg-login d-flex flex-column min-vh-100">
+  <div class="bg-register d-flex flex-column min-vh-100">
     <NavbarInfo />
-    <div class="hero-login container-fluid d-flex justify-content-center align-items-center">
+    <div class="hero-register container-fluid d-flex justify-content-center align-items-center">
       <div class="d-flex flex-column flex-md-row justify-content-between align-items-center">
         <div
           class="col-12 col-md-6 col-lg-5 d-flex justify-content-center align-items-center mb-4 mb-md-0"
         >
-          <img :src="loginbg3" class="iminkitLogin" alt="iminkit progress image" />
+          <img :src="loginbg3" class="iminkitRegister" alt="iminkit progress image" />
         </div>
         <div class="d-flex justify-content-center align-items-center">
-          <div class="card shadow-lg p-3 mb-5 login-card">
+          <div class="card shadow-lg p-3 mb-5 register-card">
             <div class="card-body">
-              <h5 class="card-title text-center mb-4">Login</h5>
+              <h5 class="card-title text-center mb-4">Register iMin Service</h5>
               <form @submit.prevent="handleSubmit">
                 <div class="mb-3">
                   <div class="input-group">
@@ -19,9 +19,8 @@
                       type="text"
                       class="form-control shadow-none"
                       :class="{ 'is-invalid': submitted && emailError }"
-                      placeholder="Please enter account ID/email address"
+                      placeholder="Please input email address"
                       v-model="email"
-                      autocomplete="email"
                     />
                   </div>
                   <div class="invalid-feedback">
@@ -49,22 +48,43 @@
                   </div>
                 </div>
 
+                <div class="mb-3">
+                  <div class="input-group">
+                    <input
+                      :type="passwordConfirmVisible ? 'text' : 'password'"
+                      class="form-control shadow-none"
+                      :class="{ 'is-invalid': submitted && passwordError }"
+                      placeholder="Please enter confirm password"
+                      v-model="confirmPassword"
+                    />
+                    <span class="input-group-text" @click="toggleConfirmPasswordVisibility">
+                      <i
+                        :class="
+                          passwordConfirmVisible ? 'fa-regular fa-eye' : 'fa-regular fa-eye-slash'
+                        "
+                      ></i>
+                    </span>
+                  </div>
+                  <div class="invalid-feedback">
+                    {{ passwordError }}
+                  </div>
+                </div>
+
                 <div class="d-grid">
+                  <p>
+                    Already have an account?<router-link
+                      to="/pages/login"
+                      class="text-decoration-none"
+                    >
+                      Login</router-link
+                    >
+                  </p>
                   <button type="submit" class="btn btn-danger text-white">
                     <span v-if="loading" class="loader"></span>
-                    <span v-else>Confirm</span>
+                    <span v-else>Register</span>
                   </button>
                 </div>
               </form>
-
-              <div class="d-flex justify-content-between mt-3">
-                <router-link to="/pages/register" class="text-primary text-decoration-none"
-                  >Register</router-link
-                >
-                <router-link to="/pages/forgotpassword" class="text-primary text-decoration-none"
-                  >Forgot password</router-link
-                >
-              </div>
             </div>
           </div>
         </div>
@@ -115,6 +135,7 @@ const password = ref('')
 const loading = ref(false)
 const submitted = ref(false)
 const passwordVisible = ref(false)
+const passwordConfirmVisible = ref(false)
 const emailError = ref('')
 const passwordError = ref('')
 const router = useRouter()
@@ -133,7 +154,7 @@ const handleSubmit = () => {
   }
 
   if (!emailError.value && !passwordError.value) {
-    getLogin()
+    getRegister()
   }
 }
 
@@ -150,23 +171,26 @@ const togglePasswordVisibility = () => {
   passwordVisible.value = !passwordVisible.value
 }
 
-const getLogin = async () => {
+const toggleConfirmPasswordVisibility = () => {
+  passwordConfirmVisible.value = !passwordConfirmVisible.value
+}
+
+const getRegister = async () => {
   try {
     loading.value = true
-
-    const response = await axios.post('login', {
+    const response = await axios.post('register', {
       email: email.value,
       password: password.value,
     })
     const token = response.data.token
-    const user = JSON.stringify(response.data.users)
+    const user = JSON.stringify(response.data.user)
     localStorage.setItem('token', token)
-    localStorage.setItem('users', user)
+    localStorage.setItem('user', user)
     await showNotification('success', response.data.message)
     router.push({ name: 'Dashboard' })
   } catch (error) {
-    console.error('Login failed:', error)
-    showNotification('error', error.response?.data?.message || 'Login failed')
+    console.error('Register failed:', error)
+    showNotification('error', error.response?.data?.message || 'Register failed')
     clearInput()
   } finally {
     loading.value = false
@@ -198,14 +222,14 @@ const clearInput = () => {
 </script>
 
 <style scoped>
-.bg-login {
+.bg-register {
   background-image: url('@/assets/images/loginbg4.png');
   background-size: cover;
 }
-.hero-login {
+.hero-register {
   height: 80vh;
 }
-.iminkitLogin {
+.iminkitRegister {
   height: auto;
   width: 50rem;
 }
@@ -230,7 +254,7 @@ const clearInput = () => {
   display: block;
 }
 
-.loginForm {
+.registerForm {
   width: 50%;
 }
 input:focus {
@@ -244,7 +268,7 @@ textarea:focus {
 .footer {
   margin-top: 20px;
 }
-.card-login {
+.card-register {
   padding: 0 !important;
 }
 
@@ -269,54 +293,54 @@ textarea:focus {
 }
 
 @media (max-width: 575.98px) {
-  .hero-login {
+  .hero-register {
     flex-direction: column;
     text-align: center;
     height: auto;
   }
-  .iminkitLogin {
+  .iminkitRegister {
     max-width: 80%;
     margin-bottom: 1rem;
   }
-  .login-card {
+  .register-card {
     width: 100%;
     margin-left: 0;
   }
 }
 
 @media (min-width: 576px) and (max-width: 991.98px) {
-  .hero-login {
+  .hero-register {
     padding: 2rem;
   }
-  .iminkitLogin {
+  .iminkitRegister {
     width: 80%;
   }
-  .login-card {
+  .register-card {
     width: 100%;
     margin-left: 2rem;
   }
 }
 
 @media (min-width: 992px) and (max-width: 1199.98px) {
-  .hero-login {
+  .hero-register {
     padding-top: 6rem;
   }
-  .iminkitLogin {
+  .iminkitRegister {
     width: 40rem;
   }
-  .login-card {
+  .register-card {
     margin-left: 6rem;
   }
 }
 
 @media (min-width: 1200px) {
-  .hero-login {
+  .hero-register {
     padding-top: 8rem;
   }
-  .iminkitLogin {
+  .iminkitRegister {
     width: 50rem;
   }
-  .login-card {
+  .register-card {
     width: 30rem;
     margin-left: 10rem;
   }
