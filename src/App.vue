@@ -5,7 +5,6 @@
 import { onBeforeMount } from 'vue'
 import { useStore } from 'vuex'
 import { useColorModes } from '@coreui/vue'
-import '@fortawesome/fontawesome-free/css/all.css'
 
 export default {
   setup() {

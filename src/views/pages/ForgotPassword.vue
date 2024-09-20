@@ -23,9 +23,7 @@
                       v-model="email"
                     />
                   </div>
-                  <div class="invalid-feedback">
-                    {{ emailError }}
-                  </div>
+                  <div class="invalid-feedback">{{ emailError }}</div>
                 </div>
 
                 <div class="d-grid">
@@ -53,16 +51,18 @@
             class="text-decoration-none text-dark"
             href="https://kit.imin.sg/useprivacy"
             target="_blank"
-            >&nbsp;Privacy And Terms |</a
           >
+            &nbsp;Privacy And Terms |
+          </a>
         </p>
         <p>
           <a
             class="text-decoration-none text-dark"
             href="https://imin.co.id/hubungi-imin/"
             target="_blank"
-            >&nbsp;Contact Us</a
           >
+            &nbsp;Contact Us
+          </a>
         </p>
       </div>
       <div class="copyright d-flex justify-content-center">
@@ -74,6 +74,7 @@
 
 <script setup>
 import { ref } from 'vue'
+import { useReCaptcha } from 'vue-recaptcha-v3'
 import loginbg3 from '@/assets/images/loginbg3.png'
 import NavbarInfo from '../../components/LoginPage/NavbarInfo.vue'
 
@@ -82,12 +83,30 @@ const loading = ref(false)
 const submitted = ref(false)
 const emailError = ref('')
 
-const handleSubmit = () => {
+const { executeRecaptcha } = useReCaptcha()
+
+const handleSubmit = async () => {
   submitted.value = true
   emailError.value = ''
 
   if (!validateEmail(email.value)) {
     emailError.value = 'Please enter a valid email address'
+    return
+  }
+
+  try {
+    loading.value = true
+    // Execute reCAPTCHA
+    const token = await executeRecaptcha('login')
+
+    // Send token and email to the server for validation
+    console.log('reCAPTCHA token:', token)
+    console.log('Email:', email.value)
+    // Add your logic here to submit the email and reCAPTCHA token to your backend server
+  } catch (error) {
+    console.error('reCAPTCHA failed:', error)
+  } finally {
+    loading.value = false
   }
 }
 
