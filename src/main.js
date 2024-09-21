@@ -9,20 +9,15 @@ import { iconsSet as icons } from '@/assets/icons'
 import DocsExample from '@/components/DocsExample'
 import Vue3EasyDataTable from 'vue3-easy-data-table'
 import 'vue3-easy-data-table/dist/style.css'
-import { VueReCaptcha } from 'vue-recaptcha-v3'
 
 const token = localStorage.getItem('token')
 axios.defaults.baseURL = 'http://127.0.0.1:8000/api/'
-axios.defaults.withCredentials = true
 axios.defaults.headers.common = { Authorization: `bearer ${token}` }
 
 const app = createApp(App)
 app.use(store)
 app.use(router)
 app.use(CoreuiVue)
-app.use(VueReCaptcha, {
-  siteKey: 'your-site-key-here', // Replace this with your actual site key
-})
 app.provide('icons', icons)
 app.component('CIcon', CIcon)
 app.component('DocsExample', DocsExample)

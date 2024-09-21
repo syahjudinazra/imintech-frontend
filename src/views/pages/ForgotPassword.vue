@@ -16,7 +16,8 @@
                 <div class="mb-3">
                   <div class="input-group">
                     <input
-                      type="text"
+                      id="email"
+                      type="email"
                       class="form-control shadow-none"
                       :class="{ 'is-invalid': submitted && emailError }"
                       placeholder="Please enter email address"
@@ -33,6 +34,9 @@
                   </button>
                 </div>
               </form>
+              <div v-if="successMessage" class="alert alert-success mt-3" role="alert">
+                {{ successMessage }}
+              </div>
             </div>
           </div>
         </div>
@@ -40,71 +44,45 @@
     </div>
 
     <footer class="mt-4">
-      <div class="d-flex justify-content-center">
-        <p>
-          <a class="text-decoration-none text-dark" href="https://imin.co.id/" target="_blank"
-            >About Us |</a
-          >
-        </p>
-        <p>
-          <a
-            class="text-decoration-none text-dark"
-            href="https://kit.imin.sg/useprivacy"
-            target="_blank"
-          >
-            &nbsp;Privacy And Terms |
-          </a>
-        </p>
-        <p>
-          <a
-            class="text-decoration-none text-dark"
-            href="https://imin.co.id/hubungi-imin/"
-            target="_blank"
-          >
-            &nbsp;Contact Us
-          </a>
-        </p>
-      </div>
-      <div class="copyright d-flex justify-content-center">
-        <p>&copy; 2024 iMin Technology Pte Ltd</p>
-      </div>
+      <FooterFront />
     </footer>
   </div>
 </template>
 
 <script setup>
 import { ref } from 'vue'
-import { useReCaptcha } from 'vue-recaptcha-v3'
+import axios from 'axios'
 import loginbg3 from '@/assets/images/loginbg3.png'
 import NavbarInfo from '../../components/LoginPage/NavbarInfo.vue'
+import FooterFront from '../../components/Layouts/FooterFront.vue'
 
 const email = ref('')
 const loading = ref(false)
 const submitted = ref(false)
 const emailError = ref('')
-
-const { executeRecaptcha } = useReCaptcha()
+const successMessage = ref('')
 
 const handleSubmit = async () => {
+  loading.value = true
   submitted.value = true
   emailError.value = ''
+  successMessage.value = ''
 
   if (!validateEmail(email.value)) {
     emailError.value = 'Please enter a valid email address'
+    loading.value = false
     return
   }
 
   try {
-    loading.value = true
-    // Execute reCAPTCHA
-    const token = await executeRecaptcha('login')
-
-    // Send token and email to the server for validation
-    console.log('reCAPTCHA token:', token)
-    console.log('Email:', email.value)
-    // Add your logic here to submit the email and reCAPTCHA token to your backend server
+    const response = await axios.post('/reset-password', {
+      email: email.value,
+    })
+    successMessage.value = 'Reset password successfully'
+    email.value = response.data
   } catch (error) {
-    console.error('reCAPTCHA failed:', error)
+    console.error('Forgot password failed:', error)
+    emailError.value = 'Failed to reset password. Please try again.'
   } finally {
     loading.value = false
   }

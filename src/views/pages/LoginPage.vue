@@ -39,9 +39,7 @@
                       v-model="password"
                     />
                     <span class="input-group-text" @click="togglePasswordVisibility">
-                      <i
-                        :class="passwordVisible ? 'fa-regular fa-eye' : 'fa-regular fa-eye-slash'"
-                      ></i>
+                      <i :class="passwordVisible ? 'cilLockLocked' : 'cilLockUnlocked'"></i>
                     </span>
                   </div>
                   <div class="invalid-feedback">
@@ -72,32 +70,7 @@
     </div>
 
     <footer class="mt-4">
-      <div class="d-flex justify-content-center">
-        <p>
-          <a class="text-decoration-none text-dark" href="https://imin.co.id/" target="_blank"
-            >About Us |</a
-          >
-        </p>
-        <p>
-          <a
-            class="text-decoration-none text-dark"
-            href="https://kit.imin.sg/useprivacy"
-            target="_blank"
-            >&nbsp;Privacy And Terms |</a
-          >
-        </p>
-        <p>
-          <a
-            class="text-decoration-none text-dark"
-            href="https://imin.co.id/hubungi-imin/"
-            target="_blank"
-            >&nbsp;Contact Us</a
-          >
-        </p>
-      </div>
-      <div class="copyright d-flex justify-content-center">
-        <p>&copy; 2024 iMin Technology Pte Ltd</p>
-      </div>
+      <FooterFront />
     </footer>
   </div>
 </template>
@@ -109,6 +82,7 @@ import Swal from 'sweetalert2'
 import loginbg3 from '@/assets/images/loginbg3.png'
 import { useRouter } from 'vue-router'
 import NavbarInfo from '../../components/LoginPage/NavbarInfo.vue'
+import FooterFront from '../../components/Layouts/FooterFront.vue'
 
 const email = ref('')
 const password = ref('')
