@@ -223,6 +223,25 @@ const routes = [
         ],
       },
       {
+        path: '/customers',
+        name: 'Customers',
+        component: {
+          render() {
+            return h(resolveComponent('router-view'))
+          },
+        },
+        redirect: '/list/customers',
+        meta: { requiresAuth: true },
+        children: [
+          {
+            path: '/list/customers',
+            name: 'Customers List',
+            component: () => import('@/views/list/CustomersTable.vue'),
+            meta: { requiresAuth: true },
+          },
+        ],
+      },
+      {
         path: '/users/management',
         name: 'UsersManagement',
         component: () => import('@/views/users/UsersManagement.vue'),
