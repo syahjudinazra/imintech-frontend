@@ -2,20 +2,15 @@
   <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center">
       <div class="add-customers-button">
-        <AddCustomers />
+        <AddCustomers @customer-added="refreshCustomers" />
       </div>
-      <div>
-        <input
-          type="text"
-          v-model="search"
-          @input="handleSearchInput"
-          placeholder="Search customers..."
-        />
-        <button class="btn btn-secondary btn-sm">Search</button>
-      </div>
+      <SearchCustomers :onSearch="updateSearch" />
     </div>
     <div class="mt-2">
       <EasyDataTable
+        v-model:server-options="serverOptions"
+        :server-items-length="serverItemsLength"
+        @update:options="serverOptions = $event"
         :headers="headers"
         :items="customers"
         :loading="loading"
@@ -126,11 +121,13 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { Modal } from 'bootstrap'
 import axios from 'axios'
 import Swal from 'sweetalert2'
 import AddCustomers from '../Modal/AddCustomers.vue'
+import SearchCustomers from '../List/Customers/SearchCustomers.vue'
+import { mockServerItems, refreshData } from '../../mock/mockCustomers'
 
 let editForm
 let deleteForm
@@ -138,7 +135,6 @@ const editCustomers = ref({})
 const loading = ref(true)
 const customers = ref([])
 const id = ref(null)
-const search = ref('')
 
 const token = localStorage.getItem('token')
 // Constants
@@ -150,27 +146,56 @@ const headers = ref([
   { text: 'Action', value: 'action' },
 ])
 
-onMounted(() => {
-  editForm = new Modal(document.getElementById('editForm'), {})
-  deleteForm = new Modal(document.getElementById('deleteForm'), {})
-  fetchCustomers()
+const serverItemsLength = ref(0)
+const serverOptions = ref({
+  page: 1,
+  rowsPerPage: 10,
+  sortBy: 'name',
+  sortType: 'desc',
+  searchTerm: '',
 })
 
-const fetchCustomers = async () => {
+const refreshCustomers = () => {
+  refreshData()
+  loadFromServer()
+}
+
+const loadFromServer = async () => {
+  loading.value = true
   try {
-    const response = await axios.get('customers', {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      params: { search: search.value },
-    })
-    customers.value = response.data.customers
+    const { serverCurrentPageItems, serverTotalItemsLength } = await mockServerItems(
+      serverOptions.value,
+      token,
+    )
+    customers.value = serverCurrentPageItems
+    serverItemsLength.value = serverTotalItemsLength
   } catch (error) {
-    console.error('Data not found', error)
+    console.error('Error loading data', error)
+    showNotification('error', 'Failed to load customers data.')
   } finally {
     loading.value = false
   }
 }
+
+const updateSearch = (term) => {
+  serverOptions.value.searchTerm = term
+  serverOptions.value.page = 1 // Reset to first page when searching
+  loadFromServer()
+}
+
+watch(
+  serverOptions,
+  () => {
+    loadFromServer()
+  },
+  { deep: true },
+)
+
+onMounted(() => {
+  editForm = new Modal(document.getElementById('editForm'))
+  deleteForm = new Modal(document.getElementById('deleteForm'))
+  loadFromServer()
+})
 
 const updateCustomers = async () => {
   try {
@@ -179,9 +204,9 @@ const updateCustomers = async () => {
         Authorization: `Bearer ${token}`,
       },
     })
-    customers.value = response.data.customers
     showNotification('success', response.data.message)
     closeModal()
+    refreshCustomers()
   } catch (error) {
     console.error('Data failed to change', error)
     showNotification('error', 'Data failed to change.')
@@ -196,12 +221,12 @@ const deleteCustomers = async () => {
         Authorization: `Bearer ${token}`,
       },
     })
-    customers.value = response.data.customers
     showNotification('success', response.data.message)
     closeModal()
+    refreshCustomers()
   } catch (error) {
-    console.error('Data gagal dihapus', error)
-    showNotification('error', 'Data gagal dihapus.')
+    console.error('Data failed to delete', error)
+    showNotification('error', 'Data failed to delete.')
     closeModal()
   }
 }
@@ -234,9 +259,6 @@ function showNotification(type, message) {
         toast.addEventListener('mouseenter', Swal.stopTimer)
         toast.addEventListener('mouseleave', Swal.resumeTimer)
       },
-      // didClose: () => {
-      //   window.location.reload()
-      // },
     })
     toast
       .fire({

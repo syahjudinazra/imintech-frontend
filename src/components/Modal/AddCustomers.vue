@@ -16,7 +16,12 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="addForm_label">Add Customers</h5>
-          <button type="button" class="btn-close" aria-label="Close" @click="closeModal"></button>
+          <button
+            type="button"
+            class="btn-close shadow-none"
+            aria-label="Close"
+            @click="closeModal"
+          ></button>
         </div>
         <div class="modal-body">
           <div class="mb-3">
@@ -52,7 +57,9 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" @click="closeModal">Close</button>
-          <button type="button" class="btn btn-primary" @click="AddCustomers">Submit</button>
+          <button type="button" class="btn btn-danger text-white" @click="AddCustomers">
+            Submit
+          </button>
         </div>
       </div>
     </div>
@@ -133,3 +140,13 @@ function showNotification(type, message) {
   })
 }
 </script>
+
+<style scoped>
+input:focus {
+  border-color: #d22c36;
+}
+
+textarea:focus {
+  border-color: #d22c36;
+}
+</style>

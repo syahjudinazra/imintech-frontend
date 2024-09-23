@@ -1,53 +1,66 @@
 <template>
-  <div>
+  <div class="search-customers position-relative">
     <input
-      v-model="searchQuery"
       type="text"
+      v-model="searchTerm"
+      @input="debounceSearch"
       placeholder="Search customers..."
-      class="search-input"
+      class="form-control shadow-none pr-4"
     />
-
-    <ul v-if="customers.length">
-      <li v-for="customer in customers" :key="customer.id">
-        {{ customer.name }} - {{ customer.phone }} - {{ customer.address }}
-      </li>
-    </ul>
+    <button
+      v-if="searchTerm"
+      @click="resetSearch"
+      class="close-search btn btn-link position-absolute end-0 top-50 translate-middle-y text-black"
+      style="right: 10px"
+    >
+      <p class="fw-bold">X</p>
+    </button>
   </div>
 </template>
 
 <script setup>
 import { ref, watch } from 'vue'
-import axios from 'axios'
-import { debounce } from 'lodash-es'
 
-// State variables
-const searchQuery = ref('')
-const customers = ref([])
+const props = defineProps({
+  onSearch: {
+    type: Function,
+    required: true,
+  },
+})
 
-// Debounced function to search customers
-const searchCustomers = debounce(async () => {
-  try {
-    const response = await axios.get('customers', {
-      params: { search: searchQuery.value },
-    })
-    customers.value = response.data.customers
-  } catch (error) {
-    console.error('Error fetching customers:', error)
-  }
-}, 300) // Wait for 300ms before triggering the search request
+const searchTerm = ref('')
+let debounceTimeout
 
-// Watch for changes in searchQuery and call the search function
-watch(searchQuery, () => {
-  searchCustomers()
+const debounceSearch = () => {
+  clearTimeout(debounceTimeout)
+  debounceTimeout = setTimeout(() => {
+    props.onSearch(searchTerm.value.trim())
+  }, 300)
+}
+
+const resetSearch = () => {
+  searchTerm.value = ''
+  props.onSearch('')
+}
+
+// Clear the timeout when the component is unmounted
+watch(() => {
+  return () => clearTimeout(debounceTimeout)
 })
 </script>
 
-<style>
-.search-input {
-  width: 100%;
-  padding: 8px;
-  margin-bottom: 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+<style scoped>
+.search-customers {
+  width: 300px;
+}
+
+.form-control:focus {
+  border-color: #e55353;
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(255, 0, 0, 0.6);
+}
+
+.close-search {
+  margin-top: 0.5rem;
+  text-decoration: none;
 }
 </style>
