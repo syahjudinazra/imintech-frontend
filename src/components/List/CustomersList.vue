@@ -4,7 +4,11 @@
       <div class="add-customers-button">
         <AddCustomers @customer-added="refreshCustomers" />
       </div>
-      <SearchCustomers :onSearch="updateSearch" />
+      <div class="others-customers d-flex align-items-center gap-2">
+        <ExportCustomers />
+        <ImportCustomers />
+        <SearchCustomers :onSearch="updateSearch" />
+      </div>
     </div>
     <div class="mt-2">
       <EasyDataTable
@@ -127,6 +131,8 @@ import axios from 'axios'
 import Swal from 'sweetalert2'
 import AddCustomers from '../Modal/AddCustomers.vue'
 import SearchCustomers from '../List/Customers/SearchCustomers.vue'
+import ExportCustomers from '../List/Customers/Excel/ExportCustomers.vue'
+import ImportCustomers from '../List/Customers/Excel/ImportCustomers.vue'
 import { mockServerItems, refreshData } from '../../mock/mockCustomers'
 
 let editForm

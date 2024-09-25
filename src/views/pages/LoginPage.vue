@@ -38,8 +38,12 @@
                       placeholder="Please enter password"
                       v-model="password"
                     />
-                    <span class="input-group-text" @click="togglePasswordVisibility">
-                      <i :class="passwordVisible ? 'cilLockLocked' : 'cilLockUnlocked'"></i>
+                    <span
+                      class="input-group-text"
+                      @click="togglePasswordVisibility"
+                      style="cursor: pointer"
+                    >
+                      <CIcon :icon="passwordVisible ? cilLockUnlocked : cilLockLocked" />
                     </span>
                   </div>
                   <div class="invalid-feedback">
@@ -78,16 +82,18 @@
 <script setup>
 import { ref } from 'vue'
 import axios from 'axios'
-import Swal from 'sweetalert2'
 import loginbg3 from '@/assets/images/loginbg3.png'
 import { useRouter } from 'vue-router'
+import { showToast } from '@/utilities/toast'
+import { CIcon } from '@coreui/icons-vue'
+import { cilLockLocked, cilLockUnlocked } from '@coreui/icons'
 import NavbarInfo from '../../components/LoginPage/NavbarInfo.vue'
 import FooterFront from '../../components/Layouts/FooterFront.vue'
 
 const email = ref('')
-const password = ref('')
 const loading = ref(false)
 const submitted = ref(false)
+const password = ref('')
 const passwordVisible = ref(false)
 const emailError = ref('')
 const passwordError = ref('')
@@ -136,33 +142,15 @@ const getLogin = async () => {
     const user = JSON.stringify(response.data.users)
     localStorage.setItem('token', token)
     localStorage.setItem('users', user)
-    await showNotification('success', response.data.message)
+    showToast('Login successfully', 'success')
     router.push({ name: 'Dashboard' })
   } catch (error) {
     console.error('Login failed:', error)
-    showNotification('error', error.response?.data?.message || 'Login failed')
+    showToast('Login failed. Please try again!', 'error')
     clearInput()
   } finally {
     loading.value = false
   }
-}
-
-const showNotification = async (type, message) => {
-  const toast = Swal.mixin({
-    toast: true,
-    position: 'top-end',
-    showConfirmButton: false,
-    timer: 2000,
-    timerProgressBar: true,
-    didOpen: (toast) => {
-      toast.addEventListener('mouseenter', Swal.stopTimer)
-      toast.addEventListener('mouseleave', Swal.resumeTimer)
-    },
-  })
-  await toast.fire({
-    icon: type,
-    title: message,
-  })
 }
 
 const clearInput = () => {

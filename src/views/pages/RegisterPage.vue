@@ -18,6 +18,20 @@
                     <input
                       type="text"
                       class="form-control shadow-none"
+                      :class="{ 'is-invalid': submitted && nameError }"
+                      placeholder="Please input name"
+                      v-model="name"
+                    />
+                  </div>
+                  <div class="invalid-feedback">
+                    {{ nameError }}
+                  </div>
+                </div>
+                <div class="mb-3">
+                  <div class="input-group">
+                    <input
+                      type="text"
+                      class="form-control shadow-none"
                       :class="{ 'is-invalid': submitted && emailError }"
                       placeholder="Please input email address"
                       v-model="email"
@@ -38,9 +52,7 @@
                       v-model="password"
                     />
                     <span class="input-group-text" @click="togglePasswordVisibility">
-                      <i
-                        :class="passwordVisible ? 'fa-regular fa-eye' : 'fa-regular fa-eye-slash'"
-                      ></i>
+                      <CIcon :icon="passwordVisible ? cilLockUnlocked : cilLockLocked" />
                     </span>
                   </div>
                   <div class="invalid-feedback">
@@ -55,14 +67,10 @@
                       class="form-control shadow-none"
                       :class="{ 'is-invalid': submitted && passwordError }"
                       placeholder="Please enter confirm password"
-                      v-model="confirmPassword"
+                      v-model="password_confirmation"
                     />
                     <span class="input-group-text" @click="toggleConfirmPasswordVisibility">
-                      <i
-                        :class="
-                          passwordConfirmVisible ? 'fa-regular fa-eye' : 'fa-regular fa-eye-slash'
-                        "
-                      ></i>
+                      <CIcon :icon="passwordVisible ? cilLockUnlocked : cilLockLocked" />
                     </span>
                   </div>
                   <div class="invalid-feedback">
@@ -100,24 +108,29 @@
 <script setup>
 import { ref } from 'vue'
 import axios from 'axios'
-import Swal from 'sweetalert2'
-import loginbg3 from '@/assets/images/loginbg3.png'
 import { useRouter } from 'vue-router'
+import loginbg3 from '@/assets/images/loginbg3.png'
+import { showToast } from '@/utilities/toast'
+import { cilLockLocked, cilLockUnlocked } from '@coreui/icons'
 import NavbarInfo from '../../components/LoginPage/NavbarInfo.vue'
 import FooterFront from '../../components/Layouts/FooterFront.vue'
 
+const router = useRouter()
+const name = ref('')
 const email = ref('')
 const password = ref('')
+const password_confirmation = ref('')
 const loading = ref(false)
 const submitted = ref(false)
 const passwordVisible = ref(false)
 const passwordConfirmVisible = ref(false)
+const nameError = ref('')
 const emailError = ref('')
 const passwordError = ref('')
-const router = useRouter()
 
 const handleSubmit = () => {
   submitted.value = true
+  nameError.value = ''
   emailError.value = ''
   passwordError.value = ''
 
@@ -127,6 +140,11 @@ const handleSubmit = () => {
 
   if (!validatePassword(password.value)) {
     passwordError.value = 'Password must be at least 6 characters long'
+  }
+
+  // Check if passwords match
+  if (password.value !== password_confirmation.value) {
+    passwordError.value = 'Passwords do not match'
   }
 
   if (!emailError.value && !passwordError.value) {
@@ -155,45 +173,28 @@ const getRegister = async () => {
   try {
     loading.value = true
     const response = await axios.post('register', {
+      name: name.value,
       email: email.value,
       password: password.value,
+      password_confirmation: password_confirmation.value,
     })
-    const token = response.data.token
-    const user = JSON.stringify(response.data.user)
-    localStorage.setItem('token', token)
-    localStorage.setItem('user', user)
-    await showNotification('success', response.data.message)
-    router.push({ name: 'Dashboard' })
+    console.log('User registered successfully:', response.data.user)
+    showToast('Registration successful. Login Now!', 'success')
+    router.push({ name: 'LoginPage' })
   } catch (error) {
-    console.error('Register failed:', error)
-    showNotification('error', error.response?.data?.message || 'Register failed')
-    clearInput()
+    showToast('Registration failed. Please try again!', 'success')
+    console.error('Error registering user:', error.message)
   } finally {
     loading.value = false
+    clearInput()
   }
 }
 
-const showNotification = async (type, message) => {
-  const toast = Swal.mixin({
-    toast: true,
-    position: 'top-end',
-    showConfirmButton: false,
-    timer: 2000,
-    timerProgressBar: true,
-    didOpen: (toast) => {
-      toast.addEventListener('mouseenter', Swal.stopTimer)
-      toast.addEventListener('mouseleave', Swal.resumeTimer)
-    },
-  })
-  await toast.fire({
-    icon: type,
-    title: message,
-  })
-}
-
 const clearInput = () => {
+  name.value = ''
   email.value = ''
   password.value = ''
+  password_confirmation.value = ''
 }
 </script>
 

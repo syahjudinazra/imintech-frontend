@@ -294,7 +294,7 @@ export default [
   },
   {
     component: 'CNavItem',
-    name: 'UsersManagement',
+    name: 'Users Management',
     to: '/users/management',
     icon: 'cil-user',
   },

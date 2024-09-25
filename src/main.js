@@ -12,7 +12,7 @@ import 'vue3-easy-data-table/dist/style.css'
 
 const token = localStorage.getItem('token')
 axios.defaults.baseURL = 'http://127.0.0.1:8000/api/'
-axios.defaults.headers.common = { Authorization: `bearer ${token}` }
+axios.defaults.headers.common = { Authorization: `Bearer ${token}` }
 
 const app = createApp(App)
 app.use(store)
