@@ -58,7 +58,7 @@ const handleFileUpload = async (event) => {
     formData.append('file', file)
 
     try {
-      const response = await axios.post('import-customers', formData, {
+      const response = await axios.post('customers-import', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -76,7 +76,7 @@ const handleFileUpload = async (event) => {
 
 const downloadTemplate = async () => {
   try {
-    const response = await axios.get('template-customers', {
+    const response = await axios.get('customers-template', {
       responseType: 'blob',
     })
 

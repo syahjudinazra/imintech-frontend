@@ -223,6 +223,88 @@ const routes = [
         ],
       },
       {
+        path: '/components',
+        name: 'Components',
+        component: {
+          render() {
+            return h(resolveComponent('router-view'))
+          },
+        },
+        redirect: '/list/components',
+        meta: { requiresAuth: true },
+        children: [
+          {
+            path: '/components/ram',
+            name: 'Ram List',
+            component: () => import('@/views/list/RamTable.vue'),
+            meta: { requiresAuth: true },
+          },
+          {
+            path: '/components/android',
+            name: 'Android List',
+            component: () => import('@/views/list/AndroidTable.vue'),
+            meta: { requiresAuth: true },
+          },
+        ],
+      },
+      {
+        path: '/technician',
+        name: 'Technician',
+        component: {
+          render() {
+            return h(resolveComponent('router-view'))
+          },
+        },
+        redirect: '/list/technician',
+        meta: { requiresAuth: true },
+        children: [
+          {
+            path: '/list/technician',
+            name: 'Technician List',
+            component: () => import('@/views/list/TechnicianTable.vue'),
+            meta: { requiresAuth: true },
+          },
+        ],
+      },
+      {
+        path: '/location',
+        name: 'Location',
+        component: {
+          render() {
+            return h(resolveComponent('router-view'))
+          },
+        },
+        redirect: '/list/location',
+        meta: { requiresAuth: true },
+        children: [
+          {
+            path: '/list/location',
+            name: 'Location Stocks List',
+            component: () => import('@/views/list/LocationTable.vue'),
+            meta: { requiresAuth: true },
+          },
+        ],
+      },
+      {
+        path: '/sales',
+        name: 'Sales',
+        component: {
+          render() {
+            return h(resolveComponent('router-view'))
+          },
+        },
+        redirect: '/list/sales',
+        meta: { requiresAuth: true },
+        children: [
+          {
+            path: '/list/sales',
+            name: 'Sales List',
+            component: () => import('@/views/list/SalesTable.vue'),
+            meta: { requiresAuth: true },
+          },
+        ],
+      },
+      {
         path: '/customers',
         name: 'Customers',
         component: {

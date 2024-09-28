@@ -1,13 +1,11 @@
 <template>
   <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center">
-      <div class="add-customers-button">
-        <AddCustomers @customer-added="refreshCustomers" />
+      <div class="add-button">
+        <AddLocation @location-added="refreshList()" />
       </div>
-      <div class="others-customers d-flex align-items-center gap-2">
-        <ExportCustomers />
-        <ImportCustomers />
-        <SearchCustomers :onSearch="updateSearch" />
+      <div class="others-location d-flex align-items-center gap-2">
+        <SearchLocation :onSearch="updateSearch" />
       </div>
     </div>
     <div class="mt-2">
@@ -16,7 +14,7 @@
         :server-items-length="serverItemsLength"
         @update:options="serverOptions = $event"
         :headers="headers"
-        :items="customers"
+        :items="location"
         :loading="loading"
         :theme-color="baseColor"
         :rows-per-page="10"
@@ -35,8 +33,6 @@
         <template #items="{ item }">
           <tr>
             <td>{{ item.name }}</td>
-            <td>{{ item.phone }}</td>
-            <td>{{ item.address }}</td>
           </tr>
         </template>
         <template #item-action="item">
@@ -63,33 +59,15 @@
           <h5 class="modal-title" id="editForm_label">Edit Data</h5>
           <button type="button" class="btn-close" aria-label="Close" @click="closeModal"></button>
         </div>
-        <form @submit.prevent="updateCustomers" enctype="multipart/form-data">
+        <form @submit.prevent="updateLocation" enctype="multipart/form-data">
           <div class="modal-body">
             <div class="mb-3">
               <label for="name" class="form-label fw-bold">Name</label>
               <input
-                v-model="editCustomers.name"
+                v-model="editLocation.name"
                 type="text"
                 class="form-control shadow-none"
                 id="name"
-              />
-            </div>
-            <div class="mb-3">
-              <label for="phone" class="form-label fw-bold">Phone</label>
-              <input
-                v-model="editCustomers.phone"
-                type="number"
-                class="form-control shadow-none"
-                id="phone"
-              />
-            </div>
-            <div class="mb-3">
-              <label for="address" class="form-label fw-bold">Address</label>
-              <textarea
-                v-model="editCustomers.address"
-                type="text"
-                class="form-control shadow-none"
-                id="address"
               />
             </div>
           </div>
@@ -115,7 +93,7 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" @click="closeModal">Close</button>
-          <button type="button" class="btn btn-danger text-white" @click="deleteCustomers">
+          <button type="button" class="btn btn-danger text-white" @click="deleteLocation">
             Delete
           </button>
         </div>
@@ -129,26 +107,22 @@ import { ref, onMounted, watch } from 'vue'
 import { Modal } from 'bootstrap'
 import axios from 'axios'
 import { showToast } from '@/utilities/toast'
-import AddCustomers from '../Modal/AddCustomers.vue'
-import SearchCustomers from '../List/Customers/SearchCustomers.vue'
-import ExportCustomers from '../List/Customers/Excel/ExportCustomers.vue'
-import ImportCustomers from '../List/Customers/Excel/ImportCustomers.vue'
-import { mockServerItems, refreshData } from '../../mock/mockCustomers'
+import AddLocation from '../Modal/AddLocation.vue'
+import SearchLocation from '../List/Location/SearchLocation.vue'
+import { mockServerItems, refreshData } from '../../mock/mockLocation'
 
 let editForm
 let deleteForm
-const editCustomers = ref({})
+const editLocation = ref({})
 const loading = ref(true)
-const customers = ref([])
+const location = ref([])
 const id = ref(null)
 
 const token = localStorage.getItem('token')
 // Constants
 const baseColor = '#e55353'
 const headers = ref([
-  { text: 'Customers', value: 'name' },
-  { text: 'Phone Number', value: 'phone' },
-  { text: 'Address', value: 'address' },
+  { text: 'Location', value: 'name' },
   { text: 'Action', value: 'action' },
 ])
 
@@ -161,7 +135,7 @@ const serverOptions = ref({
   searchTerm: '',
 })
 
-const refreshCustomers = () => {
+const refreshList = () => {
   refreshData()
   loadFromServer()
 }
@@ -173,11 +147,11 @@ const loadFromServer = async () => {
       serverOptions.value,
       token,
     )
-    customers.value = serverCurrentPageItems
+    location.value = serverCurrentPageItems
     serverItemsLength.value = serverTotalItemsLength
   } catch (error) {
     console.error('Error loading data', error)
-    showToast('Failed to load customers data.', 'error')
+    showToast('Failed to load location data.', 'error')
   } finally {
     loading.value = false
   }
@@ -185,7 +159,7 @@ const loadFromServer = async () => {
 
 const updateSearch = (term) => {
   serverOptions.value.searchTerm = term
-  serverOptions.value.page = 1 // Reset to first page when searching
+  serverOptions.value.page = 1
   loadFromServer()
 }
 
@@ -203,12 +177,12 @@ onMounted(() => {
   loadFromServer()
 })
 
-const updateCustomers = async () => {
+const updateLocation = async () => {
   try {
-    const response = await axios.put(`customers/${id.value}`, editCustomers.value)
+    const response = await axios.put(`location/${id.value}`, editLocation.value)
     showToast(response.data.message, 'success')
     closeModal()
-    refreshCustomers()
+    refreshList()
   } catch (error) {
     console.error('Data failed to change', error)
     showToast(error.data.message, 'error')
@@ -216,12 +190,12 @@ const updateCustomers = async () => {
   }
 }
 
-const deleteCustomers = async () => {
+const deleteLocation = async () => {
   try {
-    const response = await axios.delete(`customers/${id.value}`)
+    const response = await axios.delete(`location/${id.value}`)
     showToast(response.data.message, 'success')
     closeModal()
-    refreshCustomers()
+    refreshList()
   } catch (error) {
     console.error('Data failed to delete', error)
     showToast(error.data.message, 'error')
@@ -229,14 +203,14 @@ const deleteCustomers = async () => {
   }
 }
 
-function editModal(customer) {
-  editCustomers.value = { ...customer }
-  id.value = customer.id
+function editModal(location) {
+  editLocation.value = { ...location }
+  id.value = location.id
   editForm.show()
 }
 
-function deleteModal(customer) {
-  id.value = customer.id
+function deleteModal(location) {
+  id.value = location.id
   deleteForm.show()
 }
 

@@ -1,7 +1,7 @@
 <template>
   <!-- Button trigger modal -->
   <button type="button" class="btn btn-danger btn-sm text-white" @click="openModal">
-    Add Customers
+    Add Location
   </button>
 
   <!-- Modal -->
@@ -15,7 +15,7 @@
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="addForm_label">Add Customers</h5>
+          <h5 class="modal-title" id="addForm_label">Add Location</h5>
           <button
             type="button"
             class="btn-close shadow-none"
@@ -27,37 +27,17 @@
           <div class="mb-3">
             <label for="name" class="form-label fw-bold">Name</label>
             <input
-              v-model="customers.name"
+              v-model="location.name"
               type="text"
               class="form-control shadow-none"
               id="name"
               placeholder="Input name"
             />
           </div>
-          <div class="mb-3">
-            <label for="phone" class="form-label fw-bold">Phone</label>
-            <input
-              v-model="customers.phone"
-              type="number"
-              class="form-control shadow-none"
-              id="phone"
-              placeholder="Input phone min:10"
-            />
-          </div>
-          <div class="mb-3">
-            <label for="address" class="form-label fw-bold">Address</label>
-            <textarea
-              v-model="customers.address"
-              type="text"
-              class="form-control shadow-none"
-              id="address"
-              placeholder="Input address"
-            />
-          </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" @click="closeModal">Close</button>
-          <button type="button" class="btn btn-danger text-white" @click="AddCustomers">
+          <button type="button" class="btn btn-danger text-white" @click="AddLocation">
             Submit
           </button>
         </div>
@@ -72,12 +52,9 @@ import { Modal } from 'bootstrap'
 import axios from 'axios'
 import { showToast } from '@/utilities/toast'
 
-const customers = ref({
+const location = ref({
   name: '',
-  phone: '',
-  address: '',
 })
-const token = localStorage.getItem('token')
 let addForm
 
 onMounted(() => {
@@ -92,21 +69,18 @@ function closeModal() {
   addForm.hide()
 }
 
-async function AddCustomers() {
-  if (!customers.value.name) {
-    showToast('Input customer name', 'error')
+async function AddLocation() {
+  if (!location.value.name) {
+    showToast('Input location name', 'error')
     return
   }
 
   try {
-    const response = await axios.post('customers', customers.value, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-    console.log('Data added successfully:', response.data)
+    const response = await axios.post('location', location.value)
+    console.log('Data added successfully:', response.data.message)
     showToast(response.data.message, 'success')
     closeModal()
+    window.location.reload()
   } catch (error) {
     console.error('Error add data:', error)
     showToast(error.data.message, 'error')

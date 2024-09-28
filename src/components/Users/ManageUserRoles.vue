@@ -60,7 +60,7 @@
           </button>
 
           <!-- Display Message -->
-          <div v-if="message" class="alert alert-info mt-3">
+          <div v-if="message" class="alert alert-success mt-3">
             {{ message }}
           </div>
         </div>

@@ -1,13 +1,11 @@
 <template>
   <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center">
-      <div class="add-customers-button">
-        <AddCustomers @customer-added="refreshCustomers" />
+      <div class="add-sales-button">
+        <AddSales @sales-added="refreshSales()" />
       </div>
-      <div class="others-customers d-flex align-items-center gap-2">
-        <ExportCustomers />
-        <ImportCustomers />
-        <SearchCustomers :onSearch="updateSearch" />
+      <div class="others-sales d-flex align-items-center gap-2">
+        <SearchSales :onSearch="updateSearch" />
       </div>
     </div>
     <div class="mt-2">
@@ -16,7 +14,7 @@
         :server-items-length="serverItemsLength"
         @update:options="serverOptions = $event"
         :headers="headers"
-        :items="customers"
+        :items="sales"
         :loading="loading"
         :theme-color="baseColor"
         :rows-per-page="10"
@@ -63,12 +61,12 @@
           <h5 class="modal-title" id="editForm_label">Edit Data</h5>
           <button type="button" class="btn-close" aria-label="Close" @click="closeModal"></button>
         </div>
-        <form @submit.prevent="updateCustomers" enctype="multipart/form-data">
+        <form @submit.prevent="updateSales" enctype="multipart/form-data">
           <div class="modal-body">
             <div class="mb-3">
               <label for="name" class="form-label fw-bold">Name</label>
               <input
-                v-model="editCustomers.name"
+                v-model="editSales.name"
                 type="text"
                 class="form-control shadow-none"
                 id="name"
@@ -77,19 +75,10 @@
             <div class="mb-3">
               <label for="phone" class="form-label fw-bold">Phone</label>
               <input
-                v-model="editCustomers.phone"
+                v-model="editSales.phone"
                 type="number"
                 class="form-control shadow-none"
                 id="phone"
-              />
-            </div>
-            <div class="mb-3">
-              <label for="address" class="form-label fw-bold">Address</label>
-              <textarea
-                v-model="editCustomers.address"
-                type="text"
-                class="form-control shadow-none"
-                id="address"
               />
             </div>
           </div>
@@ -115,7 +104,7 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" @click="closeModal">Close</button>
-          <button type="button" class="btn btn-danger text-white" @click="deleteCustomers">
+          <button type="button" class="btn btn-danger text-white" @click="deleteSales">
             Delete
           </button>
         </div>
@@ -129,26 +118,23 @@ import { ref, onMounted, watch } from 'vue'
 import { Modal } from 'bootstrap'
 import axios from 'axios'
 import { showToast } from '@/utilities/toast'
-import AddCustomers from '../Modal/AddCustomers.vue'
-import SearchCustomers from '../List/Customers/SearchCustomers.vue'
-import ExportCustomers from '../List/Customers/Excel/ExportCustomers.vue'
-import ImportCustomers from '../List/Customers/Excel/ImportCustomers.vue'
-import { mockServerItems, refreshData } from '../../mock/mockCustomers'
+import AddSales from '../Modal/AddSales.vue'
+import SearchSales from '../List/Sales/SearchSales.vue'
+import { mockServerItems, refreshData } from '../../mock/mockSales'
 
 let editForm
 let deleteForm
-const editCustomers = ref({})
+const editSales = ref({})
 const loading = ref(true)
-const customers = ref([])
+const sales = ref([])
 const id = ref(null)
 
 const token = localStorage.getItem('token')
 // Constants
 const baseColor = '#e55353'
 const headers = ref([
-  { text: 'Customers', value: 'name' },
+  { text: 'Sales', value: 'name' },
   { text: 'Phone Number', value: 'phone' },
-  { text: 'Address', value: 'address' },
   { text: 'Action', value: 'action' },
 ])
 
@@ -161,7 +147,7 @@ const serverOptions = ref({
   searchTerm: '',
 })
 
-const refreshCustomers = () => {
+const refreshSales = () => {
   refreshData()
   loadFromServer()
 }
@@ -173,11 +159,11 @@ const loadFromServer = async () => {
       serverOptions.value,
       token,
     )
-    customers.value = serverCurrentPageItems
+    sales.value = serverCurrentPageItems
     serverItemsLength.value = serverTotalItemsLength
   } catch (error) {
     console.error('Error loading data', error)
-    showToast('Failed to load customers data.', 'error')
+    showToast('Failed to load sales data.', 'error')
   } finally {
     loading.value = false
   }
@@ -185,7 +171,7 @@ const loadFromServer = async () => {
 
 const updateSearch = (term) => {
   serverOptions.value.searchTerm = term
-  serverOptions.value.page = 1 // Reset to first page when searching
+  serverOptions.value.page = 1
   loadFromServer()
 }
 
@@ -203,12 +189,12 @@ onMounted(() => {
   loadFromServer()
 })
 
-const updateCustomers = async () => {
+const updateSales = async () => {
   try {
-    const response = await axios.put(`customers/${id.value}`, editCustomers.value)
+    const response = await axios.put(`sales/${id.value}`, editSales.value)
     showToast(response.data.message, 'success')
     closeModal()
-    refreshCustomers()
+    refreshSales()
   } catch (error) {
     console.error('Data failed to change', error)
     showToast(error.data.message, 'error')
@@ -216,12 +202,12 @@ const updateCustomers = async () => {
   }
 }
 
-const deleteCustomers = async () => {
+const deleteSales = async () => {
   try {
-    const response = await axios.delete(`customers/${id.value}`)
+    const response = await axios.delete(`sales/${id.value}`)
     showToast(response.data.message, 'success')
     closeModal()
-    refreshCustomers()
+    refreshSales()
   } catch (error) {
     console.error('Data failed to delete', error)
     showToast(error.data.message, 'error')
@@ -229,14 +215,14 @@ const deleteCustomers = async () => {
   }
 }
 
-function editModal(customer) {
-  editCustomers.value = { ...customer }
-  id.value = customer.id
+function editModal(sales) {
+  editSales.value = { ...sales }
+  id.value = sales.id
   editForm.show()
 }
 
-function deleteModal(customer) {
-  id.value = customer.id
+function deleteModal(sales) {
+  id.value = sales.id
   deleteForm.show()
 }
 

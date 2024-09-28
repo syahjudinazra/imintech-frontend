@@ -22,22 +22,34 @@ import { showToast } from '@/utilities/toast'
 
 const loading = ref(false)
 const error = ref('')
+
 const getFormattedDate = () => {
   const now = new Date()
-  const year = now.getFullYear()
-  const month = String(now.getMonth() + 1).padStart(2, '0')
-  const day = String(now.getDate()).padStart(2, '0')
-  const hours = String(now.getHours()).padStart(2, '0')
-  const minutes = String(now.getMinutes()).padStart(2, '0')
-  return `${day}${month}${year}_${hours}${minutes}`
+  return now
+    .toISOString()
+    .replace(/[^0-9]/g, '')
+    .slice(0, 14)
 }
 
 const exportExcel = async () => {
   loading.value = true
+  error.value = ''
   try {
-    const response = await axios.get('export-customers', {
+    const response = await axios.get('customers-export', {
       responseType: 'blob',
     })
+
+    // Check if the response is actually an error message
+    if (response.data.type === 'application/json') {
+      const reader = new FileReader()
+      reader.onload = function () {
+        const errorResponse = JSON.parse(reader.result)
+        throw new Error(errorResponse.message || 'Unknown error occurred')
+      }
+      reader.readAsText(response.data)
+      return
+    }
+
     const blob = new Blob([response.data], {
       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     })
@@ -49,10 +61,12 @@ const exportExcel = async () => {
     link.download = `Customers-Data_${downloadDate}.xlsx`
 
     link.click()
+    window.URL.revokeObjectURL(link.href)
     showToast('Excel file exported successfully!', 'success')
-  } catch (error) {
-    console.error('Error exporting Excel:', error)
-    showToast('Failed to export Excel file. Please try again.', 'error')
+  } catch (err) {
+    console.error('Error exporting Excel:', err)
+    error.value = err.message || 'Failed to export Excel file. Please try again.'
+    showToast(error.value, 'error')
   } finally {
     loading.value = false
   }
