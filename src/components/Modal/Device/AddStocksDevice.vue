@@ -76,7 +76,7 @@ async function AddStocksDevice() {
   }
 
   try {
-    const response = await axios.post('services-device', stocksDevice.value)
+    const response = await axios.post('stocks-device', stocksDevice.value)
     console.log('Data added successfully:', response.data.message)
     showToast(response.data.message, 'success')
     closeModal()

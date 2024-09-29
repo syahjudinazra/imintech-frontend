@@ -193,12 +193,12 @@ export default [
       {
         component: 'CNavItem',
         name: 'Stocks Devices',
-        to: '/devices/devicesstocks',
+        to: '/list/stocks-device',
       },
       {
         component: 'CNavItem',
         name: 'Stocks SKU Devices',
-        to: '/devices/devicesstockssku',
+        to: '/list/stocks-sku-device',
       },
       {
         component: 'CNavItem',

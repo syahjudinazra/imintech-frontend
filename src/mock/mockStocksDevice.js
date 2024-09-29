@@ -27,7 +27,7 @@ const filterData = (data, searchTerm) => {
 const fetchDataFromAPI = async () => {
   try {
     const response = await axios.get('stocks-device')
-    return response.data.stocksDevice
+    return response.data.stocksdevice
   } catch (error) {
     console.error('Data not found', error)
     throw error
@@ -41,6 +41,11 @@ export const mockServerItems = async (options, token) => {
   // Fetch data from API if not cached
   if (!cachedData) {
     cachedData = await fetchDataFromAPI(token)
+  }
+
+  // Ensure cachedData is an array before proceeding
+  if (!Array.isArray(cachedData)) {
+    throw new TypeError('Cached data is not iterable')
   }
 
   let filteredData = filterData(cachedData, searchTerm)

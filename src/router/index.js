@@ -193,29 +193,29 @@ const routes = [
             return h(resolveComponent('router-view'))
           },
         },
-        redirect: '/devices/devicesstocks',
+        redirect: '/list/devices',
         meta: { requiresAuth: true },
         children: [
           {
-            path: '/devices/devicesstocks',
-            name: 'Devices Stocks',
-            component: () => import('@/views/devices/DevicesStocks.vue'),
+            path: '/list/stocks-device',
+            name: 'Stocks Device',
+            component: () => import('@/views/list/devices/StocksDeviceTable.vue'),
             meta: { requiresAuth: true },
           },
           {
-            path: '/devices/devicesstockssku',
+            path: '/list/stocks-sku-device',
             name: 'Devices Stocks SKU',
-            component: () => import('@/views/devices/DevicesStocksSku.vue'),
+            component: () => import('@/views/list/devices/StocksSkuDeviceTable.vue'),
             meta: { requiresAuth: true },
           },
           {
-            path: '/devices/devicespinjam',
+            path: '/list/devicespinjam',
             name: 'Devices Pinjam',
             component: () => import('@/views/devices/DevicesPinjam.vue'),
             meta: { requiresAuth: true },
           },
           {
-            path: '/devices/devicesservices',
+            path: '/list/devicesservices',
             name: 'Devices Services',
             component: () => import('@/views/devices/DevicesServices.vue'),
             meta: { requiresAuth: true },
