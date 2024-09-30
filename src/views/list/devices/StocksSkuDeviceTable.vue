@@ -1,5 +1,5 @@
 <script setup>
-import StocksSkuDeviceList from '@/components/List/Device/StocksSkuDeviceList.vue'
+import StocksSkuDeviceList from '@/components/List/StocksSkuDeviceList.vue'
 </script>
 
 <template>

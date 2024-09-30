@@ -1,5 +1,5 @@
 <script setup>
-import LoanDeviceList from '@/components/List/Device/LoanDeviceList.vue'
+import LoanDeviceList from '@/components/List/LoanDeviceList.vue'
 </script>
 
 <template>

@@ -203,22 +203,22 @@ export default [
       {
         component: 'CNavItem',
         name: 'Loan Devices',
-        to: '/devices/devicespinjam',
+        to: '/list/loan-device',
       },
       {
         component: 'CNavItem',
         name: 'Services Devices',
-        to: '/devices/devicesservices',
+        to: '/list/services-device',
       },
       {
         component: 'CNavItem',
         name: 'SpareParts Devices',
-        to: '/devices/spareparts',
+        to: '/list/spareparts-device',
       },
       {
         component: 'CNavItem',
         name: 'Firmwares Devices',
-        to: '/devices/firmwares',
+        to: '/list/firmwares-device',
       },
     ],
   },

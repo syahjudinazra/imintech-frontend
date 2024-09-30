@@ -1,5 +1,5 @@
 <script setup>
-import SparepartsDeviceList from '@/components/List/Device/SparepartsDeviceList.vue'
+import SparepartsDeviceList from '@/components/List/SparepartsDeviceList.vue'
 </script>
 
 <template>

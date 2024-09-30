@@ -1,5 +1,5 @@
 <script setup>
-import ServicesDeviceList from '@/components/List/Device/ServicesDeviceList.vue'
+import ServicesDeviceList from '@/components/List/ServicesDeviceList.vue'
 </script>
 
 <template>

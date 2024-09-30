@@ -1,5 +1,5 @@
 <script setup>
-import FirmwaresDeviceList from '@/components/List/Device/FirmwaresDeviceList.vue'
+import FirmwaresDeviceList from '@/components/List/FirmwaresDeviceList.vue'
 </script>
 
 <template>
