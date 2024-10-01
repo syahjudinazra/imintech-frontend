@@ -1,15 +1,23 @@
 <template>
   <div class="container-fluid">
-    <AddFirmwares />
+    <div class="d-flex justify-content-between align-items-center">
+      <div class="add-button">
+        <AddFirmwares @data-added="refreshList()" />
+      </div>
+      <div class="others d-flex align-items-center gap-2">
+        <SearchFirmwares :onSearch="updateSearch" />
+      </div>
+    </div>
     <div class="mt-2">
       <EasyDataTable
         v-model:server-options="serverOptions"
         :server-items-length="serverItemsLength"
+        @update:options="serverOptions = $event"
         :headers="headers"
         :items="firmwares"
         :loading="loading"
         :theme-color="baseColor"
-        :rows-per-page="3"
+        :rows-per-page="10"
         table-class-name="head-table"
         alternating
         show-index
@@ -20,21 +28,21 @@
           <div class="loader"></div>
         </template>
         <template #empty-message>
-          <p>Data tidak ditemukan</p>
+          <p>Data not found</p>
         </template>
-        <template #items="item">
+        <template #items="{ item }">
           <tr>
-            <td>{{ item.tipe }}</td>
-            <td>{{ item.versi }}</td>
-            <td>{{ item.android }}</td>
+            <td>{{ item.firmwares_devices_id }}</td>
+            <td>{{ item.version }}</td>
+            <td>{{ item.androids_id }}</td>
             <td>{{ item.flash }}</td>
             <td>{{ item.ota }}</td>
           </tr>
         </template>
         <template #item-action="item">
           <div class="d-flex gap-2">
-            <a href="#" class="head-text text-decoration-none" @click="editModal(item)">Ubah</a>
-            <a href="#" class="head-text text-decoration-none" @click="deleteModal(item)">Hapus</a>
+            <a href="#" class="head-text text-decoration-none" @click="editModal(item)">Edit</a>
+            <a href="#" class="head-text text-decoration-none" @click="deleteModal(item)">Delete</a>
           </div>
         </template>
       </EasyDataTable>
@@ -53,63 +61,53 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="editForm_label">Edit Data</h5>
-          <button
-            type="button"
-            class="btn-close shadow-none"
-            aria-label="Close"
-            @click="closeModal"
-          ></button>
+          <button type="button" class="btn-close" aria-label="Close" @click="closeModal"></button>
         </div>
         <form @submit.prevent="updateFirmwares" enctype="multipart/form-data">
           <div class="modal-body">
             <div class="mb-3">
-              <label for="tipe" class="form-label fw-bold">Tipe Device</label>
+              <label for="firmwaresDevice" class="form-label fw-bold">Firmwares Device</label>
               <input
-                v-model="editFirmwaresForm.tipe"
+                v-model="editFirmwares.firmwares_devices_id"
                 type="text"
                 class="form-control shadow-none"
-                id="tipe"
-                placeholder="Masukan Tipe Device"
+                id="firmwaresDevice"
               />
             </div>
             <div class="mb-3">
-              <label for="versi" class="form-label fw-bold">Versi</label>
+              <label for="version" class="form-label fw-bold">Version</label>
               <input
-                v-model="editFirmwaresForm.versi"
+                v-model="editFirmwares.version"
                 type="text"
                 class="form-control shadow-none"
-                id="versi"
-                placeholder="Masukan Versi"
+                id="version"
               />
             </div>
             <div class="mb-3">
               <label for="android" class="form-label fw-bold">Android</label>
               <input
-                v-model="editFirmwaresForm.android"
+                v-model="editFirmwares.androids_id"
                 type="text"
                 class="form-control shadow-none"
                 id="android"
-                placeholder="Masukan Android"
               />
             </div>
             <div class="mb-3">
-              <label for="flash" class="form-label fw-bold">Flash</label>
+              <label for="flash" class="form-label fw-bold">Flash Link</label>
               <input
-                v-model="editFirmwaresForm.flash"
+                v-model="editFirmwares.flash"
                 type="text"
                 class="form-control shadow-none"
                 id="flash"
-                placeholder="Masukan flash"
               />
             </div>
             <div class="mb-3">
-              <label for="ota" class="form-label fw-bold">Ota</label>
+              <label for="ota" class="form-label fw-bold">OTA Link</label>
               <input
-                v-model="editFirmwaresForm.ota"
+                v-model="editFirmwares.ota"
                 type="text"
                 class="form-control shadow-none"
                 id="ota"
-                placeholder="Masukan Ota"
               />
             </div>
           </div>
@@ -127,20 +125,15 @@
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Hapus Data Firmwares</h5>
-          <button
-            type="button"
-            class="btn-close shadow-none"
-            aria-label="Close"
-            @click="closeModal"
-          ></button>
+          <h5 class="modal-title">Delete Data</h5>
+          <button type="button" class="btn-close" aria-label="Close" @click="closeModal"></button>
         </div>
         <div class="modal-body">
-          <p>Yakin mau hapus data ini?</p>
+          <p>Are you sure want delete this data?</p>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" @click="closeModal">Close</button>
-          <button type="button" class="btn btn-danger text-white" @click="deleteFirmware">
+          <button type="button" class="btn btn-danger text-white" @click="deleteFirmwares">
             Delete
           </button>
         </div>
@@ -151,51 +144,68 @@
 
 <script setup>
 import { ref, onMounted, watch } from 'vue'
-import AddFirmwares from '../../components/ModalFirmwares/AddFirmwares.vue'
-import axios from 'axios'
 import { Modal } from 'bootstrap'
-import Swal from 'sweetalert2'
-import { mockServerItems } from '../../mock'
+import axios from 'axios'
+import { showToast } from '@/utilities/toast'
+import AddFirmwares from '../../components/Firmwares/Modal/AddFirmwares.vue'
+import SearchFirmwares from '../../components/Firmwares/SearchFirmwares.vue'
+import { mockServerItems, refreshData } from '../../mock/mockFirmwares'
 
-// References
 let editForm
 let deleteForm
-const firmwares = ref([])
+const editFirmwares = ref({})
 const loading = ref(true)
-const editFirmwaresForm = ref({})
+const firmwares = ref([])
 const id = ref(null)
 
+const token = localStorage.getItem('token')
 // Constants
 const baseColor = '#e55353'
 const headers = ref([
-  { text: 'Tipe', value: 'tipe' },
-  { text: 'Versi', value: 'versi' },
-  { text: 'Android', value: 'android' },
-  { text: 'Flash', value: 'flash' },
-  { text: 'Ota', value: 'ota' },
+  { text: 'Tipe Device', value: 'firmwares_device_id' },
+  { text: 'Version', value: 'version' },
+  { text: 'Android', value: 'androids_id' },
+  { text: 'Flash Link', value: 'flash' },
+  { text: 'OTA Link', value: 'ota' },
   { text: 'Action', value: 'action' },
 ])
 
-const serverItemsLength = ref(0)
+const serverItemsLength = ref(10)
 const serverOptions = ref({
   page: 1,
-  rowsPerPage: 3,
-  sortBy: 'tipe',
+  rowsPerPage: 10,
+  sortBy: 'name',
   sortType: 'desc',
+  searchTerm: '',
 })
+
+const refreshList = () => {
+  refreshData()
+  loadFromServer()
+}
 
 const loadFromServer = async () => {
   loading.value = true
-  const { serverCurrentPageItems, serverTotalItemsLength } = await mockServerItems(
-    serverOptions.value,
-  )
-  firmwares.value = serverCurrentPageItems
-  serverItemsLength.value = serverTotalItemsLength
-  loading.value = false
+  try {
+    const { serverCurrentPageItems, serverTotalItemsLength } = await mockServerItems(
+      serverOptions.value,
+      token,
+    )
+    firmwares.value = serverCurrentPageItems
+    serverItemsLength.value = serverTotalItemsLength
+  } catch (error) {
+    console.error('Error loading data', error)
+    showToast('Failed to load stocks device data.', 'error')
+  } finally {
+    loading.value = false
+  }
 }
 
-// initial load
-loadFromServer()
+const updateSearch = (term) => {
+  serverOptions.value.searchTerm = term
+  serverOptions.value.page = 1
+  loadFromServer()
+}
 
 watch(
   serverOptions,
@@ -205,78 +215,52 @@ watch(
   { deep: true },
 )
 
-// Lifecycle hooks
 onMounted(() => {
-  editForm = new Modal(document.getElementById('editForm'), {})
-  deleteForm = new Modal(document.getElementById('deleteForm'), {})
+  editForm = new Modal(document.getElementById('editForm'))
+  deleteForm = new Modal(document.getElementById('deleteForm'))
+  loadFromServer()
 })
 
 const updateFirmwares = async () => {
   try {
-    const formData = new FormData()
-    formData.append('tipe', editFirmwaresForm.value.tipe)
-    formData.append('versi', editFirmwaresForm.value.versi)
-    formData.append('android', editFirmwaresForm.value.android)
-    formData.append('flash', editFirmwaresForm.value.flash)
-    formData.append('ota', editFirmwaresForm.value.ota)
-
-    const response = await axios.put(`updatefirmwares/${id.value}`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    })
-    firmwares.value = response.data.data
-    showNotification('success', response.data.message)
+    const response = await axios.put(`firmwares/${id.value}`, editFirmwares.value)
+    showToast(response.data.message, 'success')
     closeModal()
+    refreshList()
   } catch (error) {
-    console.error('Data gagal diubah', error)
-    showNotification('error', 'Data gagal diubah.')
+    console.error('Data failed to change', error)
+    showToast(error.data.message, 'error')
     closeModal()
   }
 }
 
-const deleteFirmware = async () => {
+const deleteFirmwares = async () => {
   try {
-    const response = await axios.delete(`destroyfirmwares/${id.value}`)
-    firmwares.value = response.data.data
-    showNotification('success', response.data.message)
+    const response = await axios.delete(`firmwares/${id.value}`)
+    showToast(response.data.message, 'success')
     closeModal()
+    refreshList()
   } catch (error) {
-    console.error('Data gagal dihapus', error)
-    showNotification('error', 'Data gagal dihapus.')
+    console.error('Data failed to delete', error)
+    showToast(error.data.message, 'error')
     closeModal()
   }
 }
 
-function editModal(firmware) {
-  editFirmwaresForm.value = { ...firmware }
-  id.value = firmware.id
+function editModal(firmwares) {
+  editFirmwares.value = { ...firmwares }
+  id.value = firmwares.id
   editForm.show()
 }
 
-function deleteModal(firmware) {
-  id.value = firmware.id
+function deleteModal(firmwares) {
+  id.value = firmwares.id
   deleteForm.show()
 }
 
 function closeModal() {
   editForm.hide()
   deleteForm.hide()
-}
-
-function showNotification(type, message) {
-  Swal.fire({
-    icon: type,
-    title: message,
-    toast: true,
-    position: 'top-end',
-    showConfirmButton: false,
-    timer: 1000,
-    timerProgressBar: true,
-    // didClose: () => {
-    //   window.location.reload()
-    // },
-  })
 }
 </script>
 

@@ -26,8 +26,8 @@ const filterData = (data, searchTerm) => {
 // Function to fetch data from API
 const fetchDataFromAPI = async () => {
   try {
-    const response = await axios.get('stocks-sku-device')
-    return response.data.stocksskudevice
+    const response = await axios.get('firmwares')
+    return response.data.firmwares
   } catch (error) {
     console.error('Data not found', error)
     throw error

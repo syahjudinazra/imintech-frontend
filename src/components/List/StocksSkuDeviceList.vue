@@ -151,7 +151,7 @@ const loadFromServer = async () => {
     serverItemsLength.value = serverTotalItemsLength
   } catch (error) {
     console.error('Error loading data', error)
-    showToast('Failed to load stocks device data.', 'error')
+    showToast('Failed to load stocks sku device data.', 'error')
   } finally {
     loading.value = false
   }

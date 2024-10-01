@@ -27,7 +27,7 @@ const filterData = (data, searchTerm) => {
 const fetchDataFromAPI = async () => {
   try {
     const response = await axios.get('firmwares-device')
-    return response.data.firmwaresDevice
+    return response.data.firmwaresdevice
   } catch (error) {
     console.error('Data not found', error)
     throw error

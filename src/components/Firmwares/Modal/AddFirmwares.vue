@@ -1,6 +1,6 @@
 <template>
   <!-- Button trigger modal -->
-  <button type="button" class="btn btn-danger text-white" @click="openModal">Tambah Data</button>
+  <button type="button" class="btn btn-danger text-white" @click="openModal">Add Data</button>
 
   <!-- Modal -->
   <div
@@ -13,7 +13,7 @@
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="addForm_label">Tambah Data</h5>
+          <h5 class="modal-title" id="addForm_label">Add Data</h5>
           <button type="button" class="btn-close" aria-label="Close" @click="closeModal"></button>
         </div>
         <form @submit.prevent="addFirmwares">
@@ -71,7 +71,7 @@
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" @click="closeModal">Close</button>
-            <button type="submit" class="btn btn-primary">Submit</button>
+            <button type="submit" class="btn btn-danger text-white">Submit</button>
           </div>
         </form>
       </div>
