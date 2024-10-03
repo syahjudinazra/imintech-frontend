@@ -5,7 +5,7 @@
         <AddStocksSkuDevice @data-added="refreshList()" />
       </div>
       <div class="others-stocks-sku-device d-flex align-items-center gap-2">
-        <SearchStocksSkuDevice :onSearch="updateSearch" />
+        <Search :onSearch="updateSearch" />
       </div>
     </div>
     <div class="mt-2">
@@ -108,7 +108,7 @@ import { Modal } from 'bootstrap'
 import axios from 'axios'
 import { showToast } from '@/utilities/toast'
 import AddStocksSkuDevice from '../StocksSku/Modal/AddStocksSkuDevice'
-import SearchStocksSkuDevice from '../StocksSku/SearchStocksSkuDevice.vue'
+import Search from '../../Layouts/SearchAll'
 import { mockServerItems, refreshData } from '../../../mock/mockStocksSkuDevice'
 
 let editForm

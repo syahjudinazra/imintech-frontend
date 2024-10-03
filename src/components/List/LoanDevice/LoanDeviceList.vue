@@ -5,7 +5,7 @@
         <AddLoanDevice @data-added="refreshList()" />
       </div>
       <div class="others-loan-device d-flex align-items-center gap-2">
-        <SearchLoanDevice :onSearch="updateSearch" />
+        <Search :onSearch="updateSearch" />
       </div>
     </div>
     <div class="mt-2">
@@ -108,7 +108,7 @@ import { Modal } from 'bootstrap'
 import axios from 'axios'
 import { showToast } from '@/utilities/toast'
 import AddLoanDevice from '../LoanDevice/Modal/AddLoanDevice.vue'
-import SearchLoanDevice from '../LoanDevice/SearchLoanDevice.vue'
+import Search from '../../Layouts/SearchAll'
 import { mockServerItems, refreshData } from '../../../mock/mockLoanDevice.js'
 
 let editForm

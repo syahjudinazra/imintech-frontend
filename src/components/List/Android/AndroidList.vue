@@ -5,7 +5,7 @@
         <AddAndroid @data-added="refreshList()" />
       </div>
       <div class="others-android d-flex align-items-center gap-2">
-        <SearchAndroid :onSearch="updateSearch" />
+        <Search :onSearch="updateSearch" />
       </div>
     </div>
     <div class="mt-2">
@@ -108,7 +108,7 @@ import { Modal } from 'bootstrap'
 import axios from 'axios'
 import { showToast } from '@/utilities/toast'
 import AddAndroid from '../Android/Modal/AddAndroid.vue'
-import SearchAndroid from '../Android/SearchAndroid.vue'
+import Search from '../../Layouts/SearchAll'
 import { mockServerItems, refreshData } from '../../../mock/mockAndroid'
 
 let editForm

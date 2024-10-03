@@ -5,7 +5,7 @@
         <AddFirmwaresDevice @data-added="refreshList()" />
       </div>
       <div class="others-firmwares-device d-flex align-items-center gap-2">
-        <SearchFirmwaresDevice :onSearch="updateSearch" />
+        <Search :onSearch="updateSearch" />
       </div>
     </div>
     <div class="mt-2">
@@ -66,7 +66,7 @@ import { showToast } from '@/utilities/toast'
 import AddFirmwaresDevice from '../FirmwaresDevice/Modal/AddFirmwaresDevice.vue'
 import EditFirmwaresDevice from '../FirmwaresDevice/Modal/EditFirmwaresDevice.vue'
 import DeleteFirmwaresDevice from '../FirmwaresDevice/Modal/DeleteFirmwaresDevice.vue'
-import SearchFirmwaresDevice from '../FirmwaresDevice/SearchFirmwaresDevice.vue'
+import Search from '../../Layouts/SearchAll'
 import { mockServerItems, refreshData } from '../../../mock/mockFirmwaresDevice'
 
 const editModalRef = ref(null)

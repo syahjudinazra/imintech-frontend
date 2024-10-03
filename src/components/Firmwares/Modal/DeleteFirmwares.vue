@@ -3,11 +3,16 @@
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Delete Data</h5>
+          <h5 class="modal-title">Delete Firmware</h5>
           <button type="button" class="btn-close" aria-label="Close" @click="closeModal"></button>
         </div>
         <div class="modal-body">
-          <p>Are you sure you want to delete this data?</p>
+          <p>Are you sure you want to delete this firmware?</p>
+          <p v-if="internalFirmware">
+            <strong>Version:</strong> {{ internalFirmware.version }}<br />
+            <strong>Device Type:</strong> {{ internalFirmware.firmwares_devices_id }}<br />
+            <strong>Android Version:</strong> {{ internalFirmware.androids_id }}
+          </p>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" @click="closeModal">Close</button>
@@ -21,28 +26,35 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { Modal } from 'bootstrap'
 import { defineEmits } from 'vue'
 
 const emit = defineEmits(['delete', 'close'])
 
 let deleteModal
+const internalFirmware = ref(null)
 
 const confirmDelete = () => {
-  emit('delete')
+  if (internalFirmware.value) {
+    emit('delete', internalFirmware.value.id)
+  } else {
+    console.error('No firmware selected for deletion')
+  }
 }
 
 const closeModal = () => {
   emit('close')
 }
 
-const showModal = () => {
+const showModal = (firmware) => {
+  internalFirmware.value = firmware
   deleteModal.show()
 }
 
 const hideModal = () => {
   deleteModal.hide()
+  internalFirmware.value = null
 }
 
 defineExpose({

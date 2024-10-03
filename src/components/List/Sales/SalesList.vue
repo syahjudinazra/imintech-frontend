@@ -5,7 +5,7 @@
         <AddSales @sales-added="refreshSales()" />
       </div>
       <div class="others-sales d-flex align-items-center gap-2">
-        <SearchSales :onSearch="updateSearch" />
+        <Search :onSearch="updateSearch" />
       </div>
     </div>
     <div class="mt-2">
@@ -119,7 +119,7 @@ import { Modal } from 'bootstrap'
 import axios from 'axios'
 import { showToast } from '@/utilities/toast'
 import AddSales from '../Sales/Modal/AddSales.vue'
-import SearchSales from '../Sales/SearchSales.vue'
+import Search from '../../Layouts/SearchAll'
 import { mockServerItems, refreshData } from '../../../mock/mockSales'
 
 let editForm

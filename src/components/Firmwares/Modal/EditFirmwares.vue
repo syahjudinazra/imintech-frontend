@@ -20,6 +20,7 @@
                 v-model="editedFirmware.firmwares_devices_id"
                 class="form-control shadow-none"
                 id="tipe"
+                required
               >
                 <option value="" disabled>Select Device Type</option>
                 <option v-for="device in firmwaresDevice" :key="device.id" :value="device.id">
@@ -34,6 +35,7 @@
                 type="text"
                 class="form-control shadow-none"
                 id="version"
+                required
               />
             </div>
             <div class="mb-3">
@@ -42,6 +44,7 @@
                 v-model="editedFirmware.androids_id"
                 class="form-control shadow-none"
                 id="android"
+                required
               >
                 <option value="" disabled>Select Android</option>
                 <option v-for="android in androids" :key="android.id" :value="android.id">
@@ -56,6 +59,7 @@
                 type="text"
                 class="form-control shadow-none"
                 id="flash"
+                required
               />
             </div>
             <div class="mb-3">
@@ -65,6 +69,7 @@
                 type="text"
                 class="form-control shadow-none"
                 id="ota"
+                required
               />
             </div>
           </div>
@@ -83,9 +88,18 @@ import { ref, watch, defineProps, defineEmits, onMounted } from 'vue'
 import { Modal } from 'bootstrap'
 
 const props = defineProps({
-  firmware: Object,
-  firmwaresDevice: Array,
-  androids: Array,
+  firmware: {
+    type: Object,
+    default: () => ({}),
+  },
+  firmwaresDevice: {
+    type: Array,
+    default: () => [],
+  },
+  androids: {
+    type: Array,
+    default: () => [],
+  },
 })
 
 const emit = defineEmits(['update', 'close'])
@@ -98,12 +112,10 @@ const editedFirmware = ref({
   ota: '',
 })
 
-// Watch for changes in the firmware prop and update the editedFirmware
 watch(
   () => props.firmware,
   (newFirmware) => {
     if (newFirmware) {
-      // Shallow copy to avoid reactivity issues
       editedFirmware.value = { ...newFirmware }
     }
   },
@@ -113,29 +125,28 @@ watch(
 let editModal
 
 const editForm = () => {
-  emit('update', editedFirmware.value) // Emit updated firmware data
-  hideModal() // Close the modal after submitting the form
+  emit('update', editedFirmware.value)
+  hideModal()
 }
 
 const closeModal = () => {
-  hideModal() // Close the modal
-  emit('close') // Emit close event
+  hideModal()
+  emit('close')
 }
 
 const showModal = () => {
-  editModal.show() // Show the modal
+  editModal.show()
 }
 
 const hideModal = () => {
-  editModal.hide() // Hide the modal
+  editModal.hide()
 }
 
 defineExpose({
-  showModal, // Expose showModal method to be used externally
-  hideModal, // Expose hideModal method to be used externally
+  showModal,
+  hideModal,
 })
 
-// Initialize Bootstrap modal on mount
 onMounted(() => {
   editModal = new Modal(document.getElementById('editForm'))
 })

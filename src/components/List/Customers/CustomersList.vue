@@ -7,7 +7,7 @@
       <div class="others-customers d-flex align-items-center gap-2">
         <ExportCustomers />
         <ImportCustomers />
-        <SearchCustomers :onSearch="updateSearch" />
+        <Search :onSearch="updateSearch" />
       </div>
     </div>
     <div class="mt-2">
@@ -130,7 +130,7 @@ import { Modal } from 'bootstrap'
 import axios from 'axios'
 import { showToast } from '@/utilities/toast'
 import AddCustomers from '../Customers/Modal/AddCustomers'
-import SearchCustomers from '../List/Customers/SearchCustomers.vue'
+import Search from '../../Layouts/SearchAll'
 import ExportCustomers from '../List/Customers/Excel/ExportCustomers.vue'
 import ImportCustomers from '../List/Customers/Excel/ImportCustomers.vue'
 import { mockServerItems, refreshData } from '../../../mock/mockCustomers'

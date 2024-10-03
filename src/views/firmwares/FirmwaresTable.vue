@@ -5,7 +5,7 @@
         <AddFirmwares @data-added="refreshList()" />
       </div>
       <div class="others d-flex align-items-center gap-2">
-        <SearchFirmwares :onSearch="updateSearch" />
+        <Search :onSearch="updateSearch" />
       </div>
     </div>
     <div class="mt-2">
@@ -68,7 +68,7 @@ import { showToast } from '@/utilities/toast'
 import AddFirmwares from '../../components/Firmwares/Modal/AddFirmwares.vue'
 import EditFirmwares from '../../components/Firmwares/Modal/EditFirmwares.vue'
 import DeleteFirmwares from '../../components/Firmwares/Modal/DeleteFirmwares.vue'
-import SearchFirmwares from '../../components/Firmwares/SearchFirmwares.vue'
+import Search from '../../components/Layouts/SearchAll'
 import { mockServerItems, refreshData } from '../../mock/mockFirmwares'
 
 const editModalRef = ref(null)
@@ -174,9 +174,9 @@ const updateFirmwares = async (updatedFirmware) => {
   }
 }
 
-const deleteFirmwares = async () => {
+const deleteFirmwares = async (firmwareId) => {
   try {
-    const response = await axios.delete(`firmwares/${id.value}`)
+    const response = await axios.delete(`firmwares/${firmwareId}`)
     showToast(response.data.message || 'Firmware deleted successfully', 'success')
     closeDeleteModal()
     refreshList()
@@ -187,6 +187,7 @@ const deleteFirmwares = async () => {
       error.message ||
       'An error occurred while deleting the firmware'
     showToast(errorMessage, 'error')
+  } finally {
     closeDeleteModal()
   }
 }
@@ -198,8 +199,7 @@ function editModal(firmware) {
 }
 
 function deleteModal(firmware) {
-  id.value = firmware.id
-  deleteModalRef.value.showModal()
+  deleteModalRef.value.showModal(firmware)
 }
 
 function closeEditModal() {

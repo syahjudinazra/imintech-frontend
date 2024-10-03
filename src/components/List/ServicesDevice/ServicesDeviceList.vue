@@ -5,7 +5,7 @@
         <AddServicesDevice @data-added="refreshList()" />
       </div>
       <div class="others-services-device d-flex align-items-center gap-2">
-        <SearchServicesDevice :onSearch="updateSearch" />
+        <Search :onSearch="updateSearch" />
       </div>
     </div>
     <div class="mt-2">
@@ -108,7 +108,7 @@ import { Modal } from 'bootstrap'
 import axios from 'axios'
 import { showToast } from '@/utilities/toast'
 import AddServicesDevice from '../ServicesDevice/Modal/AddServicesDevice.vue'
-import SearchServicesDevice from '../ServicesDevice/SearchServicesDevice.vue'
+import Search from '../../Layouts/SearchAll'
 import { mockServerItems, refreshData } from '../../../mock/mockServicesDevice'
 
 let editForm

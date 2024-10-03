@@ -5,7 +5,7 @@
         <AddRam @data-added="refreshList()" />
       </div>
       <div class="others-ram d-flex align-items-center gap-2">
-        <SearchRam :onSearch="updateSearch" />
+        <Search :onSearch="updateSearch" />
       </div>
     </div>
     <div class="mt-2">
@@ -106,7 +106,7 @@ import { Modal } from 'bootstrap'
 import axios from 'axios'
 import { showToast } from '@/utilities/toast'
 import AddRam from '../Ram/Modal/AddRam.vue'
-import SearchRam from '../Ram/SearchRam.vue'
+import Search from '../../Layouts/SearchAll'
 import { mockServerItems, refreshData } from '../../../mock/mockRam'
 
 let editForm

@@ -5,7 +5,7 @@
         <AddLocation @location-added="refreshList()" />
       </div>
       <div class="others-location d-flex align-items-center gap-2">
-        <SearchLocation :onSearch="updateSearch" />
+        <Search :onSearch="updateSearch" />
       </div>
     </div>
     <div class="mt-2">
@@ -108,7 +108,7 @@ import { Modal } from 'bootstrap'
 import axios from 'axios'
 import { showToast } from '@/utilities/toast'
 import AddLocation from '../List/Location/Modal/AddLocation.vue'
-import SearchLocation from '../List/Location/SearchLocation.vue'
+import Search from '../../Layouts/SearchAll'
 import { mockServerItems, refreshData } from '../../../mock/mockLocation'
 
 let editForm

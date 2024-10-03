@@ -50,7 +50,7 @@ watch(() => {
 </script>
 
 <style scoped>
-.search-technician {
+.search {
   width: 300px;
 }
 

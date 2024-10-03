@@ -5,7 +5,7 @@
         <AddSparepartsDevice @data-added="refreshList()" />
       </div>
       <div class="others-spareparts-device d-flex align-items-center gap-2">
-        <SearchSparepartsDevice :onSearch="updateSearch" />
+        <Search :onSearch="updateSearch" />
       </div>
     </div>
     <div class="mt-2">
@@ -108,7 +108,7 @@ import { Modal } from 'bootstrap'
 import axios from 'axios'
 import { showToast } from '@/utilities/toast'
 import AddSparepartsDevice from '../SparepartsDevice/Modal/AddSparepartsDevice.vue'
-import SearchSparepartsDevice from '../SparepartsDevice/SearchSparepartsDevice.vue'
+import Search from '../../Layouts/SearchAll'
 import { mockServerItems, refreshData } from '../../../mock/mockSparepartsDevice'
 
 let editForm

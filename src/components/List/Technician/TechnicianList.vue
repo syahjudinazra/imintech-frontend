@@ -5,7 +5,7 @@
         <AddTechnician @data-added="refreshList()" />
       </div>
       <div class="others-technician d-flex align-items-center gap-2">
-        <SearchTechnician :onSearch="updateSearch" />
+        <Search :onSearch="updateSearch" />
       </div>
     </div>
     <div class="mt-2">
@@ -108,7 +108,7 @@ import { Modal } from 'bootstrap'
 import axios from 'axios'
 import { showToast } from '@/utilities/toast'
 import AddTechnician from '../Technician/Modal/AddTechnician.vue'
-import SearchTechnician from '../Technician/SearchTechnician.vue'
+import Search from '../../Layouts/SearchAll'
 import { mockServerItems, refreshData } from '../../mock/mockTechnician'
 
 let editForm
