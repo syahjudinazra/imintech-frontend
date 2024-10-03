@@ -1,7 +1,7 @@
 <template>
   <!-- Button trigger modal -->
   <button type="button" class="btn btn-danger btn-sm text-white" @click="openModal">
-    Add Firmwares Device
+    Add Data
   </button>
 
   <!-- Modal -->
@@ -15,7 +15,7 @@
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="addForm_label">Add Firmwares Device</h5>
+          <h5 class="modal-title" id="addForm_label">Add Data</h5>
           <button
             type="button"
             class="btn-close shadow-none"
@@ -31,7 +31,7 @@
               type="text"
               class="form-control shadow-none"
               id="name"
-              placeholder="Input name"
+              placeholder="Input firmwares device name"
             />
           </div>
         </div>

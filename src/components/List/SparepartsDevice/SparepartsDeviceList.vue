@@ -2,10 +2,10 @@
   <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center">
       <div class="add-button">
-        <AddServicesDevice @data-added="refreshList()" />
+        <AddSparepartsDevice @data-added="refreshList()" />
       </div>
-      <div class="others-services-device d-flex align-items-center gap-2">
-        <SearchServicesDevice :onSearch="updateSearch" />
+      <div class="others-spareparts-device d-flex align-items-center gap-2">
+        <SearchSparepartsDevice :onSearch="updateSearch" />
       </div>
     </div>
     <div class="mt-2">
@@ -14,7 +14,7 @@
         :server-items-length="serverItemsLength"
         @update:options="serverOptions = $event"
         :headers="headers"
-        :items="servicesdevice"
+        :items="sparepartsdevice"
         :loading="loading"
         :theme-color="baseColor"
         :rows-per-page="10"
@@ -59,12 +59,12 @@
           <h5 class="modal-title" id="editForm_label">Edit Data</h5>
           <button type="button" class="btn-close" aria-label="Close" @click="closeModal"></button>
         </div>
-        <form @submit.prevent="updateServicesDevice" enctype="multipart/form-data">
+        <form @submit.prevent="updateSparepartsDevice" enctype="multipart/form-data">
           <div class="modal-body">
             <div class="mb-3">
               <label for="name" class="form-label fw-bold">Name</label>
               <input
-                v-model="editServicesDevice.name"
+                v-model="editSparepartsDevice.name"
                 type="text"
                 class="form-control shadow-none"
                 id="name"
@@ -93,7 +93,7 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" @click="closeModal">Close</button>
-          <button type="button" class="btn btn-danger text-white" @click="deleteServicesDevice">
+          <button type="button" class="btn btn-danger text-white" @click="deleteSparepartsDevice">
             Delete
           </button>
         </div>
@@ -107,22 +107,22 @@ import { ref, onMounted, watch } from 'vue'
 import { Modal } from 'bootstrap'
 import axios from 'axios'
 import { showToast } from '@/utilities/toast'
-import AddServicesDevice from '../Modal/Device/AddServicesDevice.vue'
-import SearchServicesDevice from '../List/Device/SearchServicesDevice.vue'
-import { mockServerItems, refreshData } from '../../mock/mockServicesDevice'
+import AddSparepartsDevice from '../SparepartsDevice/Modal/AddSparepartsDevice.vue'
+import SearchSparepartsDevice from '../SparepartsDevice/SearchSparepartsDevice.vue'
+import { mockServerItems, refreshData } from '../../../mock/mockSparepartsDevice'
 
 let editForm
 let deleteForm
-const editServicesDevice = ref({})
+const editSparepartsDevice = ref({})
 const loading = ref(true)
-const servicesdevice = ref([])
+const sparepartsdevice = ref([])
 const id = ref(null)
 
 const token = localStorage.getItem('token')
 // Constants
 const baseColor = '#e55353'
 const headers = ref([
-  { text: 'Services Device', value: 'name' },
+  { text: 'Spareparts Device', value: 'name' },
   { text: 'Action', value: 'action' },
 ])
 
@@ -147,7 +147,7 @@ const loadFromServer = async () => {
       serverOptions.value,
       token,
     )
-    servicesdevice.value = serverCurrentPageItems
+    sparepartsdevice.value = serverCurrentPageItems
     serverItemsLength.value = serverTotalItemsLength
   } catch (error) {
     console.error('Error loading data', error)
@@ -177,9 +177,9 @@ onMounted(() => {
   loadFromServer()
 })
 
-const updateServicesDevice = async () => {
+const updateSparepartsDevice = async () => {
   try {
-    const response = await axios.put(`services-device/${id.value}`, editServicesDevice.value)
+    const response = await axios.put(`spareparts-device/${id.value}`, editSparepartsDevice.value)
     showToast(response.data.message, 'success')
     closeModal()
     refreshList()
@@ -190,9 +190,9 @@ const updateServicesDevice = async () => {
   }
 }
 
-const deleteServicesDevice = async () => {
+const deleteSparepartsDevice = async () => {
   try {
-    const response = await axios.delete(`services-device/${id.value}`)
+    const response = await axios.delete(`spareparts-device/${id.value}`)
     showToast(response.data.message, 'success')
     closeModal()
     refreshList()
@@ -203,14 +203,14 @@ const deleteServicesDevice = async () => {
   }
 }
 
-function editModal(servicesdevice) {
-  editServicesDevice.value = { ...servicesdevice }
-  id.value = servicesdevice.id
+function editModal(sparepartsdevice) {
+  editSparepartsDevice.value = { ...sparepartsdevice }
+  id.value = sparepartsdevice.id
   editForm.show()
 }
 
-function deleteModal(servicesdevice) {
-  id.value = servicesdevice.id
+function deleteModal(sparepartsdevice) {
+  id.value = sparepartsdevice.id
   deleteForm.show()
 }
 

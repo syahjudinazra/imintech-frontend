@@ -1,5 +1,5 @@
 <script setup>
-import TechnicianList from '@/components/List/TechnicianList.vue'
+import TechnicianList from '@/components/List/Technician/TechnicianList.vue'
 </script>
 
 <template>

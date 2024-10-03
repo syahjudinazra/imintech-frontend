@@ -1,5 +1,5 @@
 <script setup>
-import AndroidList from '@/components/List/AndroidList.vue'
+import AndroidList from '@/components/List/Android/AndroidList.vue'
 </script>
 
 <template>

@@ -32,7 +32,7 @@
         </template>
         <template #items="{ item }">
           <tr>
-            <td>{{ item.firmwares_devices_id }}</td>
+            <td>{{ item.firmware_devices_id }}</td>
             <td>{{ item.version }}</td>
             <td>{{ item.androids_id }}</td>
             <td>{{ item.flash }}</td>
@@ -49,120 +49,42 @@
     </div>
   </div>
 
-  <!--Edit Modal-->
-  <div
-    class="modal fade"
-    id="editForm"
-    tabindex="-1"
-    aria-labelledby="editForm_label"
-    aria-hidden="true"
-  >
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="editForm_label">Edit Data</h5>
-          <button type="button" class="btn-close" aria-label="Close" @click="closeModal"></button>
-        </div>
-        <form @submit.prevent="updateFirmwares" enctype="multipart/form-data">
-          <div class="modal-body">
-            <div class="mb-3">
-              <label for="firmwaresDevice" class="form-label fw-bold">Firmwares Device</label>
-              <input
-                v-model="editFirmwares.firmwares_devices_id"
-                type="text"
-                class="form-control shadow-none"
-                id="firmwaresDevice"
-              />
-            </div>
-            <div class="mb-3">
-              <label for="version" class="form-label fw-bold">Version</label>
-              <input
-                v-model="editFirmwares.version"
-                type="text"
-                class="form-control shadow-none"
-                id="version"
-              />
-            </div>
-            <div class="mb-3">
-              <label for="android" class="form-label fw-bold">Android</label>
-              <input
-                v-model="editFirmwares.androids_id"
-                type="text"
-                class="form-control shadow-none"
-                id="android"
-              />
-            </div>
-            <div class="mb-3">
-              <label for="flash" class="form-label fw-bold">Flash Link</label>
-              <input
-                v-model="editFirmwares.flash"
-                type="text"
-                class="form-control shadow-none"
-                id="flash"
-              />
-            </div>
-            <div class="mb-3">
-              <label for="ota" class="form-label fw-bold">OTA Link</label>
-              <input
-                v-model="editFirmwares.ota"
-                type="text"
-                class="form-control shadow-none"
-                id="ota"
-              />
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" @click="closeModal">Close</button>
-            <button type="submit" class="btn btn-primary">Submit</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
+  <EditFirmwares
+    ref="editModalRef"
+    :firmware="editFirmwares"
+    :firmwares-device="firmwaresDevice"
+    :androids="androids"
+    @update="updateFirmwares"
+    @close="closeEditModal"
+  />
 
-  <!--Delete Modal-->
-  <div class="modal fade show" id="deleteForm">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Delete Data</h5>
-          <button type="button" class="btn-close" aria-label="Close" @click="closeModal"></button>
-        </div>
-        <div class="modal-body">
-          <p>Are you sure want delete this data?</p>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" @click="closeModal">Close</button>
-          <button type="button" class="btn btn-danger text-white" @click="deleteFirmwares">
-            Delete
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
+  <DeleteFirmwares ref="deleteModalRef" @delete="deleteFirmwares" @close="closeDeleteModal" />
 </template>
 
 <script setup>
 import { ref, onMounted, watch } from 'vue'
-import { Modal } from 'bootstrap'
 import axios from 'axios'
 import { showToast } from '@/utilities/toast'
 import AddFirmwares from '../../components/Firmwares/Modal/AddFirmwares.vue'
+import EditFirmwares from '../../components/Firmwares/Modal/EditFirmwares.vue'
+import DeleteFirmwares from '../../components/Firmwares/Modal/DeleteFirmwares.vue'
 import SearchFirmwares from '../../components/Firmwares/SearchFirmwares.vue'
 import { mockServerItems, refreshData } from '../../mock/mockFirmwares'
 
-let editForm
-let deleteForm
+const editModalRef = ref(null)
+const deleteModalRef = ref(null)
 const editFirmwares = ref({})
 const loading = ref(true)
 const firmwares = ref([])
 const id = ref(null)
+const firmwaresDevice = ref([])
+const androids = ref([])
 
 const token = localStorage.getItem('token')
 // Constants
 const baseColor = '#e55353'
 const headers = ref([
-  { text: 'Tipe Device', value: 'firmwares_device_id' },
+  { text: 'Tipe', value: 'firmwares_devices_id' },
   { text: 'Version', value: 'version' },
   { text: 'Android', value: 'androids_id' },
   { text: 'Flash Link', value: 'flash' },
@@ -216,51 +138,76 @@ watch(
 )
 
 onMounted(() => {
-  editForm = new Modal(document.getElementById('editForm'))
-  deleteForm = new Modal(document.getElementById('deleteForm'))
   loadFromServer()
+  fetchFirmwaresDevice()
+  fetchAndroid()
 })
 
-const updateFirmwares = async () => {
+const fetchFirmwaresDevice = async () => {
   try {
-    const response = await axios.put(`firmwares/${id.value}`, editFirmwares.value)
+    const response = await axios.get('firmwares-device')
+    firmwaresDevice.value = response.data.firmwaresdevice
+  } catch (error) {
+    console.error('Data not found', error)
+  }
+}
+
+const fetchAndroid = async () => {
+  try {
+    const response = await axios.get('android')
+    androids.value = response.data.android
+  } catch (error) {
+    console.error('Data not found', error)
+  }
+}
+
+const updateFirmwares = async (updatedFirmware) => {
+  try {
+    const response = await axios.put(`firmwares/${id.value}`, updatedFirmware)
     showToast(response.data.message, 'success')
-    closeModal()
+    closeEditModal()
     refreshList()
   } catch (error) {
     console.error('Data failed to change', error)
     showToast(error.data.message, 'error')
-    closeModal()
+    closeEditModal()
   }
 }
 
 const deleteFirmwares = async () => {
   try {
     const response = await axios.delete(`firmwares/${id.value}`)
-    showToast(response.data.message, 'success')
-    closeModal()
+    showToast(response.data.message || 'Firmware deleted successfully', 'success')
+    closeDeleteModal()
     refreshList()
   } catch (error) {
     console.error('Data failed to delete', error)
-    showToast(error.data.message, 'error')
-    closeModal()
+    const errorMessage =
+      error.response?.data?.message ||
+      error.message ||
+      'An error occurred while deleting the firmware'
+    showToast(errorMessage, 'error')
+    closeDeleteModal()
   }
 }
 
-function editModal(firmwares) {
-  editFirmwares.value = { ...firmwares }
-  id.value = firmwares.id
-  editForm.show()
+function editModal(firmware) {
+  editFirmwares.value = { ...firmware }
+  id.value = firmware.id
+  editModalRef.value.showModal()
 }
 
-function deleteModal(firmwares) {
-  id.value = firmwares.id
-  deleteForm.show()
+function deleteModal(firmware) {
+  id.value = firmware.id
+  deleteModalRef.value.showModal()
 }
 
-function closeModal() {
-  editForm.hide()
-  deleteForm.hide()
+function closeEditModal() {
+  editModalRef.value.hideModal()
+}
+
+function closeDeleteModal() {
+  deleteModalRef.value.hideModal()
 }
 </script>
 

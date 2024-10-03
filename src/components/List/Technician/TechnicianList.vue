@@ -2,10 +2,10 @@
   <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center">
       <div class="add-button">
-        <AddStocksDevice @data-added="refreshList()" />
+        <AddTechnician @data-added="refreshList()" />
       </div>
-      <div class="others-stocks-device d-flex align-items-center gap-2">
-        <SearchStocksDevice :onSearch="updateSearch" />
+      <div class="others-technician d-flex align-items-center gap-2">
+        <SearchTechnician :onSearch="updateSearch" />
       </div>
     </div>
     <div class="mt-2">
@@ -14,7 +14,7 @@
         :server-items-length="serverItemsLength"
         @update:options="serverOptions = $event"
         :headers="headers"
-        :items="stocksdevice"
+        :items="technician"
         :loading="loading"
         :theme-color="baseColor"
         :rows-per-page="10"
@@ -59,12 +59,12 @@
           <h5 class="modal-title" id="editForm_label">Edit Data</h5>
           <button type="button" class="btn-close" aria-label="Close" @click="closeModal"></button>
         </div>
-        <form @submit.prevent="updateStocksDevice" enctype="multipart/form-data">
+        <form @submit.prevent="updateTechnician" enctype="multipart/form-data">
           <div class="modal-body">
             <div class="mb-3">
               <label for="name" class="form-label fw-bold">Name</label>
               <input
-                v-model="editStocksDevice.name"
+                v-model="editTechnician.name"
                 type="text"
                 class="form-control shadow-none"
                 id="name"
@@ -93,7 +93,7 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" @click="closeModal">Close</button>
-          <button type="button" class="btn btn-danger text-white" @click="deleteStocksDevice">
+          <button type="button" class="btn btn-danger text-white" @click="deleteTechnician">
             Delete
           </button>
         </div>
@@ -107,22 +107,22 @@ import { ref, onMounted, watch } from 'vue'
 import { Modal } from 'bootstrap'
 import axios from 'axios'
 import { showToast } from '@/utilities/toast'
-import AddStocksDevice from '../Modal/Device/AddStocksDevice.vue'
-import SearchStocksDevice from '../List/Device/SearchStocksDevice.vue'
-import { mockServerItems, refreshData } from '../../mock/mockStocksDevice'
+import AddTechnician from '../Technician/Modal/AddTechnician.vue'
+import SearchTechnician from '../Technician/SearchTechnician.vue'
+import { mockServerItems, refreshData } from '../../mock/mockTechnician'
 
 let editForm
 let deleteForm
-const editStocksDevice = ref({})
+const editTechnician = ref({})
 const loading = ref(true)
-const stocksdevice = ref([])
+const technician = ref([])
 const id = ref(null)
 
 const token = localStorage.getItem('token')
 // Constants
 const baseColor = '#e55353'
 const headers = ref([
-  { text: 'Stocks Device', value: 'name' },
+  { text: 'Technician', value: 'name' },
   { text: 'Action', value: 'action' },
 ])
 
@@ -147,11 +147,11 @@ const loadFromServer = async () => {
       serverOptions.value,
       token,
     )
-    stocksdevice.value = serverCurrentPageItems
+    technician.value = serverCurrentPageItems
     serverItemsLength.value = serverTotalItemsLength
   } catch (error) {
     console.error('Error loading data', error)
-    showToast('Failed to load stocks device data.', 'error')
+    showToast('Failed to load technician data.', 'error')
   } finally {
     loading.value = false
   }
@@ -177,9 +177,9 @@ onMounted(() => {
   loadFromServer()
 })
 
-const updateStocksDevice = async () => {
+const updateTechnician = async () => {
   try {
-    const response = await axios.put(`stocks-device/${id.value}`, editStocksDevice.value)
+    const response = await axios.put(`technician/${id.value}`, editTechnician.value)
     showToast(response.data.message, 'success')
     closeModal()
     refreshList()
@@ -190,9 +190,9 @@ const updateStocksDevice = async () => {
   }
 }
 
-const deleteStocksDevice = async () => {
+const deleteTechnician = async () => {
   try {
-    const response = await axios.delete(`stocks-device/${id.value}`)
+    const response = await axios.delete(`technician/${id.value}`)
     showToast(response.data.message, 'success')
     closeModal()
     refreshList()
@@ -203,14 +203,14 @@ const deleteStocksDevice = async () => {
   }
 }
 
-function editModal(stocksdevice) {
-  editStocksDevice.value = { ...stocksdevice }
-  id.value = stocksdevice.id
+function editModal(technician) {
+  editTechnician.value = { ...technician }
+  id.value = technician.id
   editForm.show()
 }
 
-function deleteModal(stocksdevice) {
-  id.value = stocksdevice.id
+function deleteModal(technician) {
+  id.value = technician.id
   deleteForm.show()
 }
 

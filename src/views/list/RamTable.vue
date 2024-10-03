@@ -1,5 +1,5 @@
 <script setup>
-import RamList from '@/components/List/RamList.vue'
+import RamList from '@/components/List/Ram/RamList.vue'
 </script>
 
 <template>

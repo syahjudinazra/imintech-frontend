@@ -1,11 +1,11 @@
 <template>
   <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center">
-      <div class="add-sales-button">
-        <AddSales @sales-added="refreshSales()" />
+      <div class="add-button">
+        <AddFirmwaresDevice @data-added="refreshList()" />
       </div>
-      <div class="others-sales d-flex align-items-center gap-2">
-        <SearchSales :onSearch="updateSearch" />
+      <div class="others-firmwares-device d-flex align-items-center gap-2">
+        <SearchFirmwaresDevice :onSearch="updateSearch" />
       </div>
     </div>
     <div class="mt-2">
@@ -14,7 +14,7 @@
         :server-items-length="serverItemsLength"
         @update:options="serverOptions = $event"
         :headers="headers"
-        :items="sales"
+        :items="firmwaresdevice"
         :loading="loading"
         :theme-color="baseColor"
         :rows-per-page="10"
@@ -33,8 +33,6 @@
         <template #items="{ item }">
           <tr>
             <td>{{ item.name }}</td>
-            <td>{{ item.phone }}</td>
-            <td>{{ item.address }}</td>
           </tr>
         </template>
         <template #item-action="item">
@@ -47,98 +45,46 @@
     </div>
   </div>
 
-  <!--Edit Modal-->
-  <div
-    class="modal fade"
-    id="editForm"
-    tabindex="-1"
-    aria-labelledby="editForm_label"
-    aria-hidden="true"
-  >
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="editForm_label">Edit Data</h5>
-          <button type="button" class="btn-close" aria-label="Close" @click="closeModal"></button>
-        </div>
-        <form @submit.prevent="updateSales" enctype="multipart/form-data">
-          <div class="modal-body">
-            <div class="mb-3">
-              <label for="name" class="form-label fw-bold">Name</label>
-              <input
-                v-model="editSales.name"
-                type="text"
-                class="form-control shadow-none"
-                id="name"
-              />
-            </div>
-            <div class="mb-3">
-              <label for="phone" class="form-label fw-bold">Phone</label>
-              <input
-                v-model="editSales.phone"
-                type="number"
-                class="form-control shadow-none"
-                id="phone"
-              />
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" @click="closeModal">Close</button>
-            <button type="submit" class="btn btn-primary">Submit</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
+  <EditFirmwaresDevice
+    ref="editModalRef"
+    :firmwares-device="editFirmwaresDevice"
+    @update="updateFirmwaresDevice"
+    @close="closeEditModal"
+  />
 
-  <!--Delete Modal-->
-  <div class="modal fade show" id="deleteForm">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Delete Data</h5>
-          <button type="button" class="btn-close" aria-label="Close" @click="closeModal"></button>
-        </div>
-        <div class="modal-body">
-          <p>Are you sure want delete this data?</p>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" @click="closeModal">Close</button>
-          <button type="button" class="btn btn-danger text-white" @click="deleteSales">
-            Delete
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
+  <DeleteFirmwaresDevice
+    ref="deleteModalRef"
+    @delete="deleteFirmwaresDevice"
+    @close="closeDeleteModal"
+  />
 </template>
 
 <script setup>
 import { ref, onMounted, watch } from 'vue'
-import { Modal } from 'bootstrap'
 import axios from 'axios'
 import { showToast } from '@/utilities/toast'
-import AddSales from '../Modal/AddSales.vue'
-import SearchSales from '../List/Sales/SearchSales.vue'
-import { mockServerItems, refreshData } from '../../mock/mockSales'
+import AddFirmwaresDevice from '../FirmwaresDevice/Modal/AddFirmwaresDevice.vue'
+import EditFirmwaresDevice from '../FirmwaresDevice/Modal/EditFirmwaresDevice.vue'
+import DeleteFirmwaresDevice from '../FirmwaresDevice/Modal/DeleteFirmwaresDevice.vue'
+import SearchFirmwaresDevice from '../FirmwaresDevice/SearchFirmwaresDevice.vue'
+import { mockServerItems, refreshData } from '../../../mock/mockFirmwaresDevice'
 
-let editForm
-let deleteForm
-const editSales = ref({})
+const editModalRef = ref(null)
+const deleteModalRef = ref(null)
+const editFirmwaresDevice = ref({})
 const loading = ref(true)
-const sales = ref([])
+const firmwaresdevice = ref([])
 const id = ref(null)
 
 const token = localStorage.getItem('token')
 // Constants
 const baseColor = '#e55353'
 const headers = ref([
-  { text: 'Sales', value: 'name' },
-  { text: 'Phone Number', value: 'phone' },
+  { text: 'Firmwares Device', value: 'name' },
   { text: 'Action', value: 'action' },
 ])
 
-const serverItemsLength = ref(0)
+const serverItemsLength = ref(10)
 const serverOptions = ref({
   page: 1,
   rowsPerPage: 10,
@@ -147,7 +93,7 @@ const serverOptions = ref({
   searchTerm: '',
 })
 
-const refreshSales = () => {
+const refreshList = () => {
   refreshData()
   loadFromServer()
 }
@@ -159,11 +105,11 @@ const loadFromServer = async () => {
       serverOptions.value,
       token,
     )
-    sales.value = serverCurrentPageItems
+    firmwaresdevice.value = serverCurrentPageItems
     serverItemsLength.value = serverTotalItemsLength
   } catch (error) {
     console.error('Error loading data', error)
-    showToast('Failed to load sales data.', 'error')
+    showToast('Failed to load stocks device data.', 'error')
   } finally {
     loading.value = false
   }
@@ -184,51 +130,51 @@ watch(
 )
 
 onMounted(() => {
-  editForm = new Modal(document.getElementById('editForm'))
-  deleteForm = new Modal(document.getElementById('deleteForm'))
   loadFromServer()
 })
 
-const updateSales = async () => {
+const updateFirmwaresDevice = async (updatedFirmwaresDevice) => {
   try {
-    const response = await axios.put(`sales/${id.value}`, editSales.value)
+    const response = await axios.put(`firmwares-device/${id.value}`, updatedFirmwaresDevice)
     showToast(response.data.message, 'success')
-    closeModal()
-    refreshSales()
+    closeEditModal()
+    refreshList()
   } catch (error) {
     console.error('Data failed to change', error)
     showToast(error.data.message, 'error')
-    closeModal()
   }
 }
 
-const deleteSales = async () => {
+const deleteFirmwaresDevice = async () => {
   try {
-    const response = await axios.delete(`sales/${id.value}`)
+    const response = await axios.delete(`firmwares-device/${id.value}`)
     showToast(response.data.message, 'success')
-    closeModal()
-    refreshSales()
+    closeDeleteModal()
+    refreshList()
   } catch (error) {
     console.error('Data failed to delete', error)
     showToast(error.data.message, 'error')
-    closeModal()
+    closeDeleteModal()
   }
 }
 
-function editModal(sales) {
-  editSales.value = { ...sales }
-  id.value = sales.id
-  editForm.show()
+function editModal(firmwaresdevice) {
+  editFirmwaresDevice.value = { ...firmwaresdevice }
+  id.value = firmwaresdevice.id
+  editModalRef.value.showModal()
 }
 
-function deleteModal(sales) {
-  id.value = sales.id
-  deleteForm.show()
+function deleteModal(firmwaresdevice) {
+  id.value = firmwaresdevice.id
+  deleteModalRef.value.showModal()
 }
 
-function closeModal() {
-  editForm.hide()
-  deleteForm.hide()
+function closeEditModal() {
+  editModalRef.value.hideModal()
+}
+
+function closeDeleteModal() {
+  deleteModalRef.value.hideModal()
 }
 </script>
 

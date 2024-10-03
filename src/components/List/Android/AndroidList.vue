@@ -2,10 +2,10 @@
   <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center">
       <div class="add-button">
-        <AddFirmwaresDevice @data-added="refreshList()" />
+        <AddAndroid @data-added="refreshList()" />
       </div>
-      <div class="others-firmwares-device d-flex align-items-center gap-2">
-        <SearchFirmwaresDevice :onSearch="updateSearch" />
+      <div class="others-android d-flex align-items-center gap-2">
+        <SearchAndroid :onSearch="updateSearch" />
       </div>
     </div>
     <div class="mt-2">
@@ -14,7 +14,7 @@
         :server-items-length="serverItemsLength"
         @update:options="serverOptions = $event"
         :headers="headers"
-        :items="firmwaresdevice"
+        :items="android"
         :loading="loading"
         :theme-color="baseColor"
         :rows-per-page="10"
@@ -59,12 +59,12 @@
           <h5 class="modal-title" id="editForm_label">Edit Data</h5>
           <button type="button" class="btn-close" aria-label="Close" @click="closeModal"></button>
         </div>
-        <form @submit.prevent="updateFirmwaresDevice" enctype="multipart/form-data">
+        <form @submit.prevent="updateAndroid" enctype="multipart/form-data">
           <div class="modal-body">
             <div class="mb-3">
               <label for="name" class="form-label fw-bold">Name</label>
               <input
-                v-model="editFirmwaresDevice.name"
+                v-model="editAndroid.name"
                 type="text"
                 class="form-control shadow-none"
                 id="name"
@@ -93,7 +93,7 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" @click="closeModal">Close</button>
-          <button type="button" class="btn btn-danger text-white" @click="deleteFirmwaresDevice">
+          <button type="button" class="btn btn-danger text-white" @click="deleteAndroid">
             Delete
           </button>
         </div>
@@ -107,22 +107,22 @@ import { ref, onMounted, watch } from 'vue'
 import { Modal } from 'bootstrap'
 import axios from 'axios'
 import { showToast } from '@/utilities/toast'
-import AddFirmwaresDevice from '../Modal/Device/AddFirmwaresDevice.vue'
-import SearchFirmwaresDevice from '../List/Device/SearchFirmwaresDevice.vue'
-import { mockServerItems, refreshData } from '../../mock/mockFirmwaresDevice'
+import AddAndroid from '../Android/Modal/AddAndroid.vue'
+import SearchAndroid from '../Android/SearchAndroid.vue'
+import { mockServerItems, refreshData } from '../../../mock/mockAndroid'
 
 let editForm
 let deleteForm
-const editFirmwaresDevice = ref({})
+const editAndroid = ref({})
 const loading = ref(true)
-const firmwaresdevice = ref([])
+const android = ref([])
 const id = ref(null)
 
 const token = localStorage.getItem('token')
 // Constants
 const baseColor = '#e55353'
 const headers = ref([
-  { text: 'Firmwares Device', value: 'name' },
+  { text: 'Android', value: 'name' },
   { text: 'Action', value: 'action' },
 ])
 
@@ -147,11 +147,11 @@ const loadFromServer = async () => {
       serverOptions.value,
       token,
     )
-    firmwaresdevice.value = serverCurrentPageItems
+    android.value = serverCurrentPageItems
     serverItemsLength.value = serverTotalItemsLength
   } catch (error) {
     console.error('Error loading data', error)
-    showToast('Failed to load stocks device data.', 'error')
+    showToast('Failed to load android data.', 'error')
   } finally {
     loading.value = false
   }
@@ -177,9 +177,9 @@ onMounted(() => {
   loadFromServer()
 })
 
-const updateFirmwaresDevice = async () => {
+const updateAndroid = async () => {
   try {
-    const response = await axios.put(`firmwares-device/${id.value}`, editFirmwaresDevice.value)
+    const response = await axios.put(`android/${id.value}`, editAndroid.value)
     showToast(response.data.message, 'success')
     closeModal()
     refreshList()
@@ -190,9 +190,9 @@ const updateFirmwaresDevice = async () => {
   }
 }
 
-const deleteFirmwaresDevice = async () => {
+const deleteAndroid = async () => {
   try {
-    const response = await axios.delete(`firmwares-device/${id.value}`)
+    const response = await axios.delete(`android/${id.value}`)
     showToast(response.data.message, 'success')
     closeModal()
     refreshList()
@@ -203,14 +203,14 @@ const deleteFirmwaresDevice = async () => {
   }
 }
 
-function editModal(firmwaresdevice) {
-  editFirmwaresDevice.value = { ...firmwaresdevice }
-  id.value = firmwaresdevice.id
+function editModal(android) {
+  editAndroid.value = { ...android }
+  id.value = android.id
   editForm.show()
 }
 
-function deleteModal(firmwaresdevice) {
-  id.value = firmwaresdevice.id
+function deleteModal(android) {
+  id.value = android.id
   deleteForm.show()
 }
 

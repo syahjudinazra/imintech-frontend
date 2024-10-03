@@ -20,52 +20,54 @@
           <div class="modal-body">
             <div class="mb-3">
               <label for="tipe" class="form-label fw-bold">Tipe Device</label>
-              <input
-                v-model="firmwares.tipe"
-                type="text"
+              <select
+                v-model="firmwares.firmwares_devices_id"
                 class="form-control shadow-none"
                 id="tipe"
-                placeholder="Masukan Tipe Device"
-              />
+              >
+                <option value="" disabled>Select Device Type</option>
+                <option v-for="device in firmwaresDevice" :key="device.id" :value="device.id">
+                  {{ device.name }}
+                </option>
+              </select>
             </div>
             <div class="mb-3">
-              <label for="versi" class="form-label fw-bold">Versi</label>
+              <label for="version" class="form-label fw-bold">Version</label>
               <input
-                v-model="firmwares.versi"
+                v-model="firmwares.version"
                 type="text"
                 class="form-control shadow-none"
-                id="versi"
-                placeholder="Masukan Versi"
+                id="version"
+                placeholder="Input version"
               />
             </div>
             <div class="mb-3">
               <label for="android" class="form-label fw-bold">Android</label>
-              <input
-                v-model="firmwares.android"
-                type="text"
-                class="form-control shadow-none"
-                id="android"
-                placeholder="Masukan Android"
-              />
+              <select v-model="firmwares.androids_id" class="form-control shadow-none" id="android">
+                <option value="" disabled>Select Android</option>
+                <option v-for="android in androids" :key="android.id" :value="android.id">
+                  {{ android.name }}
+                </option>
+              </select>
             </div>
             <div class="mb-3">
-              <label for="flash" class="form-label fw-bold">Flash</label>
+              <label for="flash" class="form-label fw-bold">Flash Link</label>
               <input
                 v-model="firmwares.flash"
                 type="text"
                 class="form-control shadow-none"
                 id="flash"
-                placeholder="Masukan flash"
+                placeholder="Input flash link"
               />
             </div>
             <div class="mb-3">
-              <label for="ota" class="form-label fw-bold">Ota</label>
+              <label for="ota" class="form-label fw-bold">Ota Link</label>
               <input
                 v-model="firmwares.ota"
                 type="text"
                 class="form-control shadow-none"
                 id="ota"
-                placeholder="Masukan Ota"
+                placeholder="Input Ota link"
               />
             </div>
           </div>
@@ -83,20 +85,42 @@
 import { ref, onMounted } from 'vue'
 import { Modal } from 'bootstrap'
 import axios from 'axios'
-import Swal from 'sweetalert2'
+import { showToast } from '@/utilities/toast'
 
 const firmwares = ref({
-  tipe: '',
-  versi: '',
-  android: '',
+  firmwares_devices_id: '',
+  version: '',
+  androids_id: '',
   flash: '',
   ota: '',
 })
 
+const firmwaresDevice = ref([])
+const androids = ref([])
 let addForm
+
+const fetchFirmwaresDevice = async () => {
+  try {
+    const response = await axios.get('firmwares-device')
+    firmwaresDevice.value = response.data.firmwaresdevice
+  } catch (error) {
+    console.error('Data not found', error)
+  }
+}
+
+const fetchAndroid = async () => {
+  try {
+    const response = await axios.get('android')
+    androids.value = response.data.android
+  } catch (error) {
+    console.error('Data not found', error)
+  }
+}
 
 onMounted(() => {
   addForm = new Modal(document.getElementById('addForm'), {})
+  fetchFirmwaresDevice()
+  fetchAndroid()
 })
 
 function openModal() {
@@ -111,53 +135,24 @@ const addFirmwares = async () => {
   try {
     // Prepare form data
     const formData = new FormData()
-    formData.append('tipe', firmwares.value.tipe)
-    formData.append('versi', firmwares.value.versi)
-    formData.append('android', firmwares.value.android)
+    formData.append('firmwares_devices_id', firmwares.value.firmwares_devices_id)
+    formData.append('version', firmwares.value.version)
+    formData.append('androids_id', firmwares.value.androids_id)
     formData.append('flash', firmwares.value.flash)
     formData.append('ota', firmwares.value.ota)
 
-    const response = await axios.post('addfirmwares', formData, {
+    const response = await axios.post('firmwares', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
     })
-    console.log('Data berhasil ditambahkan:', response.data.data)
-    await showNotification('success', response.data.message)
+    console.log('Data added successfully:', response.data.message)
+    showToast(response.data.message, 'success')
     closeModal()
   } catch (error) {
-    console.error('Data gagal ditambahkan', error)
-    const message = error.response.data.message
-    await showNotification('error', message)
-    closeModal()
+    console.error('Error add data:', error)
+    showToast(error.data.message, 'error')
   }
-}
-
-function showNotification(type, message) {
-  return new Promise((resolve) => {
-    const toast = Swal.mixin({
-      toast: true,
-      position: 'top-end',
-      showConfirmButton: false,
-      timer: 1000,
-      timerProgressBar: true,
-      didOpen: (toast) => {
-        toast.addEventListener('mouseenter', Swal.stopTimer)
-        toast.addEventListener('mouseleave', Swal.resumeTimer)
-      },
-      didClose: () => {
-        window.location.reload()
-      },
-    })
-    toast
-      .fire({
-        icon: type,
-        title: message,
-      })
-      .then(() => {
-        resolve()
-      })
-  })
 }
 </script>
 
@@ -167,6 +162,9 @@ input:focus {
 }
 
 textarea:focus {
+  border-color: #d22c36;
+}
+select:focus {
   border-color: #d22c36;
 }
 </style>

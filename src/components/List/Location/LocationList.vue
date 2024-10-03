@@ -2,10 +2,10 @@
   <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center">
       <div class="add-button">
-        <AddSparepartsDevice @data-added="refreshList()" />
+        <AddLocation @location-added="refreshList()" />
       </div>
-      <div class="others-spareparts-device d-flex align-items-center gap-2">
-        <SearchSparepartsDevice :onSearch="updateSearch" />
+      <div class="others-location d-flex align-items-center gap-2">
+        <SearchLocation :onSearch="updateSearch" />
       </div>
     </div>
     <div class="mt-2">
@@ -14,7 +14,7 @@
         :server-items-length="serverItemsLength"
         @update:options="serverOptions = $event"
         :headers="headers"
-        :items="sparepartsdevice"
+        :items="location"
         :loading="loading"
         :theme-color="baseColor"
         :rows-per-page="10"
@@ -59,12 +59,12 @@
           <h5 class="modal-title" id="editForm_label">Edit Data</h5>
           <button type="button" class="btn-close" aria-label="Close" @click="closeModal"></button>
         </div>
-        <form @submit.prevent="updateSparepartsDevice" enctype="multipart/form-data">
+        <form @submit.prevent="updateLocation" enctype="multipart/form-data">
           <div class="modal-body">
             <div class="mb-3">
               <label for="name" class="form-label fw-bold">Name</label>
               <input
-                v-model="editSparepartsDevice.name"
+                v-model="editLocation.name"
                 type="text"
                 class="form-control shadow-none"
                 id="name"
@@ -93,7 +93,7 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" @click="closeModal">Close</button>
-          <button type="button" class="btn btn-danger text-white" @click="deleteSparepartsDevice">
+          <button type="button" class="btn btn-danger text-white" @click="deleteLocation">
             Delete
           </button>
         </div>
@@ -107,26 +107,26 @@ import { ref, onMounted, watch } from 'vue'
 import { Modal } from 'bootstrap'
 import axios from 'axios'
 import { showToast } from '@/utilities/toast'
-import AddSparepartsDevice from '../Modal/Device/AddSparepartsDevice.vue'
-import SearchSparepartsDevice from '../List/Device/SearchSparepartsDevice.vue'
-import { mockServerItems, refreshData } from '../../mock/mockSparepartsDevice'
+import AddLocation from '../List/Location/Modal/AddLocation.vue'
+import SearchLocation from '../List/Location/SearchLocation.vue'
+import { mockServerItems, refreshData } from '../../../mock/mockLocation'
 
 let editForm
 let deleteForm
-const editSparepartsDevice = ref({})
+const editLocation = ref({})
 const loading = ref(true)
-const sparepartsdevice = ref([])
+const location = ref([])
 const id = ref(null)
 
 const token = localStorage.getItem('token')
 // Constants
 const baseColor = '#e55353'
 const headers = ref([
-  { text: 'Spareparts Device', value: 'name' },
+  { text: 'Location', value: 'name' },
   { text: 'Action', value: 'action' },
 ])
 
-const serverItemsLength = ref(10)
+const serverItemsLength = ref(0)
 const serverOptions = ref({
   page: 1,
   rowsPerPage: 10,
@@ -147,11 +147,11 @@ const loadFromServer = async () => {
       serverOptions.value,
       token,
     )
-    sparepartsdevice.value = serverCurrentPageItems
+    location.value = serverCurrentPageItems
     serverItemsLength.value = serverTotalItemsLength
   } catch (error) {
     console.error('Error loading data', error)
-    showToast('Failed to load stocks device data.', 'error')
+    showToast('Failed to load location data.', 'error')
   } finally {
     loading.value = false
   }
@@ -177,9 +177,9 @@ onMounted(() => {
   loadFromServer()
 })
 
-const updateSparepartsDevice = async () => {
+const updateLocation = async () => {
   try {
-    const response = await axios.put(`spareparts-device/${id.value}`, editSparepartsDevice.value)
+    const response = await axios.put(`location/${id.value}`, editLocation.value)
     showToast(response.data.message, 'success')
     closeModal()
     refreshList()
@@ -190,9 +190,9 @@ const updateSparepartsDevice = async () => {
   }
 }
 
-const deleteSparepartsDevice = async () => {
+const deleteLocation = async () => {
   try {
-    const response = await axios.delete(`spareparts-device/${id.value}`)
+    const response = await axios.delete(`location/${id.value}`)
     showToast(response.data.message, 'success')
     closeModal()
     refreshList()
@@ -203,14 +203,14 @@ const deleteSparepartsDevice = async () => {
   }
 }
 
-function editModal(sparepartsdevice) {
-  editSparepartsDevice.value = { ...sparepartsdevice }
-  id.value = sparepartsdevice.id
+function editModal(location) {
+  editLocation.value = { ...location }
+  id.value = location.id
   editForm.show()
 }
 
-function deleteModal(sparepartsdevice) {
-  id.value = sparepartsdevice.id
+function deleteModal(location) {
+  id.value = location.id
   deleteForm.show()
 }
 

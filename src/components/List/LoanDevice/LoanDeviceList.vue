@@ -2,10 +2,10 @@
   <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center">
       <div class="add-button">
-        <AddRam @data-added="refreshList()" />
+        <AddLoanDevice @data-added="refreshList()" />
       </div>
-      <div class="others-ram d-flex align-items-center gap-2">
-        <SearchRam :onSearch="updateSearch" />
+      <div class="others-loan-device d-flex align-items-center gap-2">
+        <SearchLoanDevice :onSearch="updateSearch" />
       </div>
     </div>
     <div class="mt-2">
@@ -14,7 +14,7 @@
         :server-items-length="serverItemsLength"
         @update:options="serverOptions = $event"
         :headers="headers"
-        :items="ram"
+        :items="loandevice"
         :loading="loading"
         :theme-color="baseColor"
         :rows-per-page="10"
@@ -59,12 +59,12 @@
           <h5 class="modal-title" id="editForm_label">Edit Data</h5>
           <button type="button" class="btn-close" aria-label="Close" @click="closeModal"></button>
         </div>
-        <form @submit.prevent="updateRam" enctype="multipart/form-data">
+        <form @submit.prevent="updateLoanDevice" enctype="multipart/form-data">
           <div class="modal-body">
             <div class="mb-3">
               <label for="name" class="form-label fw-bold">Name</label>
               <input
-                v-model="editRam.name"
+                v-model="editLoanDevice.name"
                 type="text"
                 class="form-control shadow-none"
                 id="name"
@@ -93,7 +93,9 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" @click="closeModal">Close</button>
-          <button type="button" class="btn btn-danger text-white" @click="deleteRam">Delete</button>
+          <button type="button" class="btn btn-danger text-white" @click="deleteLoanDevice">
+            Delete
+          </button>
         </div>
       </div>
     </div>
@@ -105,22 +107,22 @@ import { ref, onMounted, watch } from 'vue'
 import { Modal } from 'bootstrap'
 import axios from 'axios'
 import { showToast } from '@/utilities/toast'
-import AddRam from '../Modal/AddRam.vue'
-import SearchRam from '../List/Ram/SearchRam.vue'
-import { mockServerItems, refreshData } from '../../mock/mockRam'
+import AddLoanDevice from '../LoanDevice/Modal/AddLoanDevice.vue'
+import SearchLoanDevice from '../LoanDevice/SearchLoanDevice.vue'
+import { mockServerItems, refreshData } from '../../../mock/mockLoanDevice.js'
 
 let editForm
 let deleteForm
-const editRam = ref({})
+const editLoanDevice = ref({})
 const loading = ref(true)
-const ram = ref([])
+const loandevice = ref([])
 const id = ref(null)
 
 const token = localStorage.getItem('token')
 // Constants
 const baseColor = '#e55353'
 const headers = ref([
-  { text: 'RAM', value: 'name' },
+  { text: 'Loan Device', value: 'name' },
   { text: 'Action', value: 'action' },
 ])
 
@@ -145,11 +147,11 @@ const loadFromServer = async () => {
       serverOptions.value,
       token,
     )
-    ram.value = serverCurrentPageItems
+    loandevice.value = serverCurrentPageItems
     serverItemsLength.value = serverTotalItemsLength
   } catch (error) {
     console.error('Error loading data', error)
-    showToast('Failed to load ram data.', 'error')
+    showToast('Failed to load stocks device data.', 'error')
   } finally {
     loading.value = false
   }
@@ -175,9 +177,9 @@ onMounted(() => {
   loadFromServer()
 })
 
-const updateRam = async () => {
+const updateLoanDevice = async () => {
   try {
-    const response = await axios.put(`ram/${id.value}`, editRam.value)
+    const response = await axios.put(`loan-device/${id.value}`, editLoanDevice.value)
     showToast(response.data.message, 'success')
     closeModal()
     refreshList()
@@ -188,9 +190,9 @@ const updateRam = async () => {
   }
 }
 
-const deleteRam = async () => {
+const deleteLoanDevice = async () => {
   try {
-    const response = await axios.delete(`ram/${id.value}`)
+    const response = await axios.delete(`loan-device/${id.value}`)
     showToast(response.data.message, 'success')
     closeModal()
     refreshList()
@@ -201,14 +203,14 @@ const deleteRam = async () => {
   }
 }
 
-function editModal(ram) {
-  editRam.value = { ...ram }
-  id.value = ram.id
+function editModal(loandevice) {
+  editLoanDevice.value = { ...loandevice }
+  id.value = loandevice.id
   editForm.show()
 }
 
-function deleteModal(ram) {
-  id.value = ram.id
+function deleteModal(loandevice) {
+  id.value = loandevice.id
   deleteForm.show()
 }
 

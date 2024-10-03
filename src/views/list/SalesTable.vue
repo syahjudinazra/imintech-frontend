@@ -1,5 +1,5 @@
 <script setup>
-import SalesList from '@/components/List/SalesList.vue'
+import SalesList from '@/components/List/Sales/SalesList.vue'
 </script>
 
 <template>
