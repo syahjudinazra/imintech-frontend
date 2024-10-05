@@ -32,9 +32,9 @@
         </template>
         <template #items="{ item }">
           <tr>
-            <td>{{ item.firmware_devices_id }}</td>
+            <td>{{ getDeviceName(item.firmwares_devices_id) }}</td>
             <td>{{ item.version }}</td>
-            <td>{{ item.androids_id }}</td>
+            <td>{{ getAndroidName(item.androids_id) }}</td>
             <td>{{ item.flash }}</td>
             <td>{{ item.ota }}</td>
           </tr>
@@ -74,9 +74,9 @@ import { mockServerItems, refreshData } from '../../mock/mockFirmwares'
 const editModalRef = ref(null)
 const deleteModalRef = ref(null)
 const editFirmwares = ref({})
+const id = ref(null)
 const loading = ref(true)
 const firmwares = ref([])
-const id = ref(null)
 const firmwaresDevice = ref([])
 const androids = ref([])
 
@@ -84,7 +84,7 @@ const token = localStorage.getItem('token')
 // Constants
 const baseColor = '#e55353'
 const headers = ref([
-  { text: 'Tipe', value: 'firmwares_devices_id' },
+  { text: 'Devices', value: 'firmwares_devices_id' },
   { text: 'Version', value: 'version' },
   { text: 'Android', value: 'androids_id' },
   { text: 'Flash Link', value: 'flash' },
@@ -143,12 +143,23 @@ onMounted(() => {
   fetchAndroid()
 })
 
+const getDeviceName = (id) => {
+  const device = firmwaresDevice.value.find((d) => d.id === id)
+  return device ? device.name : 'Unknown'
+}
+
+const getAndroidName = (id) => {
+  const android = androids.value.find((a) => a.id === id)
+  return android ? android.name : 'Unknown'
+}
+
 const fetchFirmwaresDevice = async () => {
   try {
     const response = await axios.get('firmwares-device')
     firmwaresDevice.value = response.data.firmwaresdevice
   } catch (error) {
     console.error('Data not found', error)
+    showToast('Failed to fetch device types.', 'error')
   }
 }
 
@@ -163,14 +174,19 @@ const fetchAndroid = async () => {
 
 const updateFirmwares = async (updatedFirmware) => {
   try {
-    const response = await axios.put(`firmwares/${id.value}`, updatedFirmware)
+    // Ensure we're sending IDs, not names
+    const firmwareToUpdate = {
+      ...updatedFirmware,
+      firmwares_devices_id: parseInt(updatedFirmware.firmwares_devices_id),
+      androids_id: parseInt(updatedFirmware.androids_id),
+    }
+    const response = await axios.put(`firmwares/${id.value}`, firmwareToUpdate)
     showToast(response.data.message, 'success')
     closeEditModal()
     refreshList()
   } catch (error) {
     console.error('Data failed to change', error)
-    showToast(error.data.message, 'error')
-    closeEditModal()
+    showToast(error.response?.data?.message || 'Failed to update firmware', 'error')
   }
 }
 
@@ -193,17 +209,35 @@ const deleteFirmwares = async (firmwareId) => {
 }
 
 function editModal(firmware) {
-  editFirmwares.value = { ...firmware }
+  console.log('Firmware object received:', firmware)
+
+  if (!firmware) {
+    console.error('Firmware object is null or undefined')
+    showToast('Unable to edit firmware: Invalid data', 'error')
+    return
+  }
+
+  // Ensure we're working with IDs, not names
+  editFirmwares.value = {
+    ...firmware,
+    firmwares_devices_id: firmware.firmwares_devices_id,
+    androids_id: firmware.androids_id,
+  }
   id.value = firmware.id
+
+  console.log('editFirmwares.value set to:', editFirmwares.value)
+  console.log('id.value set to:', id.value)
+
   editModalRef.value.showModal()
 }
-
 function deleteModal(firmware) {
   deleteModalRef.value.showModal(firmware)
 }
 
-function closeEditModal() {
-  editModalRef.value.hideModal()
+const closeEditModal = () => {
+  if (editModalRef.value) {
+    editModalRef.value.hideModal()
+  }
 }
 
 function closeDeleteModal() {

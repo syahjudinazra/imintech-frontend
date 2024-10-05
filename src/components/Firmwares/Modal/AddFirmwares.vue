@@ -19,17 +19,24 @@
         <form @submit.prevent="addFirmwares">
           <div class="modal-body">
             <div class="mb-3">
-              <label for="tipe" class="form-label fw-bold">Tipe Device</label>
-              <select
+              <label for="tipe" class="form-label fw-bold">Device type</label>
+              <v-select
                 v-model="firmwares.firmwares_devices_id"
-                class="form-control shadow-none"
+                :options="firmwaresDevice"
+                :reduce="(device) => device.id"
+                label="name"
+                :searchable="true"
+                :clearable="false"
+                placeholder="Select Device Type"
                 id="tipe"
               >
-                <option value="" disabled>Select Device Type</option>
-                <option v-for="device in firmwaresDevice" :key="device.id" :value="device.id">
-                  {{ device.name }}
-                </option>
-              </select>
+                <template #no-options="{ search, searching }">
+                  <template v-if="searching">
+                    No results found for <em>{{ search }}</em>
+                  </template>
+                  <em v-else>Start typing to search...</em>
+                </template>
+              </v-select>
             </div>
             <div class="mb-3">
               <label for="version" class="form-label fw-bold">Version</label>
@@ -43,12 +50,23 @@
             </div>
             <div class="mb-3">
               <label for="android" class="form-label fw-bold">Android</label>
-              <select v-model="firmwares.androids_id" class="form-control shadow-none" id="android">
-                <option value="" disabled>Select Android</option>
-                <option v-for="android in androids" :key="android.id" :value="android.id">
-                  {{ android.name }}
-                </option>
-              </select>
+              <v-select
+                v-model="firmwares.androids_id"
+                :options="androids"
+                :reduce="(android) => android.id"
+                label="name"
+                :searchable="true"
+                :clearable="false"
+                placeholder="Select Android"
+                id="android"
+              >
+                <template #no-options="{ search, searching }">
+                  <template v-if="searching">
+                    No results found for <em>{{ search }}</em>
+                  </template>
+                  <em v-else>Start typing to search...</em>
+                </template>
+              </v-select>
             </div>
             <div class="mb-3">
               <label for="flash" class="form-label fw-bold">Flash Link</label>
@@ -86,6 +104,8 @@ import { ref, onMounted } from 'vue'
 import { Modal } from 'bootstrap'
 import axios from 'axios'
 import { showToast } from '@/utilities/toast'
+import vSelect from 'vue-select'
+import 'vue-select/dist/vue-select.css'
 
 const firmwares = ref({
   firmwares_devices_id: '',
@@ -157,14 +177,40 @@ const addFirmwares = async () => {
 </script>
 
 <style scoped>
-input:focus {
+input:focus,
+textarea:focus,
+select:focus,
+.v-select.vs--open .vs__dropdown-toggle {
   border-color: #d22c36;
 }
 
-textarea:focus {
-  border-color: #d22c36;
+.v-select {
+  --vs-controls-color: #6c757d;
+  --vs-border-color: #ced4da;
+
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #212529;
+  background-color: #fff;
+  background-clip: padding-box;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
-select:focus {
-  border-color: #d22c36;
+
+.v-select .vs__dropdown-toggle {
+  padding: 0;
+  border: none;
+}
+
+.v-select .vs__selected-options {
+  padding: 0;
+}
+
+.v-select .vs__search::placeholder {
+  color: #6c757d;
+}
+
+.v-select .vs__clear {
+  display: none;
 }
 </style>
