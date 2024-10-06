@@ -5,6 +5,8 @@
         <AddFirmwares @data-added="refreshList()" />
       </div>
       <div class="others d-flex align-items-center gap-2">
+        <ExportFirmwares />
+        <ImportFirmwares />
         <Search :onSearch="updateSearch" />
       </div>
     </div>
@@ -70,6 +72,8 @@ import EditFirmwares from '../../components/Firmwares/Modal/EditFirmwares.vue'
 import DeleteFirmwares from '../../components/Firmwares/Modal/DeleteFirmwares.vue'
 import Search from '../../components/Layouts/SearchAll'
 import { mockServerItems, refreshData } from '../../mock/mockFirmwares'
+import ExportFirmwares from '../../components/Firmwares/Excel/ExportFirmwares.vue'
+import ImportFirmwares from '../../components/Firmwares/Excel/ImportFirmwares.vue'
 
 const editModalRef = ref(null)
 const deleteModalRef = ref(null)

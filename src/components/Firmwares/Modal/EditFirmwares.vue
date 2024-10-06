@@ -134,10 +134,8 @@ watch(
     if (newFirmware) {
       editedFirmware.value = {
         ...newFirmware,
-        firmwares_devices_id: newFirmware.firmwares_devices_id
-          ? Number(newFirmware.firmwares_devices_id)
-          : null,
-        androids_id: newFirmware.androids_id ? Number(newFirmware.androids_id) : null,
+        firmwares_devices_id: newFirmware.firmwares_devices_id || '',
+        androids_id: newFirmware.androids_id || '',
       }
     }
   },

@@ -131,8 +131,8 @@ import axios from 'axios'
 import { showToast } from '@/utilities/toast'
 import AddCustomers from '../Customers/Modal/AddCustomers'
 import Search from '../../Layouts/SearchAll'
-import ExportCustomers from '../List/Customers/Excel/ExportCustomers.vue'
-import ImportCustomers from '../List/Customers/Excel/ImportCustomers.vue'
+import ExportCustomers from '../Customers/Excel/ExportCustomers.vue'
+import ImportCustomers from '../Customers/Excel/ImportCustomers.vue'
 import { mockServerItems, refreshData } from '../../../mock/mockCustomers'
 
 let editForm
