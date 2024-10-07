@@ -98,10 +98,11 @@
 </template>
 
 <script setup>
-import { ref, watch, defineProps, defineEmits, onMounted } from 'vue'
+import { ref, watch, defineProps, defineEmits, onMounted, reactive } from 'vue'
 import { Modal } from 'bootstrap'
 import vSelect from 'vue-select'
 import 'vue-select/dist/vue-select.css'
+import { cloneDeep } from 'lodash-es'
 
 const props = defineProps({
   firmware: {
@@ -119,41 +120,55 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update', 'close'])
-
-const editedFirmware = ref({
-  firmwares_devices_id: null,
-  version: '',
-  androids_id: null,
-  flash: '',
-  ota: '',
-})
+const isDataChanged = ref(false)
+const initialFirmware = ref(null)
+const editedFirmware = reactive({})
+const changedFields = reactive({})
 
 watch(
   () => props.firmware,
   (newFirmware) => {
     if (newFirmware) {
-      editedFirmware.value = {
-        ...newFirmware,
-        firmwares_devices_id: newFirmware.firmwares_devices_id || '',
-        androids_id: newFirmware.androids_id || '',
-      }
+      initialFirmware.value = cloneDeep(newFirmware)
+      Object.assign(editedFirmware, cloneDeep(newFirmware))
     }
   },
   { immediate: true, deep: true },
 )
 
+watch(
+  editedFirmware,
+  (newValue) => {
+    if (initialFirmware.value) {
+      Object.keys(newValue).forEach((key) => {
+        if (JSON.stringify(newValue[key]) !== JSON.stringify(initialFirmware.value[key])) {
+          changedFields[key] = true
+        } else {
+          delete changedFields[key]
+        }
+      })
+      isDataChanged.value = Object.keys(changedFields).length > 0
+    }
+  },
+  { deep: true },
+)
+
 let editModal
 
 const editForm = () => {
-  if (!editedFirmware.value.firmwares_devices_id || !editedFirmware.value.androids_id) {
-    alert('Please select both Device Type and Android Version')
+  if (!isDataChanged.value) {
+    alert('No changes detected')
     return
   }
 
-  const updatedFirmware = {
-    ...editedFirmware.value,
-    firmwares_devices_id: Number(editedFirmware.value.firmwares_devices_id),
-    androids_id: Number(editedFirmware.value.androids_id),
+  const updatedFirmware = { id: editedFirmware.id }
+  Object.keys(changedFields).forEach((key) => {
+    updatedFirmware[key] = editedFirmware[key]
+  })
+
+  // Ensure android field is included
+  if (updatedFirmware.androids_id) {
+    updatedFirmware.android = updatedFirmware.androids_id
   }
 
   emit('update', updatedFirmware)
@@ -182,7 +197,6 @@ onMounted(() => {
   editModal = new Modal(document.getElementById('editForm'))
 })
 </script>
-
 <style scoped>
 .v-select {
   --vs-controls-color: #6c757d;

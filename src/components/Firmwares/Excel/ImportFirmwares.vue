@@ -60,6 +60,8 @@ const handleFileUpload = async (event) => {
       const response = await axios.post('firmwares-import', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
+          'X-CSRF-TOKEN':
+            document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
         },
       })
       console.log('Excel import successful:', response.data)

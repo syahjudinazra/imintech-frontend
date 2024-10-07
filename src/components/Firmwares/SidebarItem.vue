@@ -15,26 +15,27 @@
 import { ref } from 'vue'
 
 const navigationItems = ref([
-  { text: 'M2-202', path: '/firmwares/information/m2-202' },
-  { text: 'M2-203', path: '/m2-203' },
-  { text: 'M2 Pro', path: '/m2-pro' },
-  { text: 'M2 Max', path: '/m2-max' },
-  { text: 'Swift 1', path: '/swift-1' },
-  { text: 'Swift 1 Pro', path: '/swift-1-pro' },
-  { text: 'Swift 2', path: '/swift-2' },
-  { text: 'Swift 2 Pro', path: '/swift-2-pro' },
-  { text: 'D1', path: '/d1' },
-  { text: 'D1 Pro', path: '/d1-pro' },
-  { text: 'Falcon 1', path: '/falcon-1' },
-  { text: 'D2', path: '/d2' },
-  { text: 'D3', path: '/d3' },
-  { text: 'D4', path: '/d4' },
-  { text: 'D4 Pro', path: '/d4-pro' },
-  { text: 'Swan 1', path: '/swan-1' },
-  { text: 'Swan 1 Pro', path: '/swan-1-pro' },
-  { text: 'Crane 1', path: '/crane-1' },
-  { text: 'S1', path: '/S1' },
-  { text: 'K1', path: '/K1' },
+  { text: 'M2-202', path: '/firmwares/list/m2-202' },
+  { text: 'M2-203', path: '/firmwares/list/m2-203' },
+  { text: 'M2 Pro', path: '/firmwares/list/m2-pro' },
+  { text: 'M2 Max', path: '/firmwares/list/m2-max' },
+  { text: 'Swift 1', path: '/firmwares/list/swift1' },
+  { text: 'Swift 1 Pro', path: '/firmwares/list/swift1-pro' },
+  { text: 'Swift 2', path: '/firmwares/list/swift2' },
+  { text: 'Swift 2 Pro', path: '/firmwares/list/swift2-pro' },
+  { text: 'D1', path: '/firmwares/list/d1' },
+  { text: 'D1 Pro', path: '/firmwares/list/d1-pro' },
+  { text: 'Falcon 1', path: '/firmwares/list/falcon1' },
+  { text: 'D2', path: '/firmwares/list/d2' },
+  { text: 'D3', path: '/firmwares/list/d3' },
+  { text: 'D4', path: '/firmwares/list/d4' },
+  { text: 'D4 Pro', path: '/firmwares/list/d4-pro' },
+  { text: 'Swan 1', path: '/firmwares/list/swan1' },
+  { text: 'Swan 1 Pro', path: '/firmwares/list/swan1-pro' },
+  { text: 'Crane 1', path: '/firmwares/list/crane1' },
+  { text: 'S1', path: '/firmwares/list/s1' },
+  { text: 'K1', path: '/firmwares/list/k1' },
+  { text: 'K2', path: '/firmwares/list/k2' },
 ])
 </script>
 
@@ -47,7 +48,7 @@ li {
   width: 150px;
   background-color: #f0f0f0;
   overflow-y: auto;
-  height: 400px;
+  height: 600px;
 }
 
 .sidebar li {

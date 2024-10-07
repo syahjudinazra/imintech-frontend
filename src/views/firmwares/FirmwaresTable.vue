@@ -183,8 +183,19 @@ const updateFirmwares = async (updatedFirmware) => {
       ...updatedFirmware,
       firmwares_devices_id: parseInt(updatedFirmware.firmwares_devices_id),
       androids_id: parseInt(updatedFirmware.androids_id),
+      // Include the android field
+      android: updatedFirmware.android || updatedFirmware.androids_id,
     }
-    const response = await axios.put(`firmwares/${id.value}`, firmwareToUpdate)
+
+    // Only send changed fields
+    const changedFields = Object.keys(updatedFirmware).reduce((acc, key) => {
+      if (updatedFirmware[key] !== undefined) {
+        acc[key] = firmwareToUpdate[key]
+      }
+      return acc
+    }, {})
+
+    const response = await axios.put(`firmwares/${id.value}`, changedFields)
     showToast(response.data.message, 'success')
     closeEditModal()
     refreshList()

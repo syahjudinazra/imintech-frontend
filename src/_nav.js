@@ -171,7 +171,7 @@ export default [
       {
         component: 'CNavItem',
         name: 'Firmwares',
-        to: '/firmwares/information',
+        to: '/firmwares/list',
       },
       {
         component: 'CNavItem',

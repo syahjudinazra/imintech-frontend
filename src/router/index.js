@@ -165,11 +165,11 @@ const routes = [
             return h(resolveComponent('router-view'))
           },
         },
-        redirect: '/firmwares/information',
+        redirect: '/firmwares/list',
         meta: { requiresAuth: true },
         children: [
           {
-            path: '/firmwares/information',
+            path: '/firmwares/list',
             component: () => import('@/views/firmwares/FirmwaresImin.vue'),
             meta: { requiresAuth: true },
           },
@@ -179,9 +179,19 @@ const routes = [
             component: () => import('@/views/firmwares/FirmwaresTable.vue'),
           },
           {
-            path: '/firmwares/information/m2-202',
+            path: '/firmwares/list/m2-202',
             name: 'M2-202',
             component: () => import('@/components/Firmwares/M2-202.vue'),
+          },
+          {
+            path: '/firmwares/list/m2-203',
+            name: 'M2-203',
+            component: () => import('@/components/Firmwares/M2-203.vue'),
+          },
+          {
+            path: '/firmwares/list/m2-pro',
+            name: 'M2-Pro',
+            component: () => import('@/components/Firmwares/M2-Pro.vue'),
           },
         ],
       },

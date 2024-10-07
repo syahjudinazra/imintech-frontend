@@ -14,24 +14,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import axios from 'axios'
 import SidebarItem from '../../components/Firmwares/SidebarItem.vue'
-
-const firmwares = ref([])
-
-async function fetchFirmwares() {
-  try {
-    const response = await axios.get(`getfirmwares`)
-    firmwares.value = response.data.data
-  } catch (error) {
-    console.error('Failed to fetch data', error)
-  }
-}
-
-onMounted(() => {
-  fetchFirmwares()
-})
 </script>
 
 <style scoped>

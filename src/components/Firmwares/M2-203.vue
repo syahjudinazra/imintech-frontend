@@ -1,7 +1,7 @@
 <template>
   <div class="container-fluid">
     <div class="tittle-firmwares">
-      <h2>M2-202</h2>
+      <h2>M2-203</h2>
     </div>
     <div class="d-flex justify-content-between">
       <div class="sidebar-list">
@@ -72,7 +72,7 @@ import EditFirmwares from '../../components/Firmwares/Modal/EditFirmwares.vue'
 import DeleteFirmwares from '../../components/Firmwares/Modal/DeleteFirmwares.vue'
 import SidebarItem from '../../components/Firmwares/SidebarItem.vue'
 import Search from '../../components/Layouts/SearchAll'
-import { mockServerItems, refreshData } from '../../mock/listFirmwares/m202'
+import { mockServerItems, refreshData } from '../../mock/listFirmwares/m203'
 
 const editModalRef = ref(null)
 const deleteModalRef = ref(null)
@@ -120,7 +120,7 @@ const loadFromServer = async () => {
     serverItemsLength.value = serverTotalItemsLength
   } catch (error) {
     console.error('Error loading data', error)
-    showToast('Failed to load M2-202 firmware data.', 'error')
+    showToast('Failed to load M2-203 firmware data.', 'error')
   } finally {
     loading.value = false
   }
