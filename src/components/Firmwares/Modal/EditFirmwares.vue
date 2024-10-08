@@ -73,7 +73,6 @@
                 type="text"
                 class="form-control shadow-none"
                 id="flash"
-                required
               />
             </div>
             <div class="mb-3">
@@ -83,7 +82,6 @@
                 type="text"
                 class="form-control shadow-none"
                 id="ota"
-                required
               />
             </div>
           </div>

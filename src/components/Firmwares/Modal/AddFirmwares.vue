@@ -85,7 +85,7 @@
                 type="text"
                 class="form-control shadow-none"
                 id="ota"
-                placeholder="Input Ota link"
+                placeholder="Input ota link"
               />
             </div>
           </div>

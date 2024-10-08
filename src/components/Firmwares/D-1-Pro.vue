@@ -1,7 +1,7 @@
 <template>
   <div class="container-fluid">
     <div class="tittle-firmwares">
-      <h2>M2-202</h2>
+      <h2>D1 Pro</h2>
     </div>
     <div class="d-flex">
       <div class="sidebar-list">
@@ -88,7 +88,7 @@ import EditFirmwares from '../../components/Firmwares/Modal/EditFirmwares.vue'
 import DeleteFirmwares from '../../components/Firmwares/Modal/DeleteFirmwares.vue'
 import SidebarItem from '../../components/Firmwares/SidebarItem.vue'
 import Search from '../../components/Layouts/SearchAll'
-import { mockServerItems, refreshData } from '../../mock/listFirmwares/m202'
+import { mockServerItems, refreshData } from '../../mock/listFirmwares/d1Pro'
 
 const editModalRef = ref(null)
 const deleteModalRef = ref(null)

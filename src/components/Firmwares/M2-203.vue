@@ -3,11 +3,11 @@
     <div class="tittle-firmwares">
       <h2>M2-203</h2>
     </div>
-    <div class="d-flex justify-content-between">
+    <div class="d-flex">
       <div class="sidebar-list">
         <SidebarItem />
       </div>
-      <div>
+      <div class="firmwares-content w-100">
         <Search class="mb-2" :onSearch="updateSearch" />
         <EasyDataTable
           v-model:server-options="serverOptions"
@@ -35,9 +35,25 @@
               <td>{{ getDeviceName(item.firmwares_devices_id) }}</td>
               <td>{{ item.version }}</td>
               <td>{{ getAndroidName(item.androids_id) }}</td>
-              <td>{{ item.flash }}</td>
-              <td>{{ item.ota }}</td>
             </tr>
+          </template>
+          <template #item-flash="item">
+            <button
+              v-if="item.flash"
+              @click="downloadFile(item.flash)"
+              class="btn btn-success btn-sm text-white"
+            >
+              Download
+            </button>
+          </template>
+          <template #item-ota="item">
+            <button
+              v-if="item.ota"
+              @click="downloadFile(item.ota)"
+              class="btn btn-secondary btn-sm text-white"
+            >
+              Download
+            </button>
           </template>
           <template #item-action="item">
             <div class="d-flex gap-2">
@@ -120,7 +136,7 @@ const loadFromServer = async () => {
     serverItemsLength.value = serverTotalItemsLength
   } catch (error) {
     console.error('Error loading data', error)
-    showToast('Failed to load M2-203 firmware data.', 'error')
+    showToast('Failed to load M2-202 firmware data.', 'error')
   } finally {
     loading.value = false
   }
@@ -154,6 +170,10 @@ const getDeviceName = (id) => {
 const getAndroidName = (id) => {
   const android = androids.value.find((a) => a.id === id)
   return android ? android.name : 'Unknown'
+}
+
+const downloadFile = (url) => {
+  window.open(url, '_blank')
 }
 
 const fetchFirmwaresDevice = async () => {
@@ -302,6 +322,12 @@ textarea:focus {
 @keyframes l11 {
   100% {
     transform: rotate(1turn);
+  }
+}
+
+@media (min-width: 1200px) {
+  .firmwares-content {
+    margin-left: 2rem;
   }
 }
 </style>
