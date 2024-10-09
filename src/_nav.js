@@ -152,13 +152,13 @@ export default [
     items: [
       {
         component: 'CNavItem',
-        name: 'Stock Spareparts',
-        to: '/spareparts/stockspareparts',
+        name: 'List Spareparts',
+        to: '/spareparts/list-spareparts',
       },
       {
         component: 'CNavItem',
         name: 'Log History',
-        to: '/spareparts/loghistory',
+        to: '/spareparts/log-history',
       },
     ],
   },

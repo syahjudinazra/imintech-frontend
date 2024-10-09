@@ -144,13 +144,13 @@ const routes = [
         meta: { requiresAuth: true },
         children: [
           {
-            path: '/spareparts/stockspareparts',
-            name: 'Stock Spareparts',
-            component: () => import('@/views/spareparts/StockSpareparts.vue'),
+            path: '/spareparts/list-spareparts',
+            name: 'List Spareparts',
+            component: () => import('@/views/spareparts/SparepartsTable.vue'),
             meta: { requiresAuth: true },
           },
           {
-            path: '/spareparts/loghistory',
+            path: '/spareparts/log-history',
             name: 'Log History',
             component: () => import('@/views/spareparts/LogHistorySpareparts.vue'),
             meta: { requiresAuth: true },

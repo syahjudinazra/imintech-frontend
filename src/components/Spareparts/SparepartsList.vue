@@ -2,11 +2,11 @@
   <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center">
       <div class="add-button">
-        <AddFirmwares @data-added="refreshList()" />
+        <AddSpareparts @data-added="refreshList()" />
       </div>
       <div class="others d-flex align-items-center gap-2">
-        <ExportFirmwares />
-        <ImportFirmwares />
+        <ExportSpareparts />
+        <ImportSpareparts />
         <Search :onSearch="updateSearch" />
       </div>
     </div>
@@ -16,7 +16,7 @@
         :server-items-length="serverItemsLength"
         @update:options="serverOptions = $event"
         :headers="headers"
-        :items="firmwares"
+        :items="spareparts"
         :loading="loading"
         :theme-color="baseColor"
         :rows-per-page="10"
@@ -34,69 +34,97 @@
         </template>
         <template #items="{ item }">
           <tr>
-            <td>{{ getDeviceName(item.firmwares_devices_id) }}</td>
-            <td>{{ item.version }}</td>
-            <td>{{ getAndroidName(item.androids_id) }}</td>
-            <td>{{ item.flash }}</td>
-            <td>{{ item.ota }}</td>
+            <td>{{ item.no_spareparts }}</td>
+            <td>{{ getDeviceName(item.spareparts_devices_id) }}</td>
+            <td>{{ item.name }}</td>
+            <td>{{ item.quantity }}</td>
+            <td>{{ item.price }}</td>
           </tr>
         </template>
         <template #item-action="item">
           <div class="d-flex gap-2">
-            <a href="#" class="head-text text-decoration-none" @click="editModal(item)">Edit</a>
-            <a href="#" class="head-text text-decoration-none" @click="deleteModal(item)">Delete</a>
+            <a href="#" class="head-text text-decoration-none" @click="editModal(item)">Qty+</a>
+            <a href="#" class="head-text text-decoration-none" @click="deleteModal(item)">Qty-</a>
+            <div class="btn-group dropend">
+              <a
+                type="button"
+                class="text-decoration-none dropdown-toggle"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
+                More
+              </a>
+              <ul class="dropdown-menu">
+                <a
+                  href="#"
+                  class="dropdown-item head-text text-decoration-none"
+                  @click="editModal(item)"
+                  >Edit</a
+                >
+                <a
+                  href="#"
+                  class="dropdown-item head-text text-decoration-none"
+                  @click="deleteModal(item)"
+                  >Delete</a
+                >
+              </ul>
+            </div>
           </div>
         </template>
       </EasyDataTable>
     </div>
   </div>
 
-  <EditFirmwares
+  <AddQuantity />
+
+  <ReduceQuantity />
+
+  <EditSpareparts
     ref="editModalRef"
-    :firmware="editFirmwares"
-    :firmwares-device="firmwaresDevice"
-    :androids="androids"
-    @update="updateFirmwares"
+    :sparepart="editSpareparts"
+    :spareparts-device="sparepartsDevice"
+    @update="updateSpareparts"
     @close="closeEditModal"
   />
 
-  <DeleteFirmwares ref="deleteModalRef" @delete="deleteFirmwares" @close="closeDeleteModal" />
+  <DeleteSpareparts ref="deleteModalRef" @delete="deleteSpareparts" @close="closeDeleteModal" />
 </template>
 
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import axios from 'axios'
 import { showToast } from '@/utilities/toast'
-import AddFirmwares from '../../components/Firmwares/Modal/AddFirmwares.vue'
-import EditFirmwares from '../../components/Firmwares/Modal/EditFirmwares.vue'
-import DeleteFirmwares from '../../components/Firmwares/Modal/DeleteFirmwares.vue'
-import Search from '../../components/Layouts/SearchAll'
-import { mockServerItems, refreshData } from '../../mock/mockFirmwares'
-import ExportFirmwares from '../../components/Firmwares/Excel/ExportFirmwares.vue'
-import ImportFirmwares from '../../components/Firmwares/Excel/ImportFirmwares.vue'
+import AddSpareparts from '../Spareparts/Modal/AddSpareparts.vue'
+import EditSpareparts from '../Spareparts/Modal/EditSpareparts.vue'
+import DeleteSpareparts from '../Spareparts/Modal/DeleteSpareparts.vue'
+import AddQuantity from '../Spareparts/Modal/AddQuantity.vue'
+import ReduceQuantity from '../Spareparts/Modal/ReduceQuantity.vue'
+import Search from '../Layouts/SearchAll'
+import ExportSpareparts from '../Spareparts/Excel/ExportSpareparts.vue'
+import ImportSpareparts from '../Spareparts/Excel/ImportSpareparts.vue'
+import { mockServerItems, refreshData } from '@/mock/mockSpareparts'
 
 const id = ref(null)
-const firmwares = ref([])
-const firmwaresDevice = ref([])
-const androids = ref([])
+const spareparts = ref([])
+const sparepartsDevice = ref([])
 const editModalRef = ref(null)
 const deleteModalRef = ref(null)
-const editFirmwares = ref({})
+const editSpareparts = ref({})
 const loading = ref(true)
 
 const token = localStorage.getItem('token')
 // Constants
 const baseColor = '#e55353'
 const headers = ref([
-  { text: 'Devices', value: 'firmwares_devices_id' },
-  { text: 'Version', value: 'version' },
-  { text: 'Android', value: 'androids_id' },
-  { text: 'Flash Link', value: 'flash' },
-  { text: 'OTA Link', value: 'ota' },
+  { text: 'No Spareparts', value: 'no_spareparts' },
+  { text: 'Devices', value: 'spareparts_devices_id' },
+  { text: 'Name', value: 'name' },
+  { text: 'Quantity', value: 'quantity' },
+  { text: 'Price', value: 'price' },
   { text: 'Action', value: 'action' },
 ])
 
-const serverItemsLength = ref(10)
+const serverItemsLength = ref(0)
 const serverOptions = ref({
   page: 1,
   rowsPerPage: 10,
@@ -117,11 +145,11 @@ const loadFromServer = async () => {
       serverOptions.value,
       token,
     )
-    firmwares.value = serverCurrentPageItems
+    spareparts.value = serverCurrentPageItems
     serverItemsLength.value = serverTotalItemsLength
   } catch (error) {
     console.error('Error loading data', error)
-    showToast('Failed to load stocks device data.', 'error')
+    showToast('Failed to load spareparts data.', 'error')
   } finally {
     loading.value = false
   }
@@ -142,73 +170,55 @@ watch(
 )
 
 onMounted(() => {
+  fetchSparepartsDevice()
   loadFromServer()
-  fetchFirmwaresDevice()
-  fetchAndroid()
 })
 
 const getDeviceName = (id) => {
-  const device = firmwaresDevice.value.find((d) => d.id === id)
+  const device = sparepartsDevice.value.find((d) => d.id === id)
   return device ? device.name : 'Unknown'
 }
 
-const getAndroidName = (id) => {
-  const android = androids.value.find((a) => a.id === id)
-  return android ? android.name : 'Unknown'
-}
-
-const fetchFirmwaresDevice = async () => {
+const fetchSparepartsDevice = async () => {
   try {
-    const response = await axios.get('firmwares-device')
-    firmwaresDevice.value = response.data.firmwaresdevice
+    const response = await axios.get('spareparts-device')
+    sparepartsDevice.value = response.data.data
   } catch (error) {
     console.error('Data not found', error)
     showToast('Failed to fetch device types.', 'error')
   }
 }
 
-const fetchAndroid = async () => {
-  try {
-    const response = await axios.get('android')
-    androids.value = response.data.android
-  } catch (error) {
-    console.error('Data not found', error)
-  }
-}
-
-const updateFirmwares = async (updatedFirmware) => {
+const updateSpareparts = async (updatedSpareparts) => {
   try {
     // Ensure we're sending IDs, not names
-    const firmwareToUpdate = {
-      ...updatedFirmware,
-      firmwares_devices_id: parseInt(updatedFirmware.firmwares_devices_id),
-      androids_id: parseInt(updatedFirmware.androids_id),
-      // Include the android field
-      android: updatedFirmware.android || updatedFirmware.androids_id,
+    const sparepartToUpdate = {
+      ...updatedSpareparts,
+      spareparts_devices_id: parseInt(updatedSpareparts.spareparts_devices_id),
     }
 
     // Only send changed fields
-    const changedFields = Object.keys(updatedFirmware).reduce((acc, key) => {
-      if (updatedFirmware[key] !== undefined) {
-        acc[key] = firmwareToUpdate[key]
+    const changedFields = Object.keys(updatedSpareparts).reduce((acc, key) => {
+      if (updatedSpareparts[key] !== undefined) {
+        acc[key] = sparepartToUpdate[key]
       }
       return acc
     }, {})
 
-    const response = await axios.put(`firmwares/${id.value}`, changedFields)
+    const response = await axios.put(`spareparts/${id.value}`, changedFields)
     showToast(response.data.message, 'success')
     closeEditModal()
     refreshList()
   } catch (error) {
     console.error('Data failed to change', error)
-    showToast(error.response?.data?.message || 'Failed to update firmware', 'error')
+    showToast(error.response?.data?.message || 'Failed to update spareparts', 'error')
   }
 }
 
-const deleteFirmwares = async (firmwareId) => {
+const deleteSpareparts = async (sparepartId) => {
   try {
-    const response = await axios.delete(`firmwares/${firmwareId}`)
-    showToast(response.data.message || 'Firmware deleted successfully', 'success')
+    const response = await axios.delete(`spareparts/${sparepartId}`)
+    showToast(response.data.message || 'Spareparts deleted successfully', 'success')
     closeDeleteModal()
     refreshList()
   } catch (error) {
@@ -216,37 +226,38 @@ const deleteFirmwares = async (firmwareId) => {
     const errorMessage =
       error.response?.data?.message ||
       error.message ||
-      'An error occurred while deleting the firmware'
+      'An error occurred while deleting the spareparts'
     showToast(errorMessage, 'error')
   } finally {
     closeDeleteModal()
   }
 }
 
-function editModal(firmware) {
-  console.log('Firmware object received:', firmware)
+function editModal(sparepart) {
+  console.log('Spareparts object received:', sparepart)
 
-  if (!firmware) {
-    console.error('Firmware object is null or undefined')
-    showToast('Unable to edit firmware: Invalid data', 'error')
+  if (!sparepart) {
+    console.error('Spareparts object is null or undefined')
+    showToast('Unable to edit sparepart: Invalid data', 'error')
     return
   }
 
   // Ensure we're working with IDs, not names
-  editFirmwares.value = {
-    ...firmware,
-    firmwares_devices_id: firmware.firmwares_devices_id,
-    androids_id: firmware.androids_id,
+  editSpareparts.value = {
+    ...sparepart,
+    spareparts_devices_id: sparepart.spareparts_devices_id,
+    androids_id: sparepart.androids_id,
   }
-  id.value = firmware.id
+  id.value = sparepart.id
 
-  console.log('editFirmwares.value set to:', editFirmwares.value)
+  console.log('editSpareparts.value set to:', editSpareparts.value)
   console.log('id.value set to:', id.value)
 
   editModalRef.value.showModal()
 }
-function deleteModal(firmware) {
-  deleteModalRef.value.showModal(firmware)
+
+function deleteModal(sparepart) {
+  deleteModalRef.value.showModal(sparepart)
 }
 
 const closeEditModal = () => {

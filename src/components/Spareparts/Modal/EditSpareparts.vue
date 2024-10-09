@@ -15,16 +15,25 @@
         <form @submit.prevent="editForm">
           <div class="modal-body">
             <div class="mb-3">
-              <label for="firmwareDevice" class="form-label fw-bold">Device Type</label>
+              <label for="no_spareparts" class="form-label fw-bold">No Spareparts</label>
+              <input
+                v-model="editedSparepart.no_spareparts"
+                type="text"
+                class="form-control shadow-none"
+                id="no_spareparts"
+              />
+            </div>
+            <div class="mb-3">
+              <label for="sparepartsDevice" class="form-label fw-bold">Device Type</label>
               <v-select
-                v-model="editedFirmware.firmwares_devices_id"
-                :options="firmwaresDevice"
+                v-model="editedSparepart.spareparts_devices_id"
+                :options="sparepartsDevice"
                 :reduce="(device) => device.id"
                 label="name"
                 :searchable="true"
                 :clearable="false"
                 placeholder="Select Device Type"
-                id="firmwareDevice"
+                id="sparepartsDevice"
                 required
               >
                 <template #no-options="{ search, searching }">
@@ -36,52 +45,30 @@
               </v-select>
             </div>
             <div class="mb-3">
-              <label for="version" class="form-label fw-bold">Version</label>
+              <label for="name" class="form-label fw-bold">Name</label>
               <input
-                v-model="editedFirmware.version"
+                v-model="editedSparepart.name"
                 type="text"
                 class="form-control shadow-none"
-                id="version"
-                required
+                id="name"
               />
             </div>
             <div class="mb-3">
-              <label for="android" class="form-label fw-bold">Android</label>
-              <v-select
-                v-model="editedFirmware.androids_id"
-                :options="androids"
-                :reduce="(android) => android.id"
-                label="name"
-                :searchable="true"
-                :clearable="false"
-                placeholder="Select Android"
-                id="android"
-                required
-              >
-                <template #no-options="{ search, searching }">
-                  <template v-if="searching">
-                    No results found for <em>{{ search }}</em>
-                  </template>
-                  <em v-else>Start typing to search...</em>
-                </template>
-              </v-select>
-            </div>
-            <div class="mb-3">
-              <label for="flash" class="form-label fw-bold">Flash Link</label>
+              <label for="quantity" class="form-label fw-bold">Quantity</label>
               <input
-                v-model="editedFirmware.flash"
-                type="text"
+                v-model="editedSparepart.quantity"
+                type="number"
                 class="form-control shadow-none"
-                id="flash"
+                id="quantity"
               />
             </div>
             <div class="mb-3">
-              <label for="ota" class="form-label fw-bold">OTA Link</label>
+              <label for="price" class="form-label fw-bold">Price</label>
               <input
-                v-model="editedFirmware.ota"
+                v-model="editedSparepart.price"
                 type="text"
                 class="form-control shadow-none"
-                id="ota"
+                id="price"
               />
             </div>
           </div>
@@ -104,15 +91,11 @@ import 'vue-select/dist/vue-select.css'
 import { cloneDeep } from 'lodash-es'
 
 const props = defineProps({
-  firmware: {
+  sparepart: {
     type: Object,
     default: () => ({}),
   },
-  firmwaresDevice: {
-    type: Array,
-    default: () => [],
-  },
-  androids: {
+  sparepartsDevice: {
     type: Array,
     default: () => [],
   },
@@ -120,27 +103,27 @@ const props = defineProps({
 
 const emit = defineEmits(['update', 'close'])
 const isDataChanged = ref(false)
-const initialFirmware = ref(null)
-const editedFirmware = reactive({})
+const initialSparepart = ref(null)
+const editedSparepart = reactive({})
 const changedFields = reactive({})
 
 watch(
-  () => props.firmware,
-  (newFirmware) => {
-    if (newFirmware) {
-      initialFirmware.value = cloneDeep(newFirmware)
-      Object.assign(editedFirmware, cloneDeep(newFirmware))
+  () => props.sparepart,
+  (newSparepart) => {
+    if (newSparepart) {
+      initialSparepart.value = cloneDeep(newSparepart)
+      Object.assign(editedSparepart, cloneDeep(newSparepart))
     }
   },
   { immediate: true, deep: true },
 )
 
 watch(
-  editedFirmware,
+  editedSparepart,
   (newValue) => {
-    if (initialFirmware.value) {
+    if (initialSparepart.value) {
       Object.keys(newValue).forEach((key) => {
-        if (JSON.stringify(newValue[key]) !== JSON.stringify(initialFirmware.value[key])) {
+        if (JSON.stringify(newValue[key]) !== JSON.stringify(initialSparepart.value[key])) {
           changedFields[key] = true
         } else {
           delete changedFields[key]
@@ -160,17 +143,12 @@ const editForm = () => {
     return
   }
 
-  const updatedFirmware = { id: editedFirmware.id }
+  const updatedSparepart = { id: editedSparepart.id }
   Object.keys(changedFields).forEach((key) => {
-    updatedFirmware[key] = editedFirmware[key]
+    updatedSparepart[key] = editedSparepart[key]
   })
 
-  // Ensure android field is included
-  if (updatedFirmware.androids_id) {
-    updatedFirmware.android = updatedFirmware.androids_id
-  }
-
-  emit('update', updatedFirmware)
+  emit('update', updatedSparepart)
   hideModal()
 }
 
@@ -196,6 +174,7 @@ onMounted(() => {
   editModal = new Modal(document.getElementById('editForm'))
 })
 </script>
+
 <style scoped>
 .v-select {
   --vs-controls-color: #6c757d;
