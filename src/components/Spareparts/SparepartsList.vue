@@ -43,8 +43,8 @@
         </template>
         <template #item-action="item">
           <div class="d-flex gap-2">
-            <a href="#" class="head-text text-decoration-none" @click="editModal(item)">Qty+</a>
-            <a href="#" class="head-text text-decoration-none" @click="deleteModal(item)">Qty-</a>
+            <a href="#" class="head-text text-decoration-none" @click="addQty(item)">Qty+</a>
+            <a href="#" class="head-text text-decoration-none" @click="reduceQty(item)">Qty-</a>
             <div class="btn-group dropend">
               <a
                 type="button"
@@ -75,9 +75,13 @@
     </div>
   </div>
 
-  <AddQuantity />
-
-  <ReduceQuantity />
+  <QuantityManagement
+    ref="quantityModalRef"
+    :sparepart="selectedSparepart"
+    :action="quantityAction"
+    @update="updateQuantity"
+    @close="closeQuantityModal"
+  />
 
   <EditSpareparts
     ref="editModalRef"
@@ -97,8 +101,7 @@ import { showToast } from '@/utilities/toast'
 import AddSpareparts from '../Spareparts/Modal/AddSpareparts.vue'
 import EditSpareparts from '../Spareparts/Modal/EditSpareparts.vue'
 import DeleteSpareparts from '../Spareparts/Modal/DeleteSpareparts.vue'
-import AddQuantity from '../Spareparts/Modal/AddQuantity.vue'
-import ReduceQuantity from '../Spareparts/Modal/ReduceQuantity.vue'
+import QuantityManagement from '../Spareparts/Modal/QuantityManagement.vue'
 import Search from '../Layouts/SearchAll'
 import ExportSpareparts from '../Spareparts/Excel/ExportSpareparts.vue'
 import ImportSpareparts from '../Spareparts/Excel/ImportSpareparts.vue'
@@ -111,6 +114,9 @@ const editModalRef = ref(null)
 const deleteModalRef = ref(null)
 const editSpareparts = ref({})
 const loading = ref(true)
+const quantityModalRef = ref(null)
+const selectedSparepart = ref({})
+const quantityAction = ref('')
 
 const token = localStorage.getItem('token')
 // Constants
@@ -177,6 +183,31 @@ onMounted(() => {
 const getDeviceName = (id) => {
   const device = sparepartsDevice.value.find((d) => d.id === id)
   return device ? device.name : 'Unknown'
+}
+
+const addQty = (item) => {
+  selectedSparepart.value = item
+  quantityAction.value = 'add'
+  quantityModalRef.value.showModal()
+}
+
+const reduceQty = (item) => {
+  selectedSparepart.value = item
+  quantityAction.value = 'reduce'
+  quantityModalRef.value.showModal()
+}
+
+const updateQuantity = (newQuantity) => {
+  const index = spareparts.value.findIndex((s) => s.id === selectedSparepart.value.id)
+  if (index !== -1) {
+    spareparts.value[index].quantity = newQuantity
+  }
+}
+
+const closeQuantityModal = () => {
+  if (quantityModalRef.value) {
+    quantityModalRef.value.hideModal()
+  }
 }
 
 const fetchSparepartsDevice = async () => {

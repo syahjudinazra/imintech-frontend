@@ -14,13 +14,12 @@ export default defineConfig(({ mode }) => {
     css: {
       postcss: {
         plugins: [
-          autoprefixer({}) // add options if needed
+          autoprefixer({}), // add options if needed
         ],
-      }
+      },
     },
     resolve: {
       alias: [
-        // webpack path resolve to vitejs
         {
           find: /^~(.*)$/,
           replacement: '$1',
@@ -34,16 +33,7 @@ export default defineConfig(({ mode }) => {
           replacement: path.resolve(__dirname, '/src'),
         },
       ],
-      extensions: [
-        '.mjs',
-        '.js',
-        '.ts',
-        '.jsx',
-        '.tsx',
-        '.json',
-        '.vue',
-        '.scss',
-      ],
+      extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json', '.vue', '.scss'],
     },
     server: {
       port: 3000,
@@ -52,8 +42,26 @@ export default defineConfig(({ mode }) => {
       },
     },
     define: {
-      // vitejs does not support process.env so we have to redefine it
       'process.env': process.env,
+    },
+    optimizeDeps: {
+      include: ['vue', 'vue-router' /* add other frequently used dependencies */],
+    },
+    build: {
+      commonjsOptions: {
+        include: [/node_modules/],
+      },
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            vue: ['vue', 'vue-router', 'vuex'], // adjust based on your usage
+            vendor: ['lodash', 'axios'], // add other large third-party libraries
+          },
+        },
+      },
+    },
+    esbuild: {
+      drop: ['console', 'debugger'],
     },
   }
 })

@@ -145,7 +145,9 @@ const editForm = () => {
 
   const updatedSparepart = { id: editedSparepart.id }
   Object.keys(changedFields).forEach((key) => {
-    updatedSparepart[key] = editedSparepart[key]
+    if (editedSparepart[key] !== undefined && editedSparepart[key] !== '') {
+      updatedSparepart[key] = editedSparepart[key]
+    }
   })
 
   emit('update', updatedSparepart)
