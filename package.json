@@ -25,6 +25,7 @@
     "@coreui/vue-chartjs": "^3.0.0",
     "@faker-js/faker": "^9.0.1",
     "@popperjs/core": "^2.11.8",
+    "@vuepic/vue-datepicker": "^9.0.3",
     "axios": "^1.6.8",
     "bootstrap": "^5.3.3",
     "chart.js": "^4.4.2",
