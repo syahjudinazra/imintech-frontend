@@ -5,22 +5,6 @@
         <div class="title">
           <h1 class="h3 mb-3 text-gray-800">Add New Service</h1>
         </div>
-        <div class="excel-action gap-4">
-          <button
-            @click="exportService"
-            :class="['btn btn-success btn-sm fw-bold text-white', { disabled: isLoading }]"
-            :disabled="isLoading"
-          >
-            {{ isLoading ? 'Downloading...' : 'Export Excel' }}
-          </button>
-          <button
-            @click="importService"
-            :class="['btn btn-success btn-sm fw-bold text-white', { disabled: isLoading }]"
-            :disabled="isLoading"
-          >
-            {{ isLoading ? 'Downloading...' : 'Import Excel' }}
-          </button>
-        </div>
       </div>
       <hr class="w-100" />
       <form @submit.prevent="addServices" class="mb-4" enctype="multipart/form-data">
@@ -59,6 +43,7 @@
               type="radio"
               id="stocks"
               value="Stocks"
+              @change="updateCustomers"
             />
             <label class="form-check-label" for="stocks">Stocks</label>
           </div>
@@ -69,6 +54,7 @@
               type="radio"
               id="customers"
               value="Customers"
+              @change="updateCustomers"
             />
             <label class="form-check-label" for="customers">Customers</label>
           </div>
@@ -140,12 +126,7 @@
           <label for="status" class="form-label fw-bold">Status</label>
           <div class="d-flex gap-2">
             <div class="form-check">
-              <input
-                v-model="services.status"
-                class="form-check-input"
-                type="checkbox"
-                id="status"
-              />
+              <input v-model="isPending" class="form-check-input" type="checkbox" id="status" />
               <label class="form-check-label" for="status">Pending</label>
             </div>
           </div>
@@ -157,7 +138,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import axios from 'axios'
 import { showToast } from '@/utilities/toast'
 import VueDatePicker from '@vuepic/vue-datepicker'
@@ -173,12 +154,35 @@ const services = ref({
   usages_id: null,
   damage: '',
   note: 'Tanggal Pembelian:\nKelengkapan:',
-  status: false,
+  status: 'Pending',
 })
 
 const servicesDevice = ref([])
 const usages = ref([])
 const isLoading = ref(false)
+
+const isPending = computed({
+  get: () => services.value.status === 'Pending',
+  set: (value) => {
+    services.value.status = value ? 'Pending' : 'Done'
+  },
+})
+
+const updateCustomers = () => {
+  if (services.value.owner === 'Stocks') {
+    services.value.customers = 'iMin ID'
+  } else {
+    services.value.customers = ''
+  }
+}
+
+// Add a watch effect to handle changes to the owner property
+watch(
+  () => services.value.owner,
+  () => {
+    updateCustomers()
+  },
+)
 
 const fetchServicesDevice = async () => {
   try {
@@ -203,7 +207,12 @@ const addServices = async () => {
     isLoading.value = true
     const formData = new FormData()
     Object.entries(services.value).forEach(([key, value]) => {
-      formData.append(key, value)
+      if (key === 'date_in_services' && value) {
+        // Format date as YYYY-MM-DD
+        formData.append(key, new Date(value).toISOString().split('T')[0])
+      } else {
+        formData.append(key, value)
+      }
     })
 
     const response = await axios.post('services', formData, {
@@ -215,7 +224,11 @@ const addServices = async () => {
     clearInput()
   } catch (error) {
     console.error('Error adding service:', error)
-    showToast(error.data.message, 'error')
+    if (error.response && error.response.data && error.response.data.message) {
+      showToast(error.response.data.message, 'error')
+    } else {
+      showToast('An error occurred while adding the service', 'error')
+    }
   } finally {
     isLoading.value = false
   }
@@ -223,19 +236,15 @@ const addServices = async () => {
 
 const clearInput = () => {
   Object.keys(services.value).forEach((key) => {
-    services.value[key] = key === 'note' ? 'Tanggal Pembelian:\nKelengkapan:' : ''
+    if (key === 'note') {
+      services.value[key] = 'Tanggal Pembelian:\nKelengkapan:'
+    } else if (key === 'status') {
+      services.value[key] = 'Pending'
+    } else {
+      services.value[key] = ''
+    }
   })
-  services.value.status = false
-}
-
-const exportService = () => {
-  // Implement export functionality
-  console.log('Export service')
-}
-
-const importService = () => {
-  // Implement import functionality
-  console.log('Import service')
+  services.value.date_in_services = null
 }
 
 onMounted(() => {
@@ -243,6 +252,7 @@ onMounted(() => {
   fetchUsages()
 })
 </script>
+
 <style scoped>
 input:focus {
   border-color: #d22c36;

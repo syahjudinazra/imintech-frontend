@@ -28,13 +28,13 @@ import { defineEmits } from 'vue'
 const emit = defineEmits(['delete', 'close'])
 
 let deleteModal
-const internalFirmware = ref(null)
+const internalService = ref(null)
 
 const confirmDelete = () => {
-  if (internalFirmware.value) {
-    emit('delete', internalFirmware.value.id)
+  if (internalService.value) {
+    emit('delete', internalService.value.id)
   } else {
-    console.error('No firmware selected for deletion')
+    console.error('No service selected for deletion')
   }
 }
 
@@ -42,14 +42,14 @@ const closeModal = () => {
   emit('close')
 }
 
-const showModal = (firmware) => {
-  internalFirmware.value = firmware
+const showModal = (service) => {
+  internalService.value = service
   deleteModal.show()
 }
 
 const hideModal = () => {
   deleteModal.hide()
-  internalFirmware.value = null
+  internalService.value = null
 }
 
 defineExpose({
