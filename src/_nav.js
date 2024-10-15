@@ -82,18 +82,18 @@ export default [
   {
     component: 'CNavGroup',
     name: 'Loan',
-    to: '/pinjam',
+    to: '/loan',
     icon: 'cil-pencil',
     items: [
       {
         component: 'CNavItem',
         name: 'On Loan',
-        to: '/pinjam/dipinjamkan',
+        to: '/loan/on-loan',
       },
       {
         component: 'CNavItem',
         name: 'Returned',
-        to: '/pinjam/dikembalikan',
+        to: '/loan/returned',
       },
     ],
   },

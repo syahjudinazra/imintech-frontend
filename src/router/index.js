@@ -53,26 +53,26 @@ const routes = [
         meta: { requiresAuth: true },
       },
       {
-        path: '/pinjam',
-        name: 'Pinjam',
+        path: '/loan',
+        name: 'Loan',
         component: {
           render() {
             return h(resolveComponent('router-view'))
           },
         },
-        redirect: '/pinjam/dipinjamkan',
+        redirect: '/loan/on-loan',
         meta: { requiresAuth: true },
         children: [
           {
-            path: '/pinjam/dipinjamkan',
-            name: 'Dipinjamkan',
-            component: () => import('@/views/pinjam/DipinjamkanPinjam.vue'),
+            path: '/loan/on-loan',
+            name: 'On Loan',
+            component: () => import('@/views/Loan/LoanTable.vue'),
             meta: { requiresAuth: true },
           },
           {
-            path: '/pinjam/dikembalikan',
-            name: 'Dikembalikan',
-            component: () => import('@/views/pinjam/DikembalikanPinjam.vue'),
+            path: '/loan/returned',
+            name: 'Returned',
+            component: () => import('@/views/Loan/ReturnedTable.vue'),
             meta: { requiresAuth: true },
           },
         ],

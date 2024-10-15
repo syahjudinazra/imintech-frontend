@@ -1,10 +1,9 @@
+<script setup>
+import MonitorList from '@/components/Stocks/MonitorList'
+</script>
+
 <template>
   <div>
-    <h1>Monitor Stocks</h1>
-    <AddStocks />
+    <MonitorList />
   </div>
 </template>
-
-<script setup>
-import AddStocks from '@/components/Stocks/AddStocks.vue'
-</script>
