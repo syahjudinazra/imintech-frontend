@@ -57,8 +57,18 @@
           </template>
           <template #item-action="item">
             <div class="d-flex gap-2">
-              <a href="#" class="head-text text-decoration-none" @click="editModal(item)">Edit</a>
-              <a href="#" class="head-text text-decoration-none" @click="deleteModal(item)"
+              <a
+                v-if="userCan('edit Firmwares')"
+                href="#"
+                class="head-text text-decoration-none"
+                @click="editModal(item)"
+                >Edit</a
+              >
+              <a
+                v-if="userCan('delete Firmwares')"
+                href="#"
+                class="head-text text-decoration-none"
+                @click="deleteModal(item)"
                 >Delete</a
               >
             </div>
@@ -69,6 +79,7 @@
   </div>
 
   <EditFirmwares
+    v-if="userCan('edit Firmwares')"
     ref="editModalRef"
     :firmware="editFirmwares"
     :firmwares-device="firmwaresDevice"
@@ -77,7 +88,12 @@
     @close="closeEditModal"
   />
 
-  <DeleteFirmwares ref="deleteModalRef" @delete="deleteFirmwares" @close="closeDeleteModal" />
+  <DeleteFirmwares
+    v-if="userCan('delete Firmwares')"
+    ref="deleteModalRef"
+    @delete="deleteFirmwares"
+    @close="closeDeleteModal"
+  />
 </template>
 
 <script setup>
@@ -98,9 +114,9 @@ const loading = ref(true)
 const firmwares = ref([])
 const firmwaresDevice = ref([])
 const androids = ref([])
+const userPermissions = ref([])
 
 const token = localStorage.getItem('token')
-// Constants
 const baseColor = '#e55353'
 const headers = ref([
   { text: 'Devices', value: 'firmwares_devices_id' },
@@ -119,6 +135,8 @@ const serverOptions = ref({
   sortType: 'desc',
   searchTerm: '',
 })
+
+const userCan = (permission) => userPermissions.value.includes(permission)
 
 const refreshList = () => {
   refreshData()
@@ -148,19 +166,25 @@ const updateSearch = (term) => {
   loadFromServer()
 }
 
-watch(
-  serverOptions,
-  () => {
-    loadFromServer()
-  },
-  { deep: true },
-)
+watch(serverOptions, loadFromServer, { deep: true })
 
 onMounted(() => {
   loadFromServer()
   fetchFirmwaresDevice()
   fetchAndroid()
+  fetchUserPermissions()
 })
+
+async function fetchUserPermissions() {
+  try {
+    const response = await axios.get('user')
+    const permissions = response.data.permissions || []
+    userPermissions.value = permissions.map((permission) => permission.name)
+  } catch (error) {
+    console.error('Error fetching user permissions:', error)
+    showToast('Failed to fetch user permissions.', 'error')
+  }
+}
 
 const getDeviceName = (id) => {
   const device = firmwaresDevice.value.find((d) => d.id === id)
@@ -192,21 +216,24 @@ const fetchAndroid = async () => {
     androids.value = response.data.android
   } catch (error) {
     console.error('Data not found', error)
+    showToast('Failed to fetch Android versions.', 'error')
   }
 }
 
 const updateFirmwares = async (updatedFirmware) => {
+  if (!userCan('edit Firmwares')) {
+    showToast('You do not have permission to edit firmwares.', 'error')
+    return
+  }
+
   try {
-    // Ensure we're sending IDs, not names
     const firmwareToUpdate = {
       ...updatedFirmware,
       firmwares_devices_id: parseInt(updatedFirmware.firmwares_devices_id),
       androids_id: parseInt(updatedFirmware.androids_id),
-      // Include the android field
       android: updatedFirmware.android || updatedFirmware.androids_id,
     }
 
-    // Only send changed fields
     const changedFields = Object.keys(updatedFirmware).reduce((acc, key) => {
       if (updatedFirmware[key] !== undefined) {
         acc[key] = firmwareToUpdate[key]
@@ -225,6 +252,11 @@ const updateFirmwares = async (updatedFirmware) => {
 }
 
 const deleteFirmwares = async (firmwareId) => {
+  if (!userCan('delete Firmwares')) {
+    showToast('You do not have permission to delete firmwares.', 'error')
+    return
+  }
+
   try {
     const response = await axios.delete(`firmwares/${firmwareId}`)
     showToast(response.data.message || 'Firmware deleted successfully', 'success')
@@ -243,7 +275,10 @@ const deleteFirmwares = async (firmwareId) => {
 }
 
 function editModal(firmware) {
-  console.log('Firmware object received:', firmware)
+  if (!userCan('edit Firmwares')) {
+    showToast('You do not have permission to edit firmwares.', 'error')
+    return
+  }
 
   if (!firmware) {
     console.error('Firmware object is null or undefined')
@@ -251,7 +286,6 @@ function editModal(firmware) {
     return
   }
 
-  // Ensure we're working with IDs, not names
   editFirmwares.value = {
     ...firmware,
     firmwares_devices_id: firmware.firmwares_devices_id,
@@ -259,12 +293,14 @@ function editModal(firmware) {
   }
   id.value = firmware.id
 
-  console.log('editFirmwares.value set to:', editFirmwares.value)
-  console.log('id.value set to:', id.value)
-
   editModalRef.value.showModal()
 }
+
 function deleteModal(firmware) {
+  if (!userCan('delete Firmwares')) {
+    showToast('You do not have permission to delete firmwares.', 'error')
+    return
+  }
   deleteModalRef.value.showModal(firmware)
 }
 
@@ -274,8 +310,10 @@ const closeEditModal = () => {
   }
 }
 
-function closeDeleteModal() {
-  deleteModalRef.value.hideModal()
+const closeDeleteModal = () => {
+  if (deleteModalRef.value) {
+    deleteModalRef.value.hideModal()
+  }
 }
 </script>
 

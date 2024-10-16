@@ -2,11 +2,11 @@
   <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center">
       <div class="add-button">
-        <AddFirmwares @data-added="refreshList()" />
+        <AddFirmwares v-if="userCan('create Firmwares')" @data-added="refreshList()" />
       </div>
       <div class="others d-flex align-items-center gap-2">
-        <ExportFirmwares />
-        <ImportFirmwares />
+        <ExportFirmwares v-if="userCan('export Firmwares')" />
+        <ImportFirmwares v-if="userCan('import Firmwares')" />
         <Search :onSearch="updateSearch" />
       </div>
     </div>
@@ -43,8 +43,20 @@
         </template>
         <template #item-action="item">
           <div class="d-flex gap-2">
-            <a href="#" class="head-text text-decoration-none" @click="editModal(item)">Edit</a>
-            <a href="#" class="head-text text-decoration-none" @click="deleteModal(item)">Delete</a>
+            <a
+              v-if="userCan('edit Firmwares')"
+              href="#"
+              class="head-text text-decoration-none"
+              @click="editModal(item)"
+              >Edit</a
+            >
+            <a
+              v-if="userCan('delete Firmwares')"
+              href="#"
+              class="head-text text-decoration-none"
+              @click="deleteModal(item)"
+              >Delete</a
+            >
           </div>
         </template>
       </EasyDataTable>
@@ -52,6 +64,7 @@
   </div>
 
   <EditFirmwares
+    v-if="userCan('edit Firmwares')"
     ref="editModalRef"
     :firmware="editFirmwares"
     :firmwares-device="firmwaresDevice"
@@ -60,7 +73,12 @@
     @close="closeEditModal"
   />
 
-  <DeleteFirmwares ref="deleteModalRef" @delete="deleteFirmwares" @close="closeDeleteModal" />
+  <DeleteFirmwares
+    v-if="userCan('delete Firmwares')"
+    ref="deleteModalRef"
+    @delete="deleteFirmwares"
+    @close="closeDeleteModal"
+  />
 </template>
 
 <script setup>
@@ -83,8 +101,8 @@ const editModalRef = ref(null)
 const deleteModalRef = ref(null)
 const editFirmwares = ref({})
 const loading = ref(true)
+const userPermissions = ref([])
 
-const token = localStorage.getItem('token')
 // Constants
 const baseColor = '#e55353'
 const headers = ref([
@@ -115,7 +133,7 @@ const loadFromServer = async () => {
   try {
     const { serverCurrentPageItems, serverTotalItemsLength } = await mockServerItems(
       serverOptions.value,
-      token,
+      localStorage.getItem('token'),
     )
     firmwares.value = serverCurrentPageItems
     serverItemsLength.value = serverTotalItemsLength
@@ -133,6 +151,10 @@ const updateSearch = (term) => {
   loadFromServer()
 }
 
+const userCan = (permission) => {
+  return userPermissions.value.includes(permission)
+}
+
 watch(
   serverOptions,
   () => {
@@ -145,7 +167,19 @@ onMounted(() => {
   loadFromServer()
   fetchFirmwaresDevice()
   fetchAndroid()
+  fetchUserPermissions()
 })
+
+async function fetchUserPermissions() {
+  try {
+    const response = await axios.get('user')
+    const permissions = response.data.permissions || []
+    userPermissions.value = permissions.map((permission) => permission.name)
+  } catch (error) {
+    console.error('Error fetching user permissions:', error)
+    showToast('Failed to fetch user permissions.', 'error')
+  }
+}
 
 const getDeviceName = (id) => {
   const device = firmwaresDevice.value.find((d) => d.id === id)
@@ -178,16 +212,13 @@ const fetchAndroid = async () => {
 
 const updateFirmwares = async (updatedFirmware) => {
   try {
-    // Ensure we're sending IDs, not names
     const firmwareToUpdate = {
       ...updatedFirmware,
       firmwares_devices_id: parseInt(updatedFirmware.firmwares_devices_id),
       androids_id: parseInt(updatedFirmware.androids_id),
-      // Include the android field
       android: updatedFirmware.android || updatedFirmware.androids_id,
     }
 
-    // Only send changed fields
     const changedFields = Object.keys(updatedFirmware).reduce((acc, key) => {
       if (updatedFirmware[key] !== undefined) {
         acc[key] = firmwareToUpdate[key]
