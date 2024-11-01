@@ -109,7 +109,7 @@ import axios from 'axios'
 import { showToast } from '@/utilities/toast'
 import AddTechnician from '../Technician/Modal/AddTechnician.vue'
 import Search from '../../Layouts/SearchAll'
-import { mockServerItems, refreshData } from '../../mock/mockTechnician'
+import { mockServerItems, refreshData } from '../../../mock/mockTechnician'
 
 let editForm
 let deleteForm

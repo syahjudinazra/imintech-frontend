@@ -18,6 +18,7 @@
             placeholder="Input Serial Number"
             required
           />
+          <small class="text-secondary">The serial number must be in the stocks data</small>
         </div>
         <div class="form-group mb-3">
           <label class="fw-bold" for="ticket_services">Ticket Service</label>
@@ -126,8 +127,26 @@
           <label for="status" class="form-label fw-bold">Status</label>
           <div class="d-flex gap-2">
             <div class="form-check">
-              <input v-model="isPending" class="form-check-input" type="checkbox" id="status" />
-              <label class="form-check-label" for="status">Pending</label>
+              <input
+                v-model="services.status"
+                class="form-check-input"
+                type="radio"
+                name="status"
+                id="statusPending"
+                value="Pending Customers"
+              />
+              <label class="form-check-label" for="status">Pending Customers</label>
+            </div>
+            <div class="form-check">
+              <input
+                v-model="services.status"
+                class="form-check-input"
+                type="radio"
+                name="status"
+                id="statusStocks"
+                value="Pending Stocks"
+              />
+              <label class="form-check-label" for="status">Pending Stocks</label>
             </div>
           </div>
         </div>
@@ -138,7 +157,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import axios from 'axios'
 import { showToast } from '@/utilities/toast'
 import VueDatePicker from '@vuepic/vue-datepicker'
@@ -154,19 +173,12 @@ const services = ref({
   usages_id: null,
   damage: '',
   note: 'Tanggal Pembelian:\nKelengkapan:',
-  status: 'Pending',
+  status: '',
 })
 
 const servicesDevice = ref([])
 const usages = ref([])
 const isLoading = ref(false)
-
-const isPending = computed({
-  get: () => services.value.status === 'Pending',
-  set: (value) => {
-    services.value.status = value ? 'Pending' : 'Done'
-  },
-})
 
 const updateCustomers = () => {
   if (services.value.owner === 'Stocks') {

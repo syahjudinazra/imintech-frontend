@@ -55,61 +55,20 @@
               Download
             </button>
           </template>
-          <template #item-action="item">
-            <div class="d-flex gap-2">
-              <a
-                v-if="userCan('edit Firmwares')"
-                href="#"
-                class="head-text text-decoration-none"
-                @click="editModal(item)"
-                >Edit</a
-              >
-              <a
-                v-if="userCan('delete Firmwares')"
-                href="#"
-                class="head-text text-decoration-none"
-                @click="deleteModal(item)"
-                >Delete</a
-              >
-            </div>
-          </template>
         </EasyDataTable>
       </div>
     </div>
   </div>
-
-  <EditFirmwares
-    v-if="userCan('edit Firmwares')"
-    ref="editModalRef"
-    :firmware="editFirmwares"
-    :firmwares-device="firmwaresDevice"
-    :androids="androids"
-    @update="updateFirmwares"
-    @close="closeEditModal"
-  />
-
-  <DeleteFirmwares
-    v-if="userCan('delete Firmwares')"
-    ref="deleteModalRef"
-    @delete="deleteFirmwares"
-    @close="closeDeleteModal"
-  />
 </template>
 
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import axios from 'axios'
 import { showToast } from '@/utilities/toast'
-import EditFirmwares from '../../components/Firmwares/Modal/EditFirmwares.vue'
-import DeleteFirmwares from '../../components/Firmwares/Modal/DeleteFirmwares.vue'
 import SidebarItem from '../../components/Firmwares/SidebarItem.vue'
 import Search from '../../components/Layouts/SearchAll'
-import { mockServerItems, refreshData } from '../../mock/listFirmwares/d1'
+import { mockServerItems } from '../../mock/listFirmwares/d1'
 
-const editModalRef = ref(null)
-const deleteModalRef = ref(null)
-const editFirmwares = ref({})
-const id = ref(null)
 const loading = ref(true)
 const firmwares = ref([])
 const firmwaresDevice = ref([])
@@ -124,7 +83,6 @@ const headers = ref([
   { text: 'Android', value: 'androids_id' },
   { text: 'Flash Link', value: 'flash' },
   { text: 'OTA Link', value: 'ota' },
-  { text: 'Action', value: 'action' },
 ])
 
 const serverItemsLength = ref(10)
@@ -135,13 +93,6 @@ const serverOptions = ref({
   sortType: 'desc',
   searchTerm: '',
 })
-
-const userCan = (permission) => userPermissions.value.includes(permission)
-
-const refreshList = () => {
-  refreshData()
-  loadFromServer()
-}
 
 const loadFromServer = async () => {
   loading.value = true
@@ -217,102 +168,6 @@ const fetchAndroid = async () => {
   } catch (error) {
     console.error('Data not found', error)
     showToast('Failed to fetch Android versions.', 'error')
-  }
-}
-
-const updateFirmwares = async (updatedFirmware) => {
-  if (!userCan('edit Firmwares')) {
-    showToast('You do not have permission to edit firmwares.', 'error')
-    return
-  }
-
-  try {
-    const firmwareToUpdate = {
-      ...updatedFirmware,
-      firmwares_devices_id: parseInt(updatedFirmware.firmwares_devices_id),
-      androids_id: parseInt(updatedFirmware.androids_id),
-      android: updatedFirmware.android || updatedFirmware.androids_id,
-    }
-
-    const changedFields = Object.keys(updatedFirmware).reduce((acc, key) => {
-      if (updatedFirmware[key] !== undefined) {
-        acc[key] = firmwareToUpdate[key]
-      }
-      return acc
-    }, {})
-
-    const response = await axios.put(`firmwares/${id.value}`, changedFields)
-    showToast(response.data.message, 'success')
-    closeEditModal()
-    refreshList()
-  } catch (error) {
-    console.error('Data failed to change', error)
-    showToast(error.response?.data?.message || 'Failed to update firmware', 'error')
-  }
-}
-
-const deleteFirmwares = async (firmwareId) => {
-  if (!userCan('delete Firmwares')) {
-    showToast('You do not have permission to delete firmwares.', 'error')
-    return
-  }
-
-  try {
-    const response = await axios.delete(`firmwares/${firmwareId}`)
-    showToast(response.data.message || 'Firmware deleted successfully', 'success')
-    closeDeleteModal()
-    refreshList()
-  } catch (error) {
-    console.error('Data failed to delete', error)
-    const errorMessage =
-      error.response?.data?.message ||
-      error.message ||
-      'An error occurred while deleting the firmware'
-    showToast(errorMessage, 'error')
-  } finally {
-    closeDeleteModal()
-  }
-}
-
-function editModal(firmware) {
-  if (!userCan('edit Firmwares')) {
-    showToast('You do not have permission to edit firmwares.', 'error')
-    return
-  }
-
-  if (!firmware) {
-    console.error('Firmware object is null or undefined')
-    showToast('Unable to edit firmware: Invalid data', 'error')
-    return
-  }
-
-  editFirmwares.value = {
-    ...firmware,
-    firmwares_devices_id: firmware.firmwares_devices_id,
-    androids_id: firmware.androids_id,
-  }
-  id.value = firmware.id
-
-  editModalRef.value.showModal()
-}
-
-function deleteModal(firmware) {
-  if (!userCan('delete Firmwares')) {
-    showToast('You do not have permission to delete firmwares.', 'error')
-    return
-  }
-  deleteModalRef.value.showModal(firmware)
-}
-
-const closeEditModal = () => {
-  if (editModalRef.value) {
-    editModalRef.value.hideModal()
-  }
-}
-
-const closeDeleteModal = () => {
-  if (deleteModalRef.value) {
-    deleteModalRef.value.hideModal()
   }
 }
 </script>

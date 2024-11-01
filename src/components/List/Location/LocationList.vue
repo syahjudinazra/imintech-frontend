@@ -107,7 +107,7 @@ import { ref, onMounted, watch } from 'vue'
 import { Modal } from 'bootstrap'
 import axios from 'axios'
 import { showToast } from '@/utilities/toast'
-import AddLocation from '../List/Location/Modal/AddLocation.vue'
+import AddLocation from '../../List/Location/Modal/AddLocation.vue'
 import Search from '../../Layouts/SearchAll'
 import { mockServerItems, refreshData } from '../../../mock/mockLocation'
 

@@ -33,13 +33,42 @@
             <td>{{ item.date_in_services }}</td>
             <td>{{ item.serial_number }}</td>
             <td>{{ item.customers }}</td>
-            <td>{{ item.services_devices_id }}</td>
+            <td>{{ getDeviceName(item.services_devices_id) }}</td>
           </tr>
         </template>
         <template #item-action="item">
           <div class="d-flex gap-2">
-            <a href="#" class="head-text text-decoration-none" @click="editModal(item)">Edit</a>
-            <a href="#" class="head-text text-decoration-none" @click="deleteModal(item)">Delete</a>
+            <a href="#" class="head-text text-decoration-none" @click="viewModal(item)">View</a>
+            <div class="btn-group dropend">
+              <a
+                type="button"
+                class="text-decoration-none dropdown-toggle"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
+                More
+              </a>
+              <ul class="dropdown-menu">
+                <a
+                  href="#"
+                  class="dropdown-item head-text text-decoration-none"
+                  @click="editModal(item)"
+                  >Edit</a
+                >
+                <a
+                  href="#"
+                  class="dropdown-item head-text text-decoration-none"
+                  @click="moveModal(item)"
+                  >Move</a
+                >
+                <a
+                  href="#"
+                  class="dropdown-item head-text text-decoration-none"
+                  @click="deleteModal(item)"
+                  >Delete</a
+                >
+              </ul>
+            </div>
           </div>
         </template>
       </EasyDataTable>
@@ -53,6 +82,13 @@
     @close="closeEditModal"
   />
 
+  <MovePendingCustomers
+    ref="moveModalRef"
+    :service="moveService"
+    @update="updateServices"
+    @close="closeMoveModal"
+  />
+
   <DeletePendingCustomers ref="deleteModalRef" @delete="deleteServices" @close="closeDeleteModal" />
 </template>
 
@@ -60,13 +96,17 @@
 import { ref, onMounted, watch } from 'vue'
 import axios from 'axios'
 import { showToast } from '@/utilities/toast'
+import MovePendingCustomers from '../Services/Modal/Customers/MovePendingCustomers.vue'
 import EditPendingCustomers from '../Services/Modal/Customers/EditPendingCustomers.vue'
 import DeletePendingCustomers from '../Services/Modal/Customers/DeletePendingCustomers.vue'
 import Search from '../Layouts/SearchAll.vue'
 import { mockServerItems, refreshData } from '../../mock/mockPendingCustomers'
 
+const servicesDevice = ref([])
+const moveModalRef = ref(null)
 const editModalRef = ref(null)
 const deleteModalRef = ref(null)
+const moveService = ref({})
 const editService = ref({})
 const loading = ref(true)
 const services = ref([])
@@ -130,7 +170,23 @@ watch(
 
 onMounted(() => {
   loadFromServer()
+  fetchServicesDevice()
 })
+
+const getDeviceName = (id) => {
+  const device = servicesDevice.value.find((d) => d.id === id)
+  return device ? device.name : 'Unknown'
+}
+
+const fetchServicesDevice = async () => {
+  try {
+    const response = await axios.get('services-device')
+    servicesDevice.value = response.data.data
+  } catch (error) {
+    console.error('Data not found', error)
+    showToast('Failed to fetch device types.', 'error')
+  }
+}
 
 const updateServices = async (updatedServices) => {
   try {
@@ -157,6 +213,12 @@ const deleteServices = async () => {
   }
 }
 
+function moveModal(service) {
+  moveService.value = { ...service }
+  id.value = service.id
+  moveModalRef.value.showModal()
+}
+
 function editModal(service) {
   editService.value = { ...service }
   id.value = service.id
@@ -166,6 +228,10 @@ function editModal(service) {
 function deleteModal(service) {
   id.value = service.id
   deleteModalRef.value.showModal()
+}
+
+function closeMoveModal() {
+  moveModalRef.value.hideModal()
 }
 
 function closeEditModal() {

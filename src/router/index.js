@@ -19,38 +19,63 @@ const routes = [
       {
         path: '/stocks',
         name: 'Stocks',
+        component: {
+          render() {
+            return h(resolveComponent('router-view'))
+          },
+        },
         redirect: '/stocks/monitor',
         meta: { requiresAuth: true },
-      },
-      {
-        path: '/stocks/monitor',
-        name: 'Monitor',
-        component: () => import('@/views/stocks/MonitorStocks.vue'),
-        meta: { requiresAuth: true },
-      },
-      {
-        path: '/stocks/gudang',
-        name: 'Gudang',
-        component: () => import('@/views/stocks/GudangStocks.vue'),
-        meta: { requiresAuth: true },
-      },
-      {
-        path: '/stocks/service',
-        name: 'Diservice',
-        component: () => import('@/views/stocks/DiserviceStocks.vue'),
-        meta: { requiresAuth: true },
-      },
-      {
-        path: '/stocks/pinjam',
-        name: 'Dipinjam',
-        component: () => import('@/views/stocks/DipinjamStocks.vue'),
-        meta: { requiresAuth: true },
-      },
-      {
-        path: '/stocks/terjual',
-        name: 'Terjual',
-        component: () => import('@/views/stocks/TerjualStocks.vue'),
-        meta: { requiresAuth: true },
+        children: [
+          {
+            path: '/stocks/monitor',
+            name: 'Monitor',
+            component: () => import('@/views/stocks/MonitorStocks.vue'),
+            meta: { requiresAuth: true },
+          },
+          {
+            path: '/stocks/allstocks',
+            name: 'All Stocks',
+            component: () => import('@/views/stocks/AllStocks.vue'),
+            meta: { requiresAuth: true },
+          },
+          {
+            path: '/stocks/warehouse',
+            name: 'Warehouse',
+            component: () => import('@/views/stocks/WarehouseStocks.vue'),
+            meta: { requiresAuth: true },
+          },
+          {
+            path: '/stocks/services',
+            name: 'Services',
+            component: () => import('@/views/stocks/ServicesStocks.vue'),
+            meta: { requiresAuth: true },
+          },
+          {
+            path: '/stocks/loan',
+            name: 'Loan',
+            component: () => import('@/views/stocks/LoanStocks.vue'),
+            meta: { requiresAuth: true },
+          },
+          {
+            path: '/stocks/sold',
+            name: 'Sold',
+            component: () => import('@/views/stocks/SoldStocks.vue'),
+            meta: { requiresAuth: true },
+          },
+          {
+            path: '/stocks/damaged',
+            name: 'Damaged',
+            component: () => import('@/views/stocks/DamagedStocks.vue'),
+            meta: { requiresAuth: true },
+          },
+          {
+            path: '/stocks/entrust',
+            name: 'Entrust',
+            component: () => import('@/views/stocks/EntrustStocks.vue'),
+            meta: { requiresAuth: true },
+          },
+        ],
       },
       {
         path: '/loan',

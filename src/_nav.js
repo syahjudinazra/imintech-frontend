@@ -26,23 +26,38 @@ export default [
       },
       {
         component: 'CNavItem',
-        name: 'Gudang',
-        to: '/stocks/gudang',
+        name: 'All Stocks',
+        to: '/stocks/allstocks',
       },
       {
         component: 'CNavItem',
-        name: 'Diservice',
-        to: '/stocks/service',
+        name: 'Warehouse',
+        to: '/stocks/warehouse',
       },
       {
         component: 'CNavItem',
-        name: 'Dipinjam',
-        to: '/stocks/pinjam',
+        name: 'Services',
+        to: '/stocks/services',
       },
       {
         component: 'CNavItem',
-        name: 'Terjual',
-        to: '/stocks/terjual',
+        name: 'Loan',
+        to: '/stocks/loan',
+      },
+      {
+        component: 'CNavItem',
+        name: 'Sold',
+        to: '/stocks/sold',
+      },
+      {
+        component: 'CNavItem',
+        name: 'Damaged',
+        to: '/stocks/damaged',
+      },
+      {
+        component: 'CNavItem',
+        name: 'Entrust',
+        to: '/stocks/entrust',
       },
     ],
   },
@@ -104,7 +119,7 @@ export default [
   {
     component: 'CNavGroup',
     name: 'Services',
-    to: '/service',
+    to: '/services',
     icon: 'cil-cog',
     items: [
       {

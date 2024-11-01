@@ -1,14 +1,7 @@
 <template>
-  <div class="container-fluid" v-if="userRole === 'superadmin'">
-    <div class="d-flex justify-content-between align-items-center">
-      <div class="add-button">
-        <AddFirmwares v-if="userCan('create Firmwares')" @data-added="refreshList()" />
-      </div>
-      <div class="others d-flex align-items-center gap-2">
-        <ExportFirmwares v-if="userCan('export Firmwares')" />
-        <ImportFirmwares v-if="userCan('import Firmwares')" />
-        <Search :onSearch="updateSearch" />
-      </div>
+  <div class="container-fluid">
+    <div class="d-flex justify-content-end">
+      <Search :onSearch="updateSearch" />
     </div>
     <div class="mt-2">
       <EasyDataTable
@@ -16,7 +9,7 @@
         :server-items-length="serverItemsLength"
         @update:options="serverOptions = $event"
         :headers="headers"
-        :items="firmwares"
+        :items="stocks"
         :loading="loading"
         :theme-color="baseColor"
         :rows-per-page="10"
@@ -34,44 +27,63 @@
         </template>
         <template #items="{ item }">
           <tr>
-            <td>{{ getDeviceName(item.firmwares_devices_id) }}</td>
-            <td>{{ item.version }}</td>
-            <td>{{ getAndroidName(item.androids_id) }}</td>
-            <td>{{ item.flash }}</td>
-            <td>{{ item.ota }}</td>
+            <td>{{ item.serial_number }}</td>
+            <td>{{ getDeviceName(item.stocks_devices_id) }}</td>
+            <td>{{ item.no_invoice }}</td>
+            <td>{{ item.date_in }}</td>
+            <td>{{ item.date_out }}</td>
+            <td>{{ getCustomerName(item.customers_id) }}</td>
+            <td>{{ item.status }}</td>
           </tr>
         </template>
         <template #item-action="item">
           <div class="d-flex gap-2">
             <a
-              v-if="userCan('edit Firmwares')"
+              v-if="userCan('view Stocks')"
               href="#"
               class="head-text text-decoration-none"
-              @click="editModal(item)"
-              >Edit</a
+              @click="viewModal(item)"
+              >View</a
             >
-            <a
-              v-if="userCan('delete Firmwares')"
-              href="#"
-              class="head-text text-decoration-none"
-              @click="deleteModal(item)"
-              >Delete</a
-            >
+            <div class="btn-group dropend">
+              <a
+                type="button"
+                class="text-decoration-none dropdown-toggle"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
+                More
+              </a>
+              <ul class="dropdown-menu">
+                <a
+                  v-if="userCan('edit Stocks')"
+                  href="#"
+                  class="dropdown-item head-text text-decoration-none"
+                  @click="editModal(item)"
+                  >Edit</a
+                >
+                <a
+                  v-if="userCan('delete Stocks')"
+                  href="#"
+                  class="dropdown-item head-text text-decoration-none"
+                  @click="deleteModal(item)"
+                  >Delete</a
+                >
+              </ul>
+            </div>
           </div>
         </template>
       </EasyDataTable>
     </div>
   </div>
-  <p v-else-if="userRole === ''">Loading...</p>
-  <StatusPage v-else />
 
-  <EditFirmwares
-    v-if="userCan('edit Firmwares')"
+  <EditStocks
+    v-if="userCan('edit Stocks')"
     ref="editModalRef"
-    :firmware="editFirmwares"
-    :firmwares-device="firmwaresDevice"
-    :androids="androids"
-    @update="updateFirmwares"
+    :stock="editStocks"
+    :stocks-device="stocksDevice"
+    :customers="customers"
+    @update="updateStocks"
     @close="closeEditModal"
   />
 
@@ -87,22 +99,19 @@
 import { ref, onMounted, watch } from 'vue'
 import axios from 'axios'
 import { showToast } from '@/utilities/toast'
-import AddFirmwares from '../../components/Firmwares/Modal/AddFirmwares.vue'
-import EditFirmwares from '../../components/Firmwares/Modal/EditFirmwares.vue'
+import EditStocks from '../../components/Stocks/Modal/EditStocks.vue'
 import DeleteFirmwares from '../../components/Firmwares/Modal/DeleteFirmwares.vue'
 import Search from '../../components/Layouts/SearchAll'
-import { mockServerItems, refreshData } from '../../mock/mockFirmwares'
-import ExportFirmwares from '../../components/Firmwares/Excel/ExportFirmwares.vue'
-import ImportFirmwares from '../../components/Firmwares/Excel/ImportFirmwares.vue'
-import StatusPage from '../../components/StatusPage/404Page.vue'
+import { mockServerItems, refreshData } from '../../mock/mockStocks'
 
 const id = ref(null)
-const firmwares = ref([])
-const firmwaresDevice = ref([])
-const androids = ref([])
+const stocks = ref([])
+const stocksDevice = ref([])
+const skuDevice = ref([])
+const customers = ref([])
 const editModalRef = ref(null)
 const deleteModalRef = ref(null)
-const editFirmwares = ref({})
+const editStocks = ref({})
 const loading = ref(true)
 const userPermissions = ref([])
 const userRole = ref('')
@@ -110,11 +119,13 @@ const userRole = ref('')
 // Constants
 const baseColor = '#e55353'
 const headers = ref([
-  { text: 'Devices', value: 'firmwares_devices_id' },
-  { text: 'Version', value: 'version' },
-  { text: 'Android', value: 'androids_id' },
-  { text: 'Flash Link', value: 'flash' },
-  { text: 'OTA Link', value: 'ota' },
+  { text: 'Serial Number', value: 'serial_number' },
+  { text: 'Devices', value: 'stocks_devices_id' },
+  { text: 'No Invoice', value: 'no_invoice' },
+  { text: 'Date of Entry', value: 'date_in' },
+  { text: 'Date Exit', value: 'date_out' },
+  { text: 'Customers', value: 'customers_id' },
+  { text: 'Status', value: 'status' },
   { text: 'Action', value: 'action' },
 ])
 
@@ -139,7 +150,7 @@ const loadFromServer = async () => {
       serverOptions.value,
       localStorage.getItem('token'),
     )
-    firmwares.value = serverCurrentPageItems
+    stocks.value = serverCurrentPageItems
     serverItemsLength.value = serverTotalItemsLength
   } catch (error) {
     console.error('Error loading data', error)
@@ -169,8 +180,9 @@ watch(
 
 onMounted(() => {
   loadFromServer()
-  fetchFirmwaresDevice()
-  fetchAndroid()
+  fetchStocksDevice()
+  fetchSkuDevice()
+  fetchCustomers()
   fetchUserPermissions()
   fetchUserRole()
 })
@@ -197,51 +209,61 @@ async function fetchUserRole() {
 }
 
 const getDeviceName = (id) => {
-  const device = firmwaresDevice.value.find((d) => d.id === id)
+  const device = stocksDevice.value.find((d) => d.id === id)
   return device ? device.name : 'Unknown'
 }
 
-const getAndroidName = (id) => {
-  const android = androids.value.find((a) => a.id === id)
-  return android ? android.name : 'Unknown'
+const getCustomerName = (id) => {
+  const customer = customers.value.find((a) => a.id === id)
+  return customer ? customer.name : 'Unknown'
 }
 
-const fetchFirmwaresDevice = async () => {
+const fetchStocksDevice = async () => {
   try {
-    const response = await axios.get('firmwares-device')
-    firmwaresDevice.value = response.data.firmwaresdevice
+    const response = await axios.get('stocks-device')
+    stocksDevice.value = response.data.data
   } catch (error) {
     console.error('Data not found', error)
     showToast('Failed to fetch device types.', 'error')
   }
 }
 
-const fetchAndroid = async () => {
+const fetchSkuDevice = async () => {
   try {
-    const response = await axios.get('android')
-    androids.value = response.data.android
+    const response = await axios.get('stocks-sku-device')
+    skuDevice.value = response.data.data
+  } catch (error) {
+    console.error('Data not found', error)
+    showToast('Failed to fetch device types.', 'error')
+  }
+}
+
+const fetchCustomers = async () => {
+  try {
+    const response = await axios.get('customers')
+    customers.value = response.data.data
   } catch (error) {
     console.error('Data not found', error)
   }
 }
 
-const updateFirmwares = async (updatedFirmware) => {
+const updateStocks = async (updatedStock) => {
   try {
-    const firmwareToUpdate = {
-      ...updatedFirmware,
-      firmwares_devices_id: parseInt(updatedFirmware.firmwares_devices_id),
-      androids_id: parseInt(updatedFirmware.androids_id),
-      android: updatedFirmware.android || updatedFirmware.androids_id,
+    const stockToUpdate = {
+      ...updatedStock,
+      firmwares_devices_id: parseInt(updatedStock.firmwares_devices_id),
+      customers_id: parseInt(updatedStock.customers_id),
+      android: updatedStock.android || updatedStock.customers_id,
     }
 
-    const changedFields = Object.keys(updatedFirmware).reduce((acc, key) => {
-      if (updatedFirmware[key] !== undefined) {
-        acc[key] = firmwareToUpdate[key]
+    const changedFields = Object.keys(updatedStock).reduce((acc, key) => {
+      if (updatedStock[key] !== undefined) {
+        acc[key] = stockToUpdate[key]
       }
       return acc
     }, {})
 
-    const response = await axios.put(`firmwares/${id.value}`, changedFields)
+    const response = await axios.put(`stocks/${id.value}`, changedFields)
     showToast(response.data.message, 'success')
     closeEditModal()
     refreshList()
@@ -279,14 +301,14 @@ function editModal(firmware) {
   }
 
   // Ensure we're working with IDs, not names
-  editFirmwares.value = {
+  editStocks.value = {
     ...firmware,
     firmwares_devices_id: firmware.firmwares_devices_id,
-    androids_id: firmware.androids_id,
+    customers_id: firmware.customers_id,
   }
   id.value = firmware.id
 
-  console.log('editFirmwares.value set to:', editFirmwares.value)
+  console.log('editStocks.value set to:', editStocks.value)
   console.log('id.value set to:', id.value)
 
   editModalRef.value.showModal()

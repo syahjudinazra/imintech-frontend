@@ -43,6 +43,7 @@
               <div v-for="page in pages" :key="page" class="mb-3">
                 <h5>{{ page }}</h5>
                 <div class="ms-3">
+                  <!-- Standard permissions -->
                   <div class="form-check" v-for="action in actions" :key="action">
                     <input
                       class="form-check-input shadow-none"
@@ -54,6 +55,21 @@
                     />
                     <label class="form-check-label" :for="`${page}-${action}`">
                       {{ `${action} ${page}` }}
+                    </label>
+                  </div>
+
+                  <!-- Special "move SN" permission only for Stocks page -->
+                  <div class="form-check" v-if="page === 'Stocks'">
+                    <input
+                      class="form-check-input shadow-none"
+                      type="checkbox"
+                      :id="`${page}-moveSN`"
+                      :value="`move SN ${page}`"
+                      v-model="selectedPermissions"
+                      :disabled="!roleAssigned"
+                    />
+                    <label class="form-check-label" :for="`${page}-moveSN`">
+                      {{ `move SN ${page}` }}
                     </label>
                   </div>
                 </div>
@@ -68,11 +84,6 @@
           >
             Assign Permissions
           </button>
-
-          <!-- Display Message -->
-          <div v-if="message" class="alert alert-success mt-3">
-            {{ message }}
-          </div>
         </div>
       </div>
 
@@ -130,10 +141,18 @@ const roleAssigned = ref(false)
 const currentPage = ref(1)
 const pageSize = 5
 const pages = ref(['Stocks', 'Delivery', 'Loan', 'Services', 'Spareparts', 'Firmwares'])
-const actions = ref(['create', 'edit', 'view', 'delete'])
+const actions = ref(['create', 'edit', 'view', 'delete', 'import', 'export', 'template'])
 
+// Updated permissions computed property to include "move SN" for Stocks
 const permissions = computed(() => {
-  return pages.value.flatMap((page) => actions.value.map((action) => `${action} ${page}`))
+  const standardPermissions = pages.value.flatMap((page) =>
+    actions.value.map((action) => `${action} ${page}`),
+  )
+
+  // Add "move SN" permission only for Stocks
+  const specialPermissions = ['move SN Stocks']
+
+  return [...standardPermissions, ...specialPermissions]
 })
 
 const fetchUsers = async () => {

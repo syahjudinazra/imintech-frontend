@@ -96,7 +96,7 @@
                 type="text"
                 class="form-control shadow-none"
                 id="damage"
-              /><textarea />
+              />
             </div>
             <div class="mb-3">
               <label class="fw-bold" for="date_in_services">Date of Entry</label>
@@ -109,7 +109,7 @@
                 type="text"
                 class="form-control shadow-none"
                 id="note"
-              /><textarea />
+              />
             </div>
           </div>
           <div class="modal-footer">
