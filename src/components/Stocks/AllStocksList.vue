@@ -77,12 +77,24 @@
     </div>
   </div>
 
+  <ViewStocks
+    v-if="userCan('view Stocks')"
+    ref="viewModalRef"
+    :stocks-device="stocksDevice"
+    :stocks-sku-device="skuDevice"
+    :customers="customers"
+    :locations="locations"
+    @close="handleClose"
+  />
+
   <EditStocks
     v-if="userCan('edit Stocks')"
     ref="editModalRef"
     :stock="editStocks"
     :stocks-device="stocksDevice"
+    :stocks-sku-device="skuDevice"
     :customers="customers"
+    :locations="locations"
     @update="updateStocks"
     @close="closeEditModal"
   />
@@ -100,6 +112,7 @@ import { ref, onMounted, watch } from 'vue'
 import axios from 'axios'
 import { showToast } from '@/utilities/toast'
 import EditStocks from '../../components/Stocks/Modal/EditStocks.vue'
+import ViewStocks from '../../components/Stocks/Modal/ViewStocks.vue'
 import DeleteFirmwares from '../../components/Firmwares/Modal/DeleteFirmwares.vue'
 import Search from '../../components/Layouts/SearchAll'
 import { mockServerItems, refreshData } from '../../mock/mockStocks'
@@ -110,6 +123,7 @@ const stocksDevice = ref([])
 const skuDevice = ref([])
 const customers = ref([])
 const editModalRef = ref(null)
+const viewModalRef = ref(null)
 const deleteModalRef = ref(null)
 const editStocks = ref({})
 const loading = ref(true)
@@ -291,30 +305,35 @@ const deleteFirmwares = async (firmwareId) => {
   }
 }
 
-function editModal(firmware) {
-  console.log('Firmware object received:', firmware)
+function viewModal(stock) {
+  viewModalRef.value.showModal(stock)
+}
 
-  if (!firmware) {
-    console.error('Firmware object is null or undefined')
-    showToast('Unable to edit firmware: Invalid data', 'error')
+function editModal(stock) {
+  console.log('Stocks object received:', stock)
+
+  if (!stock) {
+    console.error('Stocks object is null or undefined')
+    showToast('Unable to edit stocks: Invalid data', 'error')
     return
   }
 
   // Ensure we're working with IDs, not names
   editStocks.value = {
-    ...firmware,
-    firmwares_devices_id: firmware.firmwares_devices_id,
-    customers_id: firmware.customers_id,
+    ...stock,
+    stocks_devices_id: stock.stocks_devices_id,
+    customers_id: stock.customers_id,
   }
-  id.value = firmware.id
+  id.value = stock.id
 
   console.log('editStocks.value set to:', editStocks.value)
   console.log('id.value set to:', id.value)
 
   editModalRef.value.showModal()
 }
-function deleteModal(firmware) {
-  deleteModalRef.value.showModal(firmware)
+
+function deleteModal(stock) {
+  deleteModalRef.value.showModal(stock)
 }
 
 const closeEditModal = () => {
