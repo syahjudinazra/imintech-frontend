@@ -83,13 +83,13 @@
             <!--Date in-->
             <div class="mb-3">
               <label class="fw-bold" for="date_in">Date of Entry</label>
-              <VueDatePicker v-model="editedStock.date_in" />
+              <VueDatePicker v-model="editedStock.date_in" :enable-time-picker="false" />
             </div>
 
             <!--Date out-->
             <div class="mb-3">
               <label class="fw-bold" for="date_out">Date Exit</label>
-              <VueDatePicker v-model="editedStock.date_out" />
+              <VueDatePicker v-model="editedStock.date_out" :enable-time-picker="false" />
             </div>
 
             <!--Customers-->

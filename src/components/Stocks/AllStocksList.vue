@@ -25,17 +25,30 @@
         <template #empty-message>
           <p>Data not found</p>
         </template>
+        <template #item-stocks_devices_id="{ stocks_devices_id }">
+          {{ getDeviceName(stocks_devices_id) }}
+        </template>
+        <template #item-customers_id="{ customers_id }">
+          {{ getCustomerName(customers_id) }}
+        </template>
+        <template #item-status="{ status }">
+          <span :class="getStatusBadgeClass(status)" class="px-2 py-1 rounded-pill">
+            {{ status }}
+          </span>
+        </template>
+        <template #item-date_in="{ date_in }">
+          {{ formatDate(date_in) }}
+        </template>
+        <template #item-date_out="{ date_out }">
+          {{ formatDate(date_out) }}
+        </template>
         <template #items="{ item }">
           <tr>
             <td>{{ item.serial_number }}</td>
-            <td>{{ getDeviceName(item.stocks_devices_id) }}</td>
             <td>{{ item.no_invoice }}</td>
-            <td>{{ item.date_in }}</td>
-            <td>{{ item.date_out }}</td>
-            <td>{{ getCustomerName(item.customers_id) }}</td>
-            <td>{{ item.status }}</td>
           </tr>
         </template>
+
         <template #item-action="item">
           <div class="d-flex gap-2">
             <a
@@ -99,10 +112,10 @@
     @close="closeEditModal"
   />
 
-  <DeleteFirmwares
-    v-if="userCan('delete Firmwares')"
+  <DeleteStocks
+    v-if="userCan('delete Stocks')"
     ref="deleteModalRef"
-    @delete="deleteFirmwares"
+    @delete="deleteStocks"
     @close="closeDeleteModal"
   />
 </template>
@@ -113,7 +126,7 @@ import axios from 'axios'
 import { showToast } from '@/utilities/toast'
 import EditStocks from '../../components/Stocks/Modal/EditStocks.vue'
 import ViewStocks from '../../components/Stocks/Modal/ViewStocks.vue'
-import DeleteFirmwares from '../../components/Firmwares/Modal/DeleteFirmwares.vue'
+import DeleteStocks from '../../components/Stocks/Modal/DeleteStocks.vue'
 import Search from '../../components/Layouts/SearchAll'
 import { mockServerItems, refreshData } from '../../mock/mockStocks'
 
@@ -142,7 +155,7 @@ const headers = ref([
   { text: 'Status', value: 'status' },
   { text: 'Action', value: 'action' },
 ])
-
+const dayNames = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu']
 const serverItemsLength = ref(10)
 const serverOptions = ref({
   page: 1,
@@ -182,6 +195,39 @@ const updateSearch = (term) => {
 
 const userCan = (permission) => {
   return userPermissions.value.includes(permission)
+}
+
+// Enhanced status badge styling with more visual distinction
+const getStatusBadgeClass = (status) => {
+  const baseClasses = 'badge fw-normal text-white'
+  const statusClasses = {
+    Warehouse: `${baseClasses} bg-primary fw-semibold`,
+    Services: `${baseClasses} bg-warning fw-semibold`,
+    Loan: `${baseClasses} bg-info fw-semibold`,
+    Sold: `${baseClasses} bg-success fw-semibold`,
+    Damage: `${baseClasses} bg-danger fw-semibold`,
+    Entrust: `${baseClasses} bg-secondary fw-semibold`,
+  }
+  return statusClasses[status] || `${baseClasses} bg-light text-dark`
+}
+
+const formatDate = (date) => {
+  if (!date) return '-'
+
+  try {
+    const dateObj = new Date(date)
+    if (isNaN(dateObj.getTime())) return '-'
+
+    const dayName = dayNames[dateObj.getDay()]
+    const day = dateObj.getDate().toString().padStart(2, '0')
+    const month = (dateObj.getMonth() + 1).toString().padStart(2, '0')
+    const year = dateObj.getFullYear()
+
+    return `${dayName}, ${day}/${month}/${year}`
+  } catch (error) {
+    console.error('Error formatting date:', error)
+    return '-'
+  }
 }
 
 watch(
@@ -224,12 +270,12 @@ async function fetchUserRole() {
 
 const getDeviceName = (id) => {
   const device = stocksDevice.value.find((d) => d.id === id)
-  return device ? device.name : 'Unknown'
+  return device?.name || 'N/A'
 }
 
 const getCustomerName = (id) => {
-  const customer = customers.value.find((a) => a.id === id)
-  return customer ? customer.name : 'Unknown'
+  const customer = customers.value.find((c) => c.id === id)
+  return customer?.name || 'N/A'
 }
 
 const fetchStocksDevice = async () => {
@@ -265,9 +311,11 @@ const updateStocks = async (updatedStock) => {
   try {
     const stockToUpdate = {
       ...updatedStock,
-      firmwares_devices_id: parseInt(updatedStock.firmwares_devices_id),
+      stocks_devices_id: parseInt(updatedStock.stocks_devices_id),
+      stocks_sku_devices_id: parseInt(updatedStock.stocks_sku_devices_id),
       customers_id: parseInt(updatedStock.customers_id),
-      android: updatedStock.android || updatedStock.customers_id,
+      locations_id: parseInt(updatedStock.locations_id),
+      locations: updatedStock.locations || updatedStock.customers_id,
     }
 
     const changedFields = Object.keys(updatedStock).reduce((acc, key) => {
@@ -287,18 +335,16 @@ const updateStocks = async (updatedStock) => {
   }
 }
 
-const deleteFirmwares = async (firmwareId) => {
+const deleteStocks = async (stockId) => {
   try {
-    const response = await axios.delete(`firmwares/${firmwareId}`)
-    showToast(response.data.message || 'Firmware deleted successfully', 'success')
+    const response = await axios.delete(`stocks/${stockId}`)
+    showToast(response.data.message || 'Stocks deleted successfully', 'success')
     closeDeleteModal()
     refreshList()
   } catch (error) {
     console.error('Data failed to delete', error)
     const errorMessage =
-      error.response?.data?.message ||
-      error.message ||
-      'An error occurred while deleting the firmware'
+      error.response?.data?.message || error.message || 'An error occurred while deleting the stock'
     showToast(errorMessage, 'error')
   } finally {
     closeDeleteModal()
@@ -363,6 +409,14 @@ input:focus {
 textarea:focus {
   border-color: #d22c36;
 }
+
+.badge {
+  padding: 8px 12px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 4px;
+}
+
 .loader {
   width: 50px;
   aspect-ratio: 1;

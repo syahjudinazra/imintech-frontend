@@ -1,8 +1,6 @@
 <template>
   <!-- Button trigger modal -->
-  <button type="button" class="btn btn-danger btn-sm text-white" @click="openModal">
-    Add Data
-  </button>
+  <button type="button" class="btn btn-danger text-white" @click="openModal">Add Data</button>
 
   <!-- Modal -->
   <div

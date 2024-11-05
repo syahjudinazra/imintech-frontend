@@ -209,7 +209,7 @@ const getAndroidName = (id) => {
 const fetchFirmwaresDevice = async () => {
   try {
     const response = await axios.get('firmwares-device')
-    firmwaresDevice.value = response.data.firmwaresdevice
+    firmwaresDevice.value = response.data.data
   } catch (error) {
     console.error('Data not found', error)
     showToast('Failed to fetch device types.', 'error')
@@ -219,7 +219,7 @@ const fetchFirmwaresDevice = async () => {
 const fetchAndroid = async () => {
   try {
     const response = await axios.get('android')
-    androids.value = response.data.android
+    androids.value = response.data.data
   } catch (error) {
     console.error('Data not found', error)
   }

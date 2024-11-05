@@ -16,67 +16,123 @@
           <!--Serial Number-->
           <div class="mb-3">
             <label class="form-label fw-bold">Serial Number</label>
-            <p class="form-control-static">{{ stockDetails?.serial_number || '-' }}</p>
+            <input
+              class="form-control shadow-none bg-light"
+              v-model="stockDetails.serial_number"
+              id="serial_number"
+              name="serial_number"
+              readonly
+            />
           </div>
 
           <!--Device Type-->
           <div class="mb-3">
             <label class="form-label fw-bold">Device Type</label>
-            <p class="form-control-static">{{ getDeviceName(stockDetails?.stocks_devices_id) }}</p>
+            <input
+              class="form-control shadow-none bg-light"
+              v-model="stockDetails.stocks_devices_id"
+              id="stocks_devices_id"
+              name="stocks_devices_id"
+              readonly
+            />
           </div>
 
           <!--SKU Device Type-->
           <div class="mb-3">
             <label class="form-label fw-bold">SKU Device Type</label>
-            <p class="form-control-static">
-              {{ getSkuDeviceName(stockDetails?.stocks_sku_devices_id) }}
-            </p>
+            <input
+              class="form-control shadow-none bg-light"
+              v-model="stockDetails.stocks_sku_devices_id"
+              id="stocks_sku_devices_id"
+              name="stocks_sku_devices_id"
+              readonly
+            />
           </div>
 
           <!--No Invoice-->
           <div class="mb-3">
             <label class="form-label fw-bold">No Invoice</label>
-            <p class="form-control-static">{{ stockDetails?.no_invoice || '-' }}</p>
+            <input
+              class="form-control shadow-none bg-light"
+              v-model="stockDetails.no_invoice"
+              id="no_invoice"
+              name="no_invoice"
+              readonly
+            />
           </div>
 
-          <!--Date in-->
+          <!-- Date in -->
           <div class="mb-3">
             <label class="fw-bold">Date of Entry</label>
-            <p class="form-control-static">{{ formatDate(stockDetails?.date_in) }}</p>
+            <VueDatePicker
+              class="shadow-none bg-light"
+              v-model="stockDetails.date_in"
+              :enable-time-picker="false"
+              id="date_in"
+              name="date_in"
+              readonly
+            />
           </div>
 
-          <!--Date out-->
+          <!-- Date out -->
           <div class="mb-3">
             <label class="fw-bold">Date Exit</label>
-            <p class="form-control-static">{{ formatDate(stockDetails?.date_out) }}</p>
+            <VueDatePicker
+              class="shadow-none bg-light"
+              v-model="stockDetails.date_out"
+              :enable-time-picker="false"
+              id="date_out"
+              name="date_out"
+              readonly
+            />
           </div>
 
           <!--Customers-->
           <div class="mb-3">
             <label class="form-label fw-bold">Customer</label>
-            <p class="form-control-static">{{ getCustomerName(stockDetails?.customers_id) }}</p>
+            <input
+              class="form-control shadow-none bg-light"
+              v-model="stockDetails.customers_id"
+              id="customers_id"
+              name="customers_id"
+              readonly
+            />
           </div>
 
           <!--Location-->
           <div class="mb-3">
             <label class="form-label fw-bold">Location</label>
-            <p class="form-control-static">{{ getLocationName(stockDetails?.locations_id) }}</p>
+            <input
+              class="form-control shadow-none bg-light"
+              v-model="stockDetails.locations_id"
+              id="locations_id"
+              name="locations_id"
+              readonly
+            />
           </div>
 
           <!--Information-->
           <div class="mb-3">
             <label class="form-label fw-bold">Information</label>
-            <p class="form-control-static whitespace-pre-line">
-              {{ stockDetails?.information || '-' }}
-            </p>
+            <textarea
+              class="form-control shadow-none bg-light"
+              v-model="stockDetails.information"
+              placeholder="Enter information here"
+              readonly
+            >
+            </textarea>
           </div>
 
           <!--Status-->
           <div class="mb-3">
             <label class="form-label fw-bold">Status</label>
-            <p class="form-control-static whitespace-pre-line">
-              {{ stockDetails?.status || '-' }}
-            </p>
+            <input
+              class="form-control shadow-none bg-light"
+              v-model="stockDetails.status"
+              id="status"
+              name="status"
+              readonly
+            />
           </div>
         </div>
         <div class="modal-footer">
@@ -88,61 +144,12 @@
 </template>
 
 <script setup>
-import { ref, defineProps, defineEmits, onMounted } from 'vue'
+import { ref, defineEmits, onMounted } from 'vue'
 import { Modal } from 'bootstrap'
-import { format } from 'date-fns'
-
-const props = defineProps({
-  stocksDevice: {
-    type: Array,
-    default: () => [],
-  },
-  stocksSkuDevice: {
-    type: Array,
-    default: () => [],
-  },
-  customers: {
-    type: Array,
-    default: () => [],
-  },
-  locations: {
-    type: Array,
-    default: () => [],
-  },
-})
 
 const emit = defineEmits(['close'])
-const stockDetails = ref(null)
+const stockDetails = ref({})
 let viewModal
-
-const formatDate = (date) => {
-  if (!date) return '-'
-  try {
-    return format(new Date(date), 'dd MMM yyyy HH:mm')
-  } catch (error) {
-    return '-'
-  }
-}
-
-const getDeviceName = (id) => {
-  const device = props.stocksDevice.find((d) => d.id === id)
-  return device ? device.name : '-'
-}
-
-const getSkuDeviceName = (id) => {
-  const device = props.stocksSkuDevice.find((d) => d.id === id)
-  return device ? device.name : '-'
-}
-
-const getCustomerName = (id) => {
-  const customer = props.customers.find((c) => c.id === id)
-  return customer ? customer.name : '-'
-}
-
-const getLocationName = (id) => {
-  const location = props.locations.find((l) => l.id === id)
-  return location ? location.name : '-'
-}
 
 const showModal = (stock) => {
   stockDetails.value = stock
@@ -170,25 +177,19 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.form-control-static {
-  padding: 0.375rem 0.75rem;
-  margin-bottom: 0;
-  min-height: 24px;
-  border: 1px solid #ced4da;
-  border-radius: 0.25rem;
-  background-color: #f8f9fa;
+input:focus {
+  border-color: #d22c36;
 }
 
-.whitespace-pre-line {
-  white-space: pre-line;
+textarea:focus {
+  border-color: #d22c36;
 }
 
-.modal-dialog {
-  max-width: 600px;
+.dp__theme_light {
+  --dp-background-color: #f8f9fa;
 }
 
-label {
-  color: #212529;
-  margin-bottom: 0.5rem;
+.dp__theme_dark {
+  --dp-background-color: #f8f9fa;
 }
 </style>
