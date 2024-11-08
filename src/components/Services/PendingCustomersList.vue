@@ -10,7 +10,7 @@
       <EasyDataTable
         v-model:server-options="serverOptions"
         :server-items-length="serverItemsLength"
-        @update:options="serverOptions = $event"
+        @update:options="handleOptionsUpdate"
         :headers="headers"
         :items="services"
         :loading="loading"
@@ -30,7 +30,7 @@
         </template>
         <template #items="{ item }">
           <tr>
-            <td>{{ item.date_in_services }}</td>
+            <td>{{ formatDate(item.date_in_services) }}</td>
             <td>{{ item.serial_number }}</td>
             <td>{{ item.customers }}</td>
             <td>{{ getDeviceName(item.services_devices_id) }}</td>
@@ -38,7 +38,9 @@
         </template>
         <template #item-action="item">
           <div class="d-flex gap-2">
-            <a href="#" class="head-text text-decoration-none" @click="viewModal(item)">View</a>
+            <a href="#" class="head-text text-decoration-none" @click.prevent="viewModal(item)"
+              >View</a
+            >
             <div class="btn-group dropend">
               <a
                 type="button"
@@ -52,19 +54,19 @@
                 <a
                   href="#"
                   class="dropdown-item head-text text-decoration-none"
-                  @click="editModal(item)"
+                  @click.prevent="editModal(item)"
                   >Edit</a
                 >
                 <a
                   href="#"
                   class="dropdown-item head-text text-decoration-none"
-                  @click="moveModal(item)"
+                  @click.prevent="moveModal(item)"
                   >Move</a
                 >
                 <a
                   href="#"
                   class="dropdown-item head-text text-decoration-none"
-                  @click="deleteModal(item)"
+                  @click.prevent="deleteModal(item)"
                   >Delete</a
                 >
               </ul>
@@ -73,55 +75,79 @@
         </template>
       </EasyDataTable>
     </div>
+
+    <ViewPendingCustomers
+      ref="viewModalRef"
+      :service="viewService"
+      :service-device="servicesDevice"
+      :usages="usages"
+      @close="closeViewModal"
+    />
+
+    <EditPendingCustomers
+      ref="editModalRef"
+      :service="editService"
+      :service-device="servicesDevice"
+      :usages="usages"
+      @update="updateServices"
+      @close="closeEditModal"
+    />
+
+    <MovePendingCustomers
+      ref="moveModalRef"
+      :service="moveService"
+      :technicians="technicians"
+      :spareparts="spareparts"
+      @update="moveServices"
+      @close="closeMoveModal"
+    />
+
+    <DeletePendingCustomers
+      ref="deleteModalRef"
+      @delete="deleteServices"
+      @close="closeDeleteModal"
+    />
   </div>
-
-  <EditPendingCustomers
-    ref="editModalRef"
-    :service="editService"
-    @update="updateServices"
-    @close="closeEditModal"
-  />
-
-  <MovePendingCustomers
-    ref="moveModalRef"
-    :service="moveService"
-    @update="updateServices"
-    @close="closeMoveModal"
-  />
-
-  <DeletePendingCustomers ref="deleteModalRef" @delete="deleteServices" @close="closeDeleteModal" />
 </template>
 
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import axios from 'axios'
 import { showToast } from '@/utilities/toast'
+import ViewPendingCustomers from '../Services/Modal/Customers/ViewPendingCustomers.vue'
 import MovePendingCustomers from '../Services/Modal/Customers/MovePendingCustomers.vue'
 import EditPendingCustomers from '../Services/Modal/Customers/EditPendingCustomers.vue'
 import DeletePendingCustomers from '../Services/Modal/Customers/DeletePendingCustomers.vue'
 import Search from '../Layouts/SearchAll.vue'
 import { mockServerItems, refreshData } from '../../mock/mockPendingCustomers'
 
+// Refs
+const id = ref(null)
+const services = ref([])
 const servicesDevice = ref([])
+const usages = ref([])
+const technicians = ref([])
+const spareparts = ref([])
 const moveModalRef = ref(null)
+const viewModalRef = ref(null)
 const editModalRef = ref(null)
 const deleteModalRef = ref(null)
+const viewService = ref({})
 const moveService = ref({})
 const editService = ref({})
 const loading = ref(true)
-const services = ref([])
-const id = ref(null)
 
 const token = localStorage.getItem('token')
 // Constants
 const baseColor = '#e55353'
-const headers = ref([
+const headers = [
   { text: 'Date in early', value: 'date_in_services' },
   { text: 'Serial number', value: 'serial_number' },
   { text: 'Customers', value: 'customers' },
   { text: 'Device type', value: 'services_devices_id' },
   { text: 'Action', value: 'action' },
-])
+]
+const dayNames = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu']
 
 const serverItemsLength = ref(10)
 const serverOptions = ref({
@@ -131,6 +157,25 @@ const serverOptions = ref({
   sortType: 'desc',
   searchTerm: '',
 })
+
+const formatDate = (date) => {
+  if (!date) return '-'
+
+  try {
+    const dateObj = new Date(date)
+    if (isNaN(dateObj.getTime())) return '-'
+
+    const dayName = dayNames[dateObj.getDay()]
+    const day = dateObj.getDate().toString().padStart(2, '0')
+    const month = (dateObj.getMonth() + 1).toString().padStart(2, '0')
+    const year = dateObj.getFullYear()
+
+    return `${dayName}, ${day}/${month}/${year}`
+  } catch (error) {
+    console.error('Error formatting date:', error)
+    return '-'
+  }
+}
 
 const refreshList = () => {
   refreshData()
@@ -160,6 +205,10 @@ const updateSearch = (term) => {
   loadFromServer()
 }
 
+const handleOptionsUpdate = (newOptions) => {
+  serverOptions.value = newOptions
+}
+
 watch(
   serverOptions,
   () => {
@@ -167,11 +216,6 @@ watch(
   },
   { deep: true },
 )
-
-onMounted(() => {
-  loadFromServer()
-  fetchServicesDevice()
-})
 
 const getDeviceName = (id) => {
   const device = servicesDevice.value.find((d) => d.id === id)
@@ -188,6 +232,36 @@ const fetchServicesDevice = async () => {
   }
 }
 
+const fetchUsages = async () => {
+  try {
+    const response = await axios.get('usages')
+    usages.value = response.data.data
+  } catch (error) {
+    console.error('Data not found', error)
+    showToast('Failed to fetch usages.', 'error')
+  }
+}
+
+const fetchTechnicians = async () => {
+  try {
+    const response = await axios.get('technician')
+    technicians.value = response.data.data
+  } catch (error) {
+    console.error('Data not found', error)
+    showToast('Failed to fetch technician.', 'error')
+  }
+}
+
+const fetchSpareparts = async () => {
+  try {
+    const response = await axios.get('spareparts')
+    spareparts.value = response.data.data
+  } catch (error) {
+    console.error('Data not found', error)
+    showToast('Failed to fetch spareparts.', 'error')
+  }
+}
+
 const updateServices = async (updatedServices) => {
   try {
     const response = await axios.put(`services/${id.value}`, updatedServices)
@@ -196,7 +270,19 @@ const updateServices = async (updatedServices) => {
     refreshList()
   } catch (error) {
     console.error('Data failed to change', error)
-    showToast(error.data.message, 'error')
+    showToast(error.response?.data?.message || 'Update failed', 'error')
+  }
+}
+
+const moveServices = async (movedServices) => {
+  try {
+    const response = await axios.put(`services-move/${id.value}`, movedServices)
+    showToast(response.data.message, 'success')
+    closeEditModal()
+    refreshList()
+  } catch (error) {
+    console.error('Data failed to move', error)
+    showToast(error.response?.data?.message || 'Move failed', 'error')
   }
 }
 
@@ -208,39 +294,57 @@ const deleteServices = async () => {
     refreshList()
   } catch (error) {
     console.error('Data failed to delete', error)
-    showToast(error.data.message, 'error')
+    showToast(error.response?.data?.message || 'Delete failed', 'error')
     closeDeleteModal()
   }
 }
 
-function moveModal(service) {
+const viewModal = (service) => {
+  viewService.value = { ...service }
+  id.value = service.id
+  viewModalRef.value.showModal()
+}
+
+const moveModal = (service) => {
   moveService.value = { ...service }
   id.value = service.id
   moveModalRef.value.showModal()
 }
 
-function editModal(service) {
+const editModal = (service) => {
   editService.value = { ...service }
   id.value = service.id
   editModalRef.value.showModal()
 }
 
-function deleteModal(service) {
+const deleteModal = (service) => {
   id.value = service.id
   deleteModalRef.value.showModal()
 }
 
-function closeMoveModal() {
+const closeViewModal = () => {
+  viewModalRef.value.hideModal()
+}
+
+const closeMoveModal = () => {
   moveModalRef.value.hideModal()
 }
 
-function closeEditModal() {
+const closeEditModal = () => {
   editModalRef.value.hideModal()
 }
 
-function closeDeleteModal() {
+const closeDeleteModal = () => {
   deleteModalRef.value.hideModal()
 }
+
+onMounted(() => {
+  loadFromServer()
+  fetchServicesDevice()
+  fetchUsages()
+  fetchTechnicians()
+  fetchSpareparts()
+})
 </script>
 
 <style scoped>

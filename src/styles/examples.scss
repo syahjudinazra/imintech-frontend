@@ -2,9 +2,9 @@
 
 $enable-deprecation-messages: false !default;
 
-@import "@coreui/coreui/scss/functions";
-@import "@coreui/coreui/scss/variables";
-@import "@coreui/coreui/scss/mixins";
+@import '@coreui/coreui/scss/functions';
+@import '@coreui/coreui/scss/variables';
+@import '@coreui/coreui/scss/mixins';
 
 .example {
   &:not(:first-child) {
@@ -27,7 +27,7 @@ $enable-deprecation-messages: false !default;
 
     > .form-control {
       + .form-control {
-        margin-top: .5rem;
+        margin-top: 0.5rem;
       }
     }
 
@@ -50,7 +50,7 @@ $enable-deprecation-messages: false !default;
     // Images
     > svg + svg,
     > img + img {
-      margin-left: .5rem;
+      margin-left: 0.5rem;
     }
 
     // Buttons
@@ -58,10 +58,10 @@ $enable-deprecation-messages: false !default;
     .col-auto > .btn,
     > .btn,
     > .btn-group {
-      margin: .25rem .125rem;
+      margin: 0.25rem 0.125rem;
     }
     > .btn-toolbar + .btn-toolbar {
-      margin-top: .5rem;
+      margin-top: 0.5rem;
     }
 
     // List groups
@@ -69,7 +69,7 @@ $enable-deprecation-messages: false !default;
       max-width: 400px;
     }
 
-    > [class*="list-group-horizontal"] {
+    > [class*='list-group-horizontal'] {
       max-width: 100%;
     }
 
@@ -97,8 +97,8 @@ $enable-deprecation-messages: false !default;
 
     // Pagination
     .pagination {
-      margin-top: .5rem;
-      margin-bottom: .5rem;
+      margin-top: 0.5rem;
+      margin-bottom: 0.5rem;
     }
 
     .docs-example-modal {

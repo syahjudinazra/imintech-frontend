@@ -31,6 +31,9 @@
         <template #item-customers_id="{ customers_id }">
           {{ getCustomerName(customers_id) }}
         </template>
+        <template #item-locations_id="{ locations_id }">
+          {{ getLocationName(locations_id) }}
+        </template>
         <template #item-status="{ status }">
           <span :class="getStatusBadgeClass(status)" class="px-2 py-1 rounded-pill">
             {{ status }}
@@ -135,6 +138,7 @@ const stocks = ref([])
 const stocksDevice = ref([])
 const skuDevice = ref([])
 const customers = ref([])
+const locations = ref([])
 const editModalRef = ref(null)
 const viewModalRef = ref(null)
 const deleteModalRef = ref(null)
@@ -243,6 +247,7 @@ onMounted(() => {
   fetchStocksDevice()
   fetchSkuDevice()
   fetchCustomers()
+  fetchLocations()
   fetchUserPermissions()
   fetchUserRole()
 })
@@ -278,6 +283,11 @@ const getCustomerName = (id) => {
   return customer?.name || 'N/A'
 }
 
+const getLocationName = (id) => {
+  const location = locations.value.find((l) => l.id === id)
+  return location ? location.name : 'N/A'
+}
+
 const fetchStocksDevice = async () => {
   try {
     const response = await axios.get('stocks-device')
@@ -302,6 +312,15 @@ const fetchCustomers = async () => {
   try {
     const response = await axios.get('customers')
     customers.value = response.data.data
+  } catch (error) {
+    console.error('Data not found', error)
+  }
+}
+
+const fetchLocations = async () => {
+  try {
+    const response = await axios.get('location')
+    locations.value = response.data.data
   } catch (error) {
     console.error('Data not found', error)
   }

@@ -22,14 +22,19 @@
         </div>
         <div class="form-group mb-3">
           <label class="fw-bold" for="ticket_services">Ticket Service</label>
-          <input
-            v-model="services.ticket_services"
-            type="text"
-            class="form-control shadow-none"
-            id="ticket_services"
-            placeholder="Input Ticket Service"
-            required
-          />
+          <div class="d-flex">
+            <input
+              v-model="services.ticket_services"
+              type="text"
+              class="form-control shadow-none"
+              id="ticket_services"
+              placeholder="Input Ticket Service"
+              readonly
+            />
+            <button @click="generateTicketService" type="button" class="btn btn-secondary ms-2">
+              Generate
+            </button>
+          </div>
         </div>
         <div class="form-group mb-3">
           <label class="fw-bold" for="date_in_services">Date of Entry</label>
@@ -137,17 +142,6 @@
               />
               <label class="form-check-label" for="status">Pending Customers</label>
             </div>
-            <div class="form-check">
-              <input
-                v-model="services.status"
-                class="form-check-input"
-                type="radio"
-                name="status"
-                id="statusStocks"
-                value="Pending Stocks"
-              />
-              <label class="form-check-label" for="status">Pending Stocks</label>
-            </div>
           </div>
         </div>
         <button type="submit" class="btn btn-danger text-white">Submit</button>
@@ -188,7 +182,15 @@ const updateCustomers = () => {
   }
 }
 
-// Add a watch effect to handle changes to the owner property
+function generateTicketService() {
+  const date = new Date()
+  const day = String(date.getDate()).padStart(2, '0')
+  const month = String(date.getMonth() + 1).padStart(2, '0') // Months are zero-based
+  const year = date.getFullYear()
+  const randomNum = Math.floor(Math.random() * 1000) + 1 // Random number between 1 and 1000
+  services.value.ticket_services = `C-${day}/${month}/${year}/${randomNum}`
+}
+
 watch(
   () => services.value.owner,
   () => {

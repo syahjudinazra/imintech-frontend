@@ -30,7 +30,7 @@
             <label class="form-label fw-bold">Device Type</label>
             <input
               class="form-control shadow-none bg-light"
-              v-model="stockDetails.stocks_devices_id"
+              :value="getDeviceName(stockDetails.stocks_devices_id)"
               id="stocks_devices_id"
               name="stocks_devices_id"
               readonly
@@ -42,9 +42,7 @@
             <label class="form-label fw-bold">SKU Device Type</label>
             <input
               class="form-control shadow-none bg-light"
-              v-model="stockDetails.stocks_sku_devices_id"
-              id="stocks_sku_devices_id"
-              name="stocks_sku_devices_id"
+              :value="getSkuDeviceName(stockDetails.stocks_sku_devices_id)"
               readonly
             />
           </div>
@@ -68,6 +66,8 @@
               class="shadow-none bg-light"
               v-model="stockDetails.date_in"
               :enable-time-picker="false"
+              :format="customDateFormat"
+              :model-value="formatDateForPicker(stockDetails.date_in)"
               id="date_in"
               name="date_in"
               readonly
@@ -81,6 +81,8 @@
               class="shadow-none bg-light"
               v-model="stockDetails.date_out"
               :enable-time-picker="false"
+              :format="customDateFormat"
+              :model-value="formatDateForPicker(stockDetails.date_out)"
               id="date_out"
               name="date_out"
               readonly
@@ -92,9 +94,7 @@
             <label class="form-label fw-bold">Customer</label>
             <input
               class="form-control shadow-none bg-light"
-              v-model="stockDetails.customers_id"
-              id="customers_id"
-              name="customers_id"
+              :value="getCustomerName(stockDetails.customers_id)"
               readonly
             />
           </div>
@@ -104,9 +104,7 @@
             <label class="form-label fw-bold">Location</label>
             <input
               class="form-control shadow-none bg-light"
-              v-model="stockDetails.locations_id"
-              id="locations_id"
-              name="locations_id"
+              :value="getLocationName(stockDetails.locations_id)"
               readonly
             />
           </div>
@@ -146,13 +144,107 @@
 <script setup>
 import { ref, defineEmits, onMounted } from 'vue'
 import { Modal } from 'bootstrap'
+import axios from 'axios'
+import VueDatePicker from '@vuepic/vue-datepicker'
+import '@vuepic/vue-datepicker/dist/main.css'
 
 const emit = defineEmits(['close'])
 const stockDetails = ref({})
+const stocksDevice = ref([])
+const customers = ref([])
+const locations = ref([])
+const skuDevices = ref([])
+
 let viewModal
 
+// Date formatting
+const customDateFormat = 'dd/MM/yyyy'
+
+const formatDateForPicker = (date) => {
+  if (!date) return null
+  return new Date(date)
+}
+
+const formatDate = (date) => {
+  if (!date) return '-'
+
+  try {
+    const dateObj = new Date(date)
+    if (isNaN(dateObj.getTime())) return '-'
+
+    const day = dateObj.getDate().toString().padStart(2, '0')
+    const month = (dateObj.getMonth() + 1).toString().padStart(2, '0')
+    const year = dateObj.getFullYear()
+
+    return `${day}/${month}/${year}`
+  } catch (error) {
+    console.error('Error formatting date:', error)
+    return '-'
+  }
+}
+
+const getDeviceName = (id) => {
+  const device = stocksDevice.value.find((d) => d.id === id)
+  return device ? device.name : 'N/A'
+}
+
+const getSkuDeviceName = (id) => {
+  const skuDevice = skuDevices.value.find((s) => s.id === id)
+  return skuDevice ? skuDevice.name : 'N/A'
+}
+
+const getCustomerName = (id) => {
+  const customer = customers.value.find((c) => c.id === id)
+  return customer ? customer.name : 'N/A'
+}
+
+const getLocationName = (id) => {
+  const location = locations.value.find((l) => l.id === id)
+  return location ? location.name : 'N/A'
+}
+
+const fetchStocksDevice = async () => {
+  try {
+    const response = await axios.get('stocks-device')
+    stocksDevice.value = response.data.data
+  } catch (error) {
+    console.error('Data not found', error)
+  }
+}
+
+const fetchSkuDevice = async () => {
+  try {
+    const response = await axios.get('stocks-sku-device')
+    skuDevices.value = response.data.data
+  } catch (error) {
+    console.error('Data not found', error)
+  }
+}
+
+const fetchCustomers = async () => {
+  try {
+    const response = await axios.get('customers')
+    customers.value = response.data.data
+  } catch (error) {
+    console.error('Data not found', error)
+  }
+}
+
+const fetchLocations = async () => {
+  try {
+    const response = await axios.get('location')
+    locations.value = response.data.data
+  } catch (error) {
+    console.error('Data not found', error)
+  }
+}
+
 const showModal = (stock) => {
-  stockDetails.value = stock
+  stockDetails.value = {
+    ...stock,
+    date_in: stock.date_in ? new Date(stock.date_in) : null,
+    date_out: stock.date_out ? new Date(stock.date_out) : null,
+  }
   viewModal.show()
 }
 
@@ -163,7 +255,7 @@ const closeModal = () => {
 
 const hideModal = () => {
   viewModal.hide()
-  stockDetails.value = null
+  stockDetails.value = {}
 }
 
 defineExpose({
@@ -172,6 +264,11 @@ defineExpose({
 })
 
 onMounted(() => {
+  fetchStocksDevice()
+  fetchSkuDevice()
+  fetchCustomers()
+  fetchLocations()
+  formatDate()
   viewModal = new Modal(document.getElementById('viewForm'))
 })
 </script>

@@ -64,8 +64,8 @@ const routes = [
             meta: { requiresAuth: true },
           },
           {
-            path: '/stocks/damaged',
-            name: 'Damaged',
+            path: '/stocks/damage',
+            name: 'Damage',
             component: () => import('@/views/stocks/DamagedStocks.vue'),
             meta: { requiresAuth: true },
           },
@@ -504,6 +504,11 @@ const routes = [
         component: () => import('@/views/pages/ForgotPassword'),
       },
     ],
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'NotFound',
+    component: () => import('@/views/NotFound.vue'),
   },
 ]
 

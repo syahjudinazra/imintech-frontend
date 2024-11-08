@@ -83,13 +83,25 @@
             <!--Date in-->
             <div class="mb-3">
               <label class="fw-bold" for="date_in">Date of Entry</label>
-              <VueDatePicker v-model="editedStock.date_in" :enable-time-picker="false" />
+              <VueDatePicker
+                v-model="editedStock.date_in"
+                :enable-time-picker="false"
+                :format="customDateFormat"
+                :model-value="formatDateForPicker(editedStock.date_in)"
+                id="date_in"
+              />
             </div>
 
             <!--Date out-->
             <div class="mb-3">
               <label class="fw-bold" for="date_out">Date Exit</label>
-              <VueDatePicker v-model="editedStock.date_out" :enable-time-picker="false" />
+              <VueDatePicker
+                v-model="editedStock.date_out"
+                :enable-time-picker="false"
+                :format="customDateFormat"
+                :model-value="formatDateForPicker(editedStock.date_out)"
+                id="date_out"
+              />
             </div>
 
             <!--Customers-->
@@ -201,6 +213,32 @@ const formatDateForMySQL = (date) => {
   return d.toISOString().slice(0, 19).replace('T', ' ')
 }
 
+// Date formatting
+const customDateFormat = 'dd/MM/yyyy'
+
+const formatDateForPicker = (date) => {
+  if (!date) return null
+  return new Date(date)
+}
+
+const formatDate = (date) => {
+  if (!date) return '-'
+
+  try {
+    const dateObj = new Date(date)
+    if (isNaN(dateObj.getTime())) return '-'
+
+    const day = dateObj.getDate().toString().padStart(2, '0')
+    const month = (dateObj.getMonth() + 1).toString().padStart(2, '0')
+    const year = dateObj.getFullYear()
+
+    return `${day}/${month}/${year}`
+  } catch (error) {
+    console.error('Error formatting date:', error)
+    return '-'
+  }
+}
+
 watch(
   () => props.stock,
   (newStock) => {
@@ -273,6 +311,7 @@ defineExpose({
 })
 
 onMounted(() => {
+  formatDate()
   editModal = new Modal(document.getElementById('editForm'))
 })
 </script>

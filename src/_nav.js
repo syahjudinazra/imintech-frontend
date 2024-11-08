@@ -51,8 +51,8 @@ export default [
       },
       {
         component: 'CNavItem',
-        name: 'Damaged',
-        to: '/stocks/damaged',
+        name: 'Damage',
+        to: '/stocks/damage',
       },
       {
         component: 'CNavItem',

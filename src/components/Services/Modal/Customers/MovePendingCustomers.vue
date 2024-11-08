@@ -18,7 +18,7 @@
             <div class="mb-3">
               <label for="serial_number" class="form-label fw-bold"> Serial number </label>
               <input
-                v-model="editedService.serial_number"
+                v-model="movedService.serial_number"
                 type="text"
                 class="form-control bg-light shadow-none"
                 id="serial_number"
@@ -28,33 +28,21 @@
 
             <!-- Customers -->
             <div class="mb-3">
-              <label for="customers" class="form-label fw-bold"> Customers </label>
-              <v-select
-                v-model="editedService.customers_id"
-                :options="props.customers"
-                :reduce="(customer) => customer.id"
-                label="name"
-                :searchable="true"
-                :clearable="false"
-                placeholder="Select Customers"
-                class="bg-light"
+              <label for="customers" class="form-label fw-bold">Customers</label>
+              <input
+                v-model="movedService.customers"
+                type="text"
+                class="form-control bg-light shadow-none"
                 id="customers"
                 readonly
-              >
-                <template #no-options="{ search, searching }">
-                  <template v-if="searching">
-                    No results found for <em>{{ search }}</em>
-                  </template>
-                  <em v-else>Start typing to search...</em>
-                </template>
-              </v-select>
+              />
             </div>
 
             <!-- Damage -->
             <div class="mb-3">
               <label for="damage" class="form-label fw-bold"> Damage </label>
               <textarea
-                v-model="editedService.damage"
+                v-model="movedService.damage"
                 class="form-control bg-light shadow-none"
                 id="damage"
                 readonly
@@ -65,9 +53,10 @@
             <div class="mb-3">
               <label for="repair" class="form-label fw-bold"> Repair </label>
               <textarea
-                v-model="editedService.repair"
+                v-model="movedService.repair"
                 class="form-control shadow-none"
                 id="repair"
+                placeholder="Input Repair"
               />
             </div>
 
@@ -75,7 +64,7 @@
             <div class="mb-3">
               <label for="technician" class="form-label fw-bold"> Technician </label>
               <v-select
-                v-model="editedService.technicians_id"
+                v-model="movedService.technicians_id"
                 :options="props.technicians"
                 :reduce="(technician) => technician.id"
                 label="name"
@@ -94,18 +83,18 @@
               </v-select>
             </div>
 
-            <!-- Device Type -->
+            <!-- No Spareparts -->
             <div class="mb-3">
-              <label for="serviceDevice" class="form-label fw-bold"> Device Type </label>
+              <label for="serviceDevice" class="form-label fw-bold"> No Spareparts </label>
               <v-select
-                v-model="editedService.services_devices_id"
-                :options="props.servicesDevice"
-                :reduce="(device) => device.id"
+                v-model="movedService.spareparts_id"
+                :options="props.spareparts"
+                :reduce="(sparepart) => sparepart.id"
                 label="name"
                 :searchable="true"
                 :clearable="false"
-                placeholder="Select Device Type"
-                id="serviceDevice"
+                placeholder="Select No Spareparts"
+                id="spareparts"
                 required
               >
                 <template #no-options="{ search, searching }">
@@ -117,16 +106,32 @@
               </v-select>
             </div>
 
+            <!-- SN Cannibal -->
+            <div class="mb-3">
+              <label for="sn_kanibal" class="form-label fw-bold">SN Cannibal</label>
+              <input
+                v-model="movedService.sn_kanibal"
+                type="text"
+                class="form-control shadow-none"
+                id="sn_kanibal"
+                placeholder="Input SN Cannibal"
+              />
+            </div>
+
             <!-- Date Exit -->
             <div class="mb-3">
               <label for="date_out_services" class="form-label fw-bold"> Date exit </label>
-              <VueDatePicker v-model="editedService.date_out_services" id="date_out_services" />
+              <VueDatePicker
+                v-model="movedService.date_out_services"
+                :enable-time-picker="false"
+                id="date_out_services"
+              />
             </div>
 
             <!-- Note -->
             <div class="mb-3">
               <label for="note" class="form-label fw-bold"> Note </label>
-              <textarea v-model="editedService.note" class="form-control shadow-none" id="note" />
+              <textarea v-model="movedService.note" class="form-control shadow-none" id="note" />
             </div>
             <!-- File Upload - Images -->
             <div class="mb-3">
@@ -226,17 +231,12 @@ const props = defineProps({
     required: true,
     default: () => ({}),
   },
-  servicesDevice: {
-    type: Array,
-    required: true,
-    default: () => [],
-  },
-  customers: {
-    type: Array,
-    required: true,
-    default: () => [],
-  },
   technicians: {
+    type: Array,
+    required: true,
+    default: () => [],
+  },
+  spareparts: {
     type: Array,
     required: true,
     default: () => [],
@@ -248,7 +248,7 @@ const emit = defineEmits(['update', 'close'])
 // State
 const isDataChanged = ref(false)
 const initialService = ref(null)
-const editedService = reactive({})
+const movedService = reactive({})
 const changedFields = reactive({})
 let moveModal = null
 
@@ -288,7 +288,7 @@ const handleImageUpload = (event) => {
   })
 
   imageFiles.value = [...imageFiles.value, ...validFiles]
-  editedService.images = imageFiles.value
+  movedService.images = imageFiles.value
   changedFields.images = true
   isDataChanged.value = true
 }
@@ -313,7 +313,7 @@ const handleDocumentUpload = (event) => {
   })
 
   documentFiles.value = [...documentFiles.value, ...validFiles]
-  editedService.documents = documentFiles.value
+  movedService.documents = documentFiles.value
   changedFields.documents = true
   isDataChanged.value = true
 }
@@ -321,7 +321,7 @@ const handleDocumentUpload = (event) => {
 const removeImage = (index) => {
   imageFiles.value.splice(index, 1)
   imagePreviewUrls.value.splice(index, 1)
-  editedService.images = imageFiles.value
+  movedService.images = imageFiles.value
   if (imageFiles.value.length === 0) {
     delete changedFields.images
   }
@@ -330,7 +330,7 @@ const removeImage = (index) => {
 
 const removeDocument = (index) => {
   documentFiles.value.splice(index, 1)
-  editedService.documents = documentFiles.value
+  movedService.documents = documentFiles.value
   if (documentFiles.value.length === 0) {
     delete changedFields.documents
   }
@@ -346,7 +346,7 @@ const moveForm = () => {
 
   // Create FormData for file upload
   const formData = new FormData()
-  formData.append('id', editedService.id)
+  formData.append('id', movedService.id)
 
   // Append changed fields
   Object.keys(changedFields).forEach((key) => {
@@ -359,7 +359,7 @@ const moveForm = () => {
         formData.append('documents[]', file)
       })
     } else {
-      formData.append(key, editedService[key])
+      formData.append(key, movedService[key])
     }
   })
 
@@ -392,14 +392,14 @@ watch(
   (newService) => {
     if (newService) {
       initialService.value = cloneDeep(newService)
-      Object.assign(editedService, cloneDeep(newService))
+      Object.assign(movedService, cloneDeep(newService))
     }
   },
   { immediate: true, deep: true },
 )
 
 watch(
-  editedService,
+  movedService,
   (newValue) => {
     if (initialService.value) {
       Object.keys(newValue).forEach((key) => {

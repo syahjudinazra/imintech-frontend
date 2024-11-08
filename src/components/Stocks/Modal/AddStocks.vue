@@ -90,8 +90,9 @@
               <label class="fw-bold" for="date_in">Date of Entry</label>
               <VueDatePicker
                 v-model="stocks.date_in"
+                :enable-time-picker="false"
                 :format="customFormat"
-                :model-type="'dd/MM/yyyy HH:mm:ss'"
+                :model-type="'dd/MM/yyyy'"
               />
             </div>
 
@@ -296,9 +297,6 @@ const formatDateForDisplay = (date) => {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
     })
     .replace(',', '')
 }

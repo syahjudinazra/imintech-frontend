@@ -14,8 +14,21 @@
         </div>
         <form @submit.prevent="editForm">
           <div class="modal-body">
+            <!--Ticket Services-->
             <div class="mb-3">
-              <div class="form-group mb-3">
+              <label for="ticket_services" class="form-label fw-bold">Ticket Services</label>
+              <input
+                v-model="editedService.ticket_services"
+                type="text"
+                class="form-control shadow-none"
+                id="ticket_services"
+                required
+              />
+            </div>
+
+            <!--Owner-->
+            <div class="mb-3">
+              <div class="form-group">
                 <label class="fw-bold">Owner</label><br />
                 <div class="form-check form-check-inline">
                   <input
@@ -27,7 +40,7 @@
                   />
                   <label class="form-check-label" for="stocks">Stocks</label>
                 </div>
-                <div class="form-check form-check-inline mb-3">
+                <div class="form-check form-check-inline">
                   <input
                     v-model="editedService.owner"
                     class="form-check-input mt-1"
@@ -38,10 +51,26 @@
                   <label class="form-check-label" for="customers">Customers</label>
                 </div>
               </div>
+            </div>
+
+            <!--Customers-->
+            <div class="mb-3">
+              <label for="customers" class="form-label fw-bold">Customers</label>
+              <input
+                v-model="editedService.customers"
+                type="text"
+                class="form-control shadow-none"
+                id="customers"
+                required
+              />
+            </div>
+
+            <!--Device Type-->
+            <div class="mb-3">
               <label for="serviceDevice" class="form-label fw-bold">Device Type</label>
               <v-select
                 v-model="editedService.services_devices_id"
-                :options="servicesDevice"
+                :options="serviceDevice"
                 :reduce="(device) => device.id"
                 label="name"
                 :searchable="true"
@@ -58,6 +87,8 @@
                 </template>
               </v-select>
             </div>
+
+            <!--Serial Number-->
             <div class="mb-3">
               <label for="serial_number" class="form-label fw-bold">Serial number</label>
               <input
@@ -68,6 +99,8 @@
                 required
               />
             </div>
+
+            <!--Usage-->
             <div class="mb-3">
               <label for="usage" class="form-label fw-bold">Usage</label>
               <v-select
@@ -89,32 +122,39 @@
                 </template>
               </v-select>
             </div>
+
+            <!--Damage-->
             <div class="mb-3">
               <label for="damage" class="form-label fw-bold">Damage</label>
               <textarea
                 v-model="editedService.damage"
-                type="text"
                 class="form-control shadow-none"
                 id="damage"
               />
             </div>
+
+            <!--Date of Entry-->
             <div class="mb-3">
               <label class="fw-bold" for="date_in_services">Date of Entry</label>
-              <VueDatePicker v-model="editedService.date_in_services" />
+              <VueDatePicker
+                v-model="editedService.date_in_services"
+                :enable-time-picker="false"
+                :format="customDateFormat"
+                :model-value="formatDateForPicker(editedService.date_in_services)"
+              />
             </div>
+
+            <!--Note-->
             <div class="mb-3">
               <label for="note" class="form-label fw-bold">Note</label>
-              <textarea
-                v-model="editedService.note"
-                type="text"
-                class="form-control shadow-none"
-                id="note"
-              />
+              <textarea v-model="editedService.note" class="form-control shadow-none" id="note" />
             </div>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" @click="closeModal">Close</button>
-            <button type="submit" class="btn btn-danger text-white">Submit</button>
+            <button type="submit" class="btn btn-danger text-white" :disabled="!isDataChanged">
+              Submit
+            </button>
           </div>
         </form>
       </div>
@@ -126,8 +166,10 @@
 import { ref, watch, defineProps, defineEmits, onMounted, reactive } from 'vue'
 import { Modal } from 'bootstrap'
 import vSelect from 'vue-select'
-import { showToast } from '@/utilities/toast'
+import VueDatePicker from '@vuepic/vue-datepicker'
+import '@vuepic/vue-datepicker/dist/main.css'
 import 'vue-select/dist/vue-select.css'
+import { showToast } from '@/utilities/toast'
 import { cloneDeep } from 'lodash-es'
 
 const props = defineProps({
@@ -135,7 +177,7 @@ const props = defineProps({
     type: Object,
     default: () => ({}),
   },
-  servicesDevice: {
+  serviceDevice: {
     type: Array,
     default: () => [],
   },
@@ -146,17 +188,32 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update', 'close'])
+
+// Refs and reactive states
+const editModal = ref(null)
 const isDataChanged = ref(false)
 const initialService = ref(null)
 const editedService = reactive({})
 const changedFields = reactive({})
 
+// Date formatting
+const customDateFormat = 'dd/MM/yyyy'
+
+const formatDateForPicker = (date) => {
+  if (!date) return null
+  return new Date(date)
+}
+
+// Watchers
 watch(
   () => props.service,
   (newService) => {
     if (newService) {
       initialService.value = cloneDeep(newService)
       Object.assign(editedService, cloneDeep(newService))
+      if (editedService.date_in_services) {
+        editedService.date_in_services = formatDateForPicker(editedService.date_in_services)
+      }
     }
   },
   { immediate: true, deep: true },
@@ -179,25 +236,38 @@ watch(
   { deep: true },
 )
 
-let editModal
-
+// Form submission
 const editForm = () => {
   if (!isDataChanged.value) {
     showToast('No changes detected.', 'error')
     return
   }
 
-  const updatedService = { id: editedService.id }
-  Object.keys(changedFields).forEach((key) => {
-    updatedService[key] = editedService[key]
-  })
+  try {
+    const updatedService = { id: editedService.id }
+    Object.keys(changedFields).forEach((key) => {
+      updatedService[key] = editedService[key]
+    })
 
-  if (updatedService.usages_id) {
-    updatedService.usage = updatedService.usages_id
+    if (updatedService.date_in_services) {
+      updatedService.date_in_services = updatedService.date_in_services.toISOString().split('T')[0]
+    }
+
+    if (updatedService.usages_id) {
+      updatedService.usage = updatedService.usages_id
+    }
+
+    emit('update', updatedService)
+    hideModal()
+  } catch (error) {
+    console.error('Error updating service:', error)
+    showToast('Failed to update service.', 'error')
   }
+}
 
-  emit('update', updatedService)
-  hideModal()
+// Modal functions
+const showModal = () => {
+  editModal.value.show()
 }
 
 const closeModal = () => {
@@ -205,12 +275,10 @@ const closeModal = () => {
   emit('close')
 }
 
-const showModal = () => {
-  editModal.show()
-}
-
 const hideModal = () => {
-  editModal.hide()
+  editModal.value.hide()
+  Object.keys(editedService).forEach((key) => delete editedService[key])
+  isDataChanged.value = false
 }
 
 defineExpose({
@@ -219,10 +287,16 @@ defineExpose({
 })
 
 onMounted(() => {
-  editModal = new Modal(document.getElementById('editForm'))
+  editModal.value = new Modal(document.getElementById('editForm'))
 })
 </script>
+
 <style scoped>
+input:focus,
+textarea:focus {
+  border-color: #d22c36;
+}
+
 .v-select {
   --vs-controls-color: #6c757d;
   --vs-border-color: #ced4da;
