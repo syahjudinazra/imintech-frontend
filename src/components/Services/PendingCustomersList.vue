@@ -274,15 +274,26 @@ const updateServices = async (updatedServices) => {
   }
 }
 
-const moveServices = async (movedServices) => {
+const moveServices = async (formData) => {
   try {
-    const response = await axios.put(`services-move/${id.value}`, movedServices)
+    const response = await axios.post(`services-move/${id.value}`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+
     showToast(response.data.message, 'success')
-    closeEditModal()
+    closeMoveModal()
     refreshList()
   } catch (error) {
     console.error('Data failed to move', error)
-    showToast(error.response?.data?.message || 'Move failed', 'error')
+    const errorMessage = error.response?.data?.message || 'Move failed'
+    showToast(errorMessage, 'error')
+
+    // Log validation errors if they exist
+    if (error.response?.data?.errors) {
+      console.error('Validation errors:', error.response.data.errors)
+    }
   }
 }
 

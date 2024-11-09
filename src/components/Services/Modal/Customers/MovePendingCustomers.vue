@@ -120,11 +120,13 @@
 
             <!-- Date Exit -->
             <div class="mb-3">
-              <label for="date_out_services" class="form-label fw-bold"> Date exit </label>
+              <label for="date_out_services" class="form-label fw-bold">Date exit</label>
               <VueDatePicker
                 v-model="movedService.date_out_services"
                 :enable-time-picker="false"
-                id="date_out_services"
+                :format="customDateFormat"
+                :model-value="formatDateForPicker(movedService.date_out_services)"
+                @update:model-value="handleDateChange"
               />
             </div>
 
@@ -133,6 +135,7 @@
               <label for="note" class="form-label fw-bold"> Note </label>
               <textarea v-model="movedService.note" class="form-control shadow-none" id="note" />
             </div>
+
             <!-- File Upload - Images -->
             <div class="mb-3">
               <label for="images" class="form-label fw-bold">Upload Payment</label>
@@ -142,7 +145,7 @@
                 id="images"
                 multiple
                 @change="handleImageUpload"
-                accept="image/*"
+                accept="image/jpeg,image/png,image/jpg"
                 ref="imageInput"
               />
               <small class="text-secondary">Support file: PNG,JPG,JPEG. Max 2MB</small>
@@ -178,7 +181,7 @@
                 id="documents"
                 multiple
                 @change="handleDocumentUpload"
-                accept=".pdf,.doc,.docx"
+                accept="application/pdf"
                 ref="documentInput"
               />
               <small class="text-secondary">Support file: .Pdf Max 5MB</small>
@@ -198,6 +201,27 @@
                   >
                     x
                   </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Status -->
+            <div class="form-group mb-3" hidden>
+              <label for="status" class="form-label fw-bold">Status</label>
+              <div class="d-flex gap-2">
+                <div class="form-check">
+                  <input
+                    v-model="movedService.status"
+                    class="form-check-input"
+                    type="radio"
+                    name="status"
+                    id="statusValidation"
+                    value="Validation Customers"
+                    :checked="movedService.status"
+                  />
+                  <label class="form-check-label" for="statusValidation">
+                    Validation Customers
+                  </label>
                 </div>
               </div>
             </div>
@@ -259,26 +283,65 @@ const imageFiles = ref([])
 const documentFiles = ref([])
 const imagePreviewUrls = ref([])
 
+// File validation
+const validateImageFile = (file) => {
+  const maxSize = 2 * 1024 * 1024 // 2MB
+  const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg']
+
+  if (!allowedTypes.includes(file.type)) {
+    showToast(`File ${file.name} must be a JPEG, PNG, or JPG image.`, 'error')
+    return false
+  }
+
+  if (file.size > maxSize) {
+    showToast(`File ${file.name} exceeds 2MB limit.`, 'error')
+    return false
+  }
+
+  return true
+}
+
+const validatePDFFile = (file) => {
+  const maxSize = 5 * 1024 * 1024 // 5MB
+
+  if (file.type !== 'application/pdf') {
+    showToast(`File ${file.name} must be a PDF document.`, 'error')
+    return false
+  }
+
+  if (file.size > maxSize) {
+    showToast(`File ${file.name} exceeds 5MB limit.`, 'error')
+    return false
+  }
+
+  return true
+}
+
+// Date handling
+const customDateFormat = 'dd/MM/yyyy'
+
+const formatDateForPicker = (date) => {
+  if (!date) return null
+  return new Date(date)
+}
+
+const formatDateForServer = (date) => {
+  if (!date) return null
+  const d = new Date(date)
+  return d.toISOString().split('T')[0] // Returns YYYY-MM-DD format
+}
+
+const handleDateChange = (newDate) => {
+  movedService.date_out_services = newDate
+  changedFields.date_out_services = true
+  isDataChanged.value = true
+}
+
 // File handling methods
 const handleImageUpload = (event) => {
   const files = Array.from(event.target.files)
+  const validFiles = files.filter(validateImageFile)
 
-  // Validate file types and size
-  const validFiles = files.filter((file) => {
-    const isImage = file.type.startsWith('image/')
-    const isValidSize = file.size <= 5 * 1024 * 1024 // 5MB limit
-
-    if (!isImage) {
-      showToast('Please upload only image files.', 'error')
-    }
-    if (!isValidSize) {
-      showToast('Image size should be less than 5MB.', 'error')
-    }
-
-    return isImage && isValidSize
-  })
-
-  // Create preview URLs and store files
   validFiles.forEach((file) => {
     const reader = new FileReader()
     reader.onload = (e) => {
@@ -288,40 +351,26 @@ const handleImageUpload = (event) => {
   })
 
   imageFiles.value = [...imageFiles.value, ...validFiles]
-  movedService.images = imageFiles.value
-  changedFields.images = true
-  isDataChanged.value = true
+  if (validFiles.length > 0) {
+    changedFields.images = true
+    isDataChanged.value = true
+  }
 }
 
 const handleDocumentUpload = (event) => {
   const files = Array.from(event.target.files)
-
-  // Validate file types and size
-  const validFiles = files.filter((file) => {
-    const validTypes = ['.pdf', '.doc', '.docx']
-    const isValidType = validTypes.some((type) => file.name.toLowerCase().endsWith(type))
-    const isValidSize = file.size <= 10 * 1024 * 1024 // 10MB limit
-
-    if (!isValidType) {
-      showToast('Please upload only PDF or Word documents.', 'error')
-    }
-    if (!isValidSize) {
-      showToast('Document size should be less than 10MB.', 'error')
-    }
-
-    return isValidType && isValidSize
-  })
+  const validFiles = files.filter(validatePDFFile)
 
   documentFiles.value = [...documentFiles.value, ...validFiles]
-  movedService.documents = documentFiles.value
-  changedFields.documents = true
-  isDataChanged.value = true
+  if (validFiles.length > 0) {
+    changedFields.documents = true
+    isDataChanged.value = true
+  }
 }
 
 const removeImage = (index) => {
   imageFiles.value.splice(index, 1)
   imagePreviewUrls.value.splice(index, 1)
-  movedService.images = imageFiles.value
   if (imageFiles.value.length === 0) {
     delete changedFields.images
   }
@@ -330,60 +379,81 @@ const removeImage = (index) => {
 
 const removeDocument = (index) => {
   documentFiles.value.splice(index, 1)
-  movedService.documents = documentFiles.value
   if (documentFiles.value.length === 0) {
     delete changedFields.documents
   }
   isDataChanged.value = Object.keys(changedFields).length > 0
 }
 
-// Form submission
-const moveForm = () => {
+const moveForm = async () => {
   if (!isDataChanged.value) {
     showToast('No changes detected.', 'error')
     return
   }
 
-  // Create FormData for file upload
   const formData = new FormData()
-  formData.append('id', movedService.id)
 
-  // Append changed fields
+  // Format date before sending to server
+  const formattedDate = formatDateForServer(movedService.date_out_services)
+
+  // Append basic form fields
   Object.keys(changedFields).forEach((key) => {
-    if (key === 'images') {
-      imageFiles.value.forEach((file) => {
-        formData.append('images[]', file)
-      })
-    } else if (key === 'documents') {
-      documentFiles.value.forEach((file) => {
-        formData.append('documents[]', file)
-      })
-    } else {
-      formData.append(key, movedService[key])
+    if (key !== 'images' && key !== 'documents') {
+      if (key === 'date_out_services') {
+        formData.append(key, formattedDate)
+      } else {
+        formData.append(key, movedService[key])
+      }
     }
   })
+
+  // Append files
+  imageFiles.value.forEach((file) => {
+    formData.append('images[]', file)
+  })
+
+  documentFiles.value.forEach((file) => {
+    formData.append('documents[]', file)
+  })
+
+  // Add other required fields
+  formData.append('technicians_id', movedService.technicians_id)
+  formData.append('spareparts_id', movedService.spareparts_id)
+  formData.append('repair', movedService.repair || '')
+  formData.append('sn_kanibal', movedService.sn_kanibal || '')
+  formData.append('date_out_services', formattedDate || '')
+  formData.append('note', movedService.note || '')
+  formData.append('status', movedService.status || '')
 
   emit('update', formData)
   hideModal()
 }
 
-// Reset file inputs when modal is closed
-const closeModal = () => {
+// Reset form
+const resetForm = () => {
   imageFiles.value = []
   documentFiles.value = []
   imagePreviewUrls.value = []
   if (imageInput.value) imageInput.value.value = ''
   if (documentInput.value) documentInput.value.value = ''
-  hideModal()
-  emit('close')
+  Object.keys(changedFields).forEach((key) => delete changedFields[key])
+  isDataChanged.value = false
 }
 
+// Modal handlers
 const showModal = () => {
   moveModal?.show()
 }
 
 const hideModal = () => {
+  resetForm()
   moveModal?.hide()
+}
+
+const closeModal = () => {
+  resetForm()
+  hideModal()
+  emit('close')
 }
 
 // Watchers
@@ -393,6 +463,9 @@ watch(
     if (newService) {
       initialService.value = cloneDeep(newService)
       Object.assign(movedService, cloneDeep(newService))
+      if (movedService.date_out_services) {
+        movedService.date_out_services = formatDateForPicker(movedService.date_out_services)
+      }
     }
   },
   { immediate: true, deep: true },
