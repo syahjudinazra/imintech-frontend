@@ -18,14 +18,17 @@
                     <input
                       type="text"
                       class="form-control shadow-none"
-                      :class="{ 'is-invalid': submitted && emailError }"
+                      :class="{ 'is-invalid': submitted && (emailError || serverErrors.email) }"
                       placeholder="Please enter account ID/email address"
                       v-model="email"
                       autocomplete="email"
                     />
                   </div>
-                  <div class="invalid-feedback">
+                  <div class="invalid-feedback" v-if="emailError">
                     {{ emailError }}
+                  </div>
+                  <div class="invalid-feedback" v-if="serverErrors.email">
+                    {{ serverErrors.email[0] }}
                   </div>
                 </div>
 
@@ -34,7 +37,9 @@
                     <input
                       :type="passwordVisible ? 'text' : 'password'"
                       class="form-control shadow-none"
-                      :class="{ 'is-invalid': submitted && passwordError }"
+                      :class="{
+                        'is-invalid': submitted && (passwordError || serverErrors.password),
+                      }"
                       placeholder="Please enter password"
                       v-model="password"
                     />
@@ -46,26 +51,29 @@
                       <CIcon :icon="passwordVisible ? cilLockUnlocked : cilLockLocked" />
                     </span>
                   </div>
-                  <div class="invalid-feedback">
+                  <div class="invalid-feedback" v-if="passwordError">
                     {{ passwordError }}
+                  </div>
+                  <div class="invalid-feedback" v-if="serverErrors.password">
+                    {{ serverErrors.password[0] }}
                   </div>
                 </div>
 
                 <div class="d-grid">
-                  <button type="submit" class="btn btn-danger text-white">
-                    <span v-if="loading" class="loader"></span>
-                    <span v-else>Confirm</span>
+                  <button type="submit" class="btn btn-danger text-white" :disabled="loading">
+                    <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
+                    <span>{{ loading ? 'Logging in...' : 'Confirm' }}</span>
                   </button>
                 </div>
               </form>
 
               <div class="d-flex justify-content-between mt-3">
-                <router-link to="/pages/register" class="text-primary text-decoration-none"
-                  >Register</router-link
-                >
-                <router-link to="/pages/forgotpassword" class="text-primary text-decoration-none"
-                  >Forgot password</router-link
-                >
+                <router-link to="/pages/register" class="text-primary text-decoration-none">
+                  Register
+                </router-link>
+                <router-link to="/pages/forgotpassword" class="text-primary text-decoration-none">
+                  Forgot password
+                </router-link>
               </div>
             </div>
           </div>
@@ -97,12 +105,14 @@ const password = ref('')
 const passwordVisible = ref(false)
 const emailError = ref('')
 const passwordError = ref('')
+const serverErrors = ref({})
 const router = useRouter()
 
 const handleSubmit = () => {
   submitted.value = true
   emailError.value = ''
   passwordError.value = ''
+  serverErrors.value = {}
 
   if (!validateEmail(email.value)) {
     emailError.value = 'Please enter a valid email address'
@@ -138,6 +148,7 @@ const getLogin = async () => {
       email: email.value,
       password: password.value,
     })
+
     const token = response.data.token
     const user = JSON.stringify(response.data.users)
     localStorage.setItem('token', token)
@@ -145,8 +156,25 @@ const getLogin = async () => {
     showToast('Login successfully', 'success')
     router.push({ name: 'Dashboard' })
   } catch (error) {
-    console.error('Login failed:', error)
-    showToast('Login failed. Please try again!', 'error')
+    if (error.response) {
+      const { data, status } = error.response
+
+      if (status === 422) {
+        // Validation errors
+        serverErrors.value = data.errors || {}
+
+        // Handle specific error messages
+        if (data.errors?.email?.[0]?.includes('email does not exist')) {
+          showToast('Email is not registered', 'error')
+        } else if (data.errors?.password?.[0]?.includes('incorrect password')) {
+          showToast('Incorrect password', 'error')
+        }
+      } else {
+        showToast('Login failed. Please try again later.', 'error')
+      }
+    } else {
+      showToast('Login failed. Please check your internet connection.', 'error')
+    }
     clearInput()
   } finally {
     loading.value = false
@@ -156,6 +184,7 @@ const getLogin = async () => {
 const clearInput = () => {
   email.value = ''
   password.value = ''
+  submitted.value = false
 }
 </script>
 

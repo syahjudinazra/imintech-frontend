@@ -38,7 +38,7 @@
         </div>
         <div class="form-group mb-3">
           <label class="fw-bold" for="date_in_services">Date of Entry</label>
-          <VueDatePicker v-model="services.date_in_services" />
+          <VueDatePicker v-model="services.date_in_services" :enable-time-picker="false" />
         </div>
         <div class="form-group mb-3">
           <label class="fw-bold">Owner</label><br />

@@ -95,7 +95,6 @@
                 :clearable="false"
                 placeholder="Select No Spareparts"
                 id="spareparts"
-                required
               >
                 <template #no-options="{ search, searching }">
                   <template v-if="searching">

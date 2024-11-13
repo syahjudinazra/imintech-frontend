@@ -28,12 +28,16 @@
         <template #empty-message>
           <p>Data not found</p>
         </template>
+        <template #item-date_in_services="{ date_in_services }">
+          {{ formatDate(date_in_services) }}
+        </template>
+        <template #item-services_devices_id="{ services_devices_id }">
+          {{ getDeviceName(services_devices_id) }}
+        </template>
         <template #items="{ item }">
           <tr>
-            <td>{{ formatDate(item.date_in_services) }}</td>
             <td>{{ item.serial_number }}</td>
             <td>{{ item.customers }}</td>
-            <td>{{ getDeviceName(item.services_devices_id) }}</td>
           </tr>
         </template>
         <template #item-action="item">
@@ -62,6 +66,12 @@
                   class="dropdown-item head-text text-decoration-none"
                   @click.prevent="moveModal(item)"
                   >Move</a
+                >
+                <a
+                  href="#"
+                  class="dropdown-item head-text text-decoration-none"
+                  @click.prevent="reqModal(item)"
+                  >Request Spareparts</a
                 >
                 <a
                   href="#"
@@ -102,6 +112,16 @@
       @close="closeMoveModal"
     />
 
+    <RequestPendingCustomers
+      v-model="showRequestModal"
+      :service-id="selectedServiceId"
+      :spareparts="spareparts"
+      :spareparts-device="sparepartsDevice"
+      :customer-name="selectedCustomerName"
+      @update="reqSpareparts"
+      @close="closeReqModal"
+    />
+
     <DeletePendingCustomers
       ref="deleteModalRef"
       @delete="deleteServices"
@@ -116,6 +136,7 @@ import axios from 'axios'
 import { showToast } from '@/utilities/toast'
 import ViewPendingCustomers from '../Services/Modal/Customers/ViewPendingCustomers.vue'
 import MovePendingCustomers from '../Services/Modal/Customers/MovePendingCustomers.vue'
+import RequestPendingCustomers from '../Services/Modal/Customers/SparepartsPendingCustomers.vue'
 import EditPendingCustomers from '../Services/Modal/Customers/EditPendingCustomers.vue'
 import DeletePendingCustomers from '../Services/Modal/Customers/DeletePendingCustomers.vue'
 import Search from '../Layouts/SearchAll.vue'
@@ -125,6 +146,7 @@ import { mockServerItems, refreshData } from '../../mock/mockPendingCustomers'
 const id = ref(null)
 const services = ref([])
 const servicesDevice = ref([])
+const sparepartsDevice = ref([])
 const usages = ref([])
 const technicians = ref([])
 const spareparts = ref([])
@@ -136,6 +158,11 @@ const viewService = ref({})
 const moveService = ref({})
 const editService = ref({})
 const loading = ref(true)
+
+// New refs for Request Spareparts modal
+const showRequestModal = ref(false)
+const selectedServiceId = ref(null)
+const selectedCustomerName = ref('')
 
 const token = localStorage.getItem('token')
 // Constants
@@ -160,16 +187,13 @@ const serverOptions = ref({
 
 const formatDate = (date) => {
   if (!date) return '-'
-
   try {
     const dateObj = new Date(date)
     if (isNaN(dateObj.getTime())) return '-'
-
     const dayName = dayNames[dateObj.getDay()]
     const day = dateObj.getDate().toString().padStart(2, '0')
     const month = (dateObj.getMonth() + 1).toString().padStart(2, '0')
     const year = dateObj.getFullYear()
-
     return `${dayName}, ${day}/${month}/${year}`
   } catch (error) {
     console.error('Error formatting date:', error)
@@ -262,6 +286,16 @@ const fetchSpareparts = async () => {
   }
 }
 
+const fetchSparepartsDevice = async () => {
+  try {
+    const response = await axios.get('spareparts-device')
+    sparepartsDevice.value = response.data.data
+  } catch (error) {
+    console.error('Data not found', error)
+    showToast('Failed to fetch device types.', 'error')
+  }
+}
+
 const updateServices = async (updatedServices) => {
   try {
     const response = await axios.put(`services/${id.value}`, updatedServices)
@@ -281,19 +315,24 @@ const moveServices = async (formData) => {
         'Content-Type': 'multipart/form-data',
       },
     })
-
     showToast(response.data.message, 'success')
     closeMoveModal()
     refreshList()
   } catch (error) {
     console.error('Data failed to move', error)
-    const errorMessage = error.response?.data?.message || 'Move failed'
-    showToast(errorMessage, 'error')
+    showToast(error.response?.data?.message || 'Move failed', 'error')
+  }
+}
 
-    // Log validation errors if they exist
-    if (error.response?.data?.errors) {
-      console.error('Validation errors:', error.response.data.errors)
-    }
+const reqSpareparts = async () => {
+  try {
+    const response = await axios.post(`spareparts/${id.value}/update-quantity`)
+    showToast(response.data.message, 'success')
+    closeEditModal()
+    refreshList()
+  } catch (error) {
+    console.error('Data failed to change', error)
+    showToast(error.response?.data?.message || 'Update failed', 'error')
   }
 }
 
@@ -322,6 +361,12 @@ const moveModal = (service) => {
   moveModalRef.value.showModal()
 }
 
+const reqModal = (service) => {
+  selectedServiceId.value = service.ticket_services
+  selectedCustomerName.value = service.customers
+  showRequestModal.value = true
+}
+
 const editModal = (service) => {
   editService.value = { ...service }
   id.value = service.id
@@ -341,6 +386,12 @@ const closeMoveModal = () => {
   moveModalRef.value.hideModal()
 }
 
+const closeReqModal = () => {
+  showRequestModal.value = false
+  selectedServiceId.value = null
+  selectedCustomerName.value = ''
+}
+
 const closeEditModal = () => {
   editModalRef.value.hideModal()
 }
@@ -355,6 +406,7 @@ onMounted(() => {
   fetchUsages()
   fetchTechnicians()
   fetchSpareparts()
+  fetchSparepartsDevice()
 })
 </script>
 

@@ -1,7 +1,6 @@
 <template>
-  <!-- Button trigger modal -->
   <button type="button" class="btn btn-danger btn-sm text-white" @click="openModal">
-    Add Customers
+    Add Data
   </button>
 
   <!-- Modal -->
@@ -15,7 +14,7 @@
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="addForm_label">Add Customers</h5>
+          <h5 class="modal-title" id="addForm_label">Add Data</h5>
           <button
             type="button"
             class="btn-close shadow-none"
@@ -39,10 +38,14 @@
             <input
               v-model="customers.phone"
               type="number"
-              class="form-control shadow-none"
+              :class="['form-control shadow-none', { 'is-invalid': phoneError }]"
               id="phone"
               placeholder="Input phone min:10"
+              @input="validatePhone"
             />
+            <div class="invalid-feedback" v-if="phoneError">
+              Phone number must be at least 10 digits long
+            </div>
           </div>
           <div class="mb-3">
             <label for="address" class="form-label fw-bold">Address</label>
@@ -57,7 +60,12 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" @click="closeModal">Close</button>
-          <button type="button" class="btn btn-danger text-white" @click="AddCustomers">
+          <button
+            type="button"
+            class="btn btn-danger text-white"
+            @click="AddCustomers"
+            :disabled="!isFormValid"
+          >
             Submit
           </button>
         </div>
@@ -67,7 +75,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { Modal } from 'bootstrap'
 import axios from 'axios'
 import { showToast } from '@/utilities/toast'
@@ -77,6 +85,7 @@ const customers = ref({
   phone: '',
   address: '',
 })
+const phoneError = ref(false)
 const token = localStorage.getItem('token')
 let addForm
 
@@ -84,7 +93,27 @@ onMounted(() => {
   addForm = new Modal(document.getElementById('addForm'), {})
 })
 
+const isFormValid = computed(() => {
+  return (
+    customers.value.name &&
+    customers.value.phone &&
+    customers.value.phone.toString().length >= 10 &&
+    !phoneError.value
+  )
+})
+
+function validatePhone() {
+  const phoneNumber = customers.value.phone.toString()
+  phoneError.value = phoneNumber.length < 10
+}
+
 function openModal() {
+  customers.value = {
+    name: '',
+    phone: '',
+    address: '',
+  }
+  phoneError.value = false
   addForm.show()
 }
 
@@ -95,6 +124,11 @@ function closeModal() {
 async function AddCustomers() {
   if (!customers.value.name) {
     showToast('Input customer name', 'error')
+    return
+  }
+
+  if (!customers.value.phone || customers.value.phone.toString().length < 10) {
+    showToast('Phone number must be at least 10 digits long', 'error')
     return
   }
 
@@ -109,11 +143,10 @@ async function AddCustomers() {
     closeModal()
   } catch (error) {
     console.error('Error add data:', error)
-    showToast(error.data.message, 'error')
+    showToast(error.response?.data?.message || 'An error occurred', 'error')
   }
 }
 </script>
-
 <style scoped>
 input:focus {
   border-color: #d22c36;

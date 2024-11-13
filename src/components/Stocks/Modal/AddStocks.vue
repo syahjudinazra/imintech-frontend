@@ -92,7 +92,6 @@
                 v-model="stocks.date_in"
                 :enable-time-picker="false"
                 :format="customFormat"
-                :model-type="'dd/MM/yyyy'"
               />
             </div>
 

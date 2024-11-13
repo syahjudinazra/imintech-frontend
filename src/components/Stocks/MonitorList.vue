@@ -152,11 +152,22 @@ const getDeviceName = computed(() => {
 
 // Enhanced computed property to include device names
 const processedStocksWithNames = computed(() => {
-  return stocks.value.map((stock) => ({
-    ...stock,
-    device: getDeviceName.value(stock.stocks_devices_id),
-    total: STATUS_VALUES.reduce((sum, status) => sum + (stock[status.toLowerCase()] || 0), 0),
-  }))
+  return stocks.value.map((stock) => {
+    // Get the device name
+    const deviceName = getDeviceName.value(stock.stocks_devices_id)
+
+    // Get warehouse and services counts from summary
+    const warehouseCount = summary.value?.Warehouse?.[stock.stocks_devices_id] || 0
+    const servicesCount = summary.value?.Services?.[stock.stocks_devices_id] || 0
+
+    return {
+      ...stock,
+      device: deviceName,
+      warehouse: warehouseCount,
+      services: servicesCount,
+      total: warehouseCount + servicesCount,
+    }
+  })
 })
 
 // Rest of the computed properties remain the same
@@ -179,7 +190,6 @@ const getPercentageByStatus = computed(() => {
   }
 })
 
-// Modified loadFromServer to handle both stocks and devices
 const loadFromServer = async () => {
   loading.value = true
   error.value = null
@@ -190,13 +200,16 @@ const loadFromServer = async () => {
       params: {
         page,
         per_page: rowsPerPage,
-        sort_by: sortBy === 'device' ? 'stocks_devices_id' : sortBy, // Map the sort field
+        sort_by: sortBy === 'device' ? 'stocks_devices_id' : sortBy,
         sort_type: sortType,
         search: searchTerm,
       },
     })
 
+    // Destructure and store the response data
     const { data, devices: deviceData, summary: summaryData, total } = response.data
+
+    // Update the reactive references
     stocks.value = data
     devices.value = deviceData
     summary.value = summaryData
