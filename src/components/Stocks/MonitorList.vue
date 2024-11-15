@@ -28,9 +28,14 @@
         </button>
       </div>
       <div class="d-flex align-items-center gap-2">
-        <ExportStocks :data="stocks" :loading="loading" />
+        <ExportStocks :data="groupedStocks" :loading="loading" />
         <ImportStocks @import-complete="refreshList" />
-        <MoveSn @move-complete="refreshList" />
+        <MoveSn
+          :customer="customers"
+          :stocks-devices="stocksDevice"
+          :location="locations"
+          @move-complete="refreshList"
+        />
         <Search @search="updateSearch" :disabled="loading" placeholder="Search devices..." />
       </div>
     </div>
@@ -42,7 +47,7 @@
           v-model:server-options="serverOptions"
           :server-items-length="serverItemsLength"
           :headers="headers"
-          :items="processedStocksWithNames"
+          :items="processedUniqueStocks"
           :loading="loading"
           :theme-color="BASE_COLOR"
           :rows-per-page="10"
@@ -106,11 +111,13 @@ import ImportStocks from '../Stocks/Excel/ImportStocks.vue'
 // State management
 const stocks = ref([])
 const devices = ref([])
+const customers = ref([])
+const locations = ref([])
 const loading = ref(true)
 const summary = ref({})
 const error = ref(null)
 
-// Constants (same as before)
+// Constants
 const STATUS_VALUES = ['Warehouse', 'Services', 'Loan', 'Sold', 'Damage', 'Entrust']
 const BASE_COLOR = '#e55353'
 
@@ -123,7 +130,6 @@ const STATUS_CLASSES = {
   Entrust: 'secondary',
 }
 
-// Modified headers to use 'device' instead of 'stocks_devices_id'
 const headers = [
   { text: 'Device', value: 'device', sortable: true },
   { text: 'Warehouse', value: 'warehouse', sortable: true },
@@ -150,27 +156,46 @@ const getDeviceName = computed(() => {
   return (deviceId) => deviceMap.get(deviceId) || deviceId
 })
 
-// Enhanced computed property to include device names
-const processedStocksWithNames = computed(() => {
-  return stocks.value.map((stock) => {
-    // Get the device name
-    const deviceName = getDeviceName.value(stock.stocks_devices_id)
+// New computed property to group stocks by device ID
+const groupedStocks = computed(() => {
+  const grouped = new Map()
 
-    // Get warehouse and services counts from summary
-    const warehouseCount = summary.value?.Warehouse?.[stock.stocks_devices_id] || 0
-    const servicesCount = summary.value?.Services?.[stock.stocks_devices_id] || 0
-
-    return {
-      ...stock,
-      device: deviceName,
-      warehouse: warehouseCount,
-      services: servicesCount,
-      total: warehouseCount + servicesCount,
+  stocks.value.forEach((stock) => {
+    if (!grouped.has(stock.stocks_devices_id)) {
+      grouped.set(stock.stocks_devices_id, {
+        stocks_devices_id: stock.stocks_devices_id,
+        device: getDeviceName.value(stock.stocks_devices_id),
+        warehouse: 0,
+        services: 0,
+        loan: 0,
+        sold: 0,
+        damage: 0,
+        entrust: 0,
+        total: 0,
+      })
     }
   })
+
+  // Update counts from summary data
+  Object.entries(summary.value).forEach(([status, counts]) => {
+    Object.entries(counts).forEach(([deviceId, count]) => {
+      const device = grouped.get(parseInt(deviceId))
+      if (device) {
+        device[status.toLowerCase()] = count
+        device.total += count
+      }
+    })
+  })
+
+  return Array.from(grouped.values())
 })
 
-// Rest of the computed properties remain the same
+// Use the grouped data for the table
+const processedUniqueStocks = computed(() => {
+  return groupedStocks.value
+})
+
+// Rest of the computed properties
 const getStatusClass = computed(() => {
   return (status) => STATUS_CLASSES[status]
 })
@@ -206,10 +231,8 @@ const loadFromServer = async () => {
       },
     })
 
-    // Destructure and store the response data
     const { data, devices: deviceData, summary: summaryData, total } = response.data
 
-    // Update the reactive references
     stocks.value = data
     devices.value = deviceData
     summary.value = summaryData
@@ -223,7 +246,24 @@ const loadFromServer = async () => {
   }
 }
 
-// Rest of the methods remain the same
+const fetchCustomers = async () => {
+  try {
+    const response = await axios.get('customers')
+    customers.value = response.data.data
+  } catch (error) {
+    console.error('Data not found', error)
+  }
+}
+
+const fetchLocations = async () => {
+  try {
+    const response = await axios.get('location')
+    locations.value = response.data.data
+  } catch (error) {
+    console.error('Data not found', error)
+  }
+}
+
 const handleOptionsUpdate = (newOptions) => {
   serverOptions.value = newOptions
 }
@@ -253,6 +293,8 @@ watch(
 // Lifecycle hooks
 onMounted(() => {
   loadFromServer()
+  fetchCustomers()
+  fetchLocations()
 })
 </script>
 

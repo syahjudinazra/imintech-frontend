@@ -147,6 +147,7 @@
                 type="text"
                 class="form-control shadow-none"
                 id="information"
+                placeholder="Input Information"
               />
             </div>
 
