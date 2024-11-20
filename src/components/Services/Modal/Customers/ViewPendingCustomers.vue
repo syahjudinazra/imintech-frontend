@@ -85,6 +85,16 @@
             />
           </div>
 
+          <!--Spareparts Number-->
+          <div class="mb-3" v-if="sparepartRequests && sparepartRequests.length > 0">
+            <label class="form-label fw-bold">Spareparts Number</label>
+            <input
+              class="form-control shadow-none bg-light"
+              :value="formatSparepartNumbers(sparepartRequests)"
+              readonly
+            />
+          </div>
+
           <!--Damage-->
           <div class="mb-3">
             <label class="fw-bold" for="damage">Damage</label>
@@ -148,12 +158,15 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
+  sparepartRequests: {
+    type: Array,
+    default: () => [],
+  },
 })
 
 const emit = defineEmits(['close'])
 let viewModal = ref(null)
 
-// Date formatting
 const customDateFormat = 'dd/MM/yyyy'
 
 const formatDateForPicker = (date) => {
@@ -169,6 +182,12 @@ const getDeviceName = (id) => {
 const getUsagesName = (id) => {
   const usage = props.usages.find((u) => u.id === id)
   return usage ? usage.name : 'N/A'
+}
+
+// New function to format sparepart numbers
+const formatSparepartNumbers = (requests) => {
+  if (!requests || requests.length === 0) return 'No spareparts requested'
+  return requests.map((req) => req.no_spareparts).join(', ')
 }
 
 const showModal = () => {

@@ -91,6 +91,7 @@
       :service="viewService"
       :service-device="servicesDevice"
       :usages="usages"
+      :sparepart-requests="sparepartRequests"
       @close="closeViewModal"
     />
 
@@ -147,6 +148,7 @@ const id = ref(null)
 const services = ref([])
 const servicesDevice = ref([])
 const sparepartsDevice = ref([])
+const sparepartRequests = ref([])
 const usages = ref([])
 const technicians = ref([])
 const spareparts = ref([])
@@ -296,6 +298,17 @@ const fetchSparepartsDevice = async () => {
   }
 }
 
+const fetchSparepartRequests = async (serviceId) => {
+  try {
+    const response = await axios.get(`services/${serviceId}/sparepart-requests`)
+    return response.data.data
+  } catch (error) {
+    console.error('Failed to fetch sparepart requests:', error)
+    showToast('Failed to fetch sparepart requests', 'error')
+    return []
+  }
+}
+
 const updateServices = async (updatedServices) => {
   try {
     const response = await axios.put(`services/${id.value}`, updatedServices)
@@ -324,18 +337,6 @@ const moveServices = async (formData) => {
   }
 }
 
-const reqSpareparts = async () => {
-  try {
-    const response = await axios.post(`spareparts/${id.value}/update-quantity`)
-    showToast(response.data.message, 'success')
-    closeEditModal()
-    refreshList()
-  } catch (error) {
-    console.error('Data failed to change', error)
-    showToast(error.response?.data?.message || 'Update failed', 'error')
-  }
-}
-
 const deleteServices = async () => {
   try {
     const response = await axios.delete(`services/${id.value}`)
@@ -349,9 +350,14 @@ const deleteServices = async () => {
   }
 }
 
-const viewModal = (service) => {
+const viewModal = async (service) => {
   viewService.value = { ...service }
   id.value = service.id
+
+  // Fetch sparepart requests for this service
+  const requests = await fetchSparepartRequests(service.id)
+  sparepartRequests.value = requests
+
   viewModalRef.value.showModal()
 }
 
@@ -362,7 +368,7 @@ const moveModal = (service) => {
 }
 
 const reqModal = (service) => {
-  selectedServiceId.value = service.ticket_services
+  selectedServiceId.value = service.id
   selectedCustomerName.value = service.customers
   showRequestModal.value = true
 }

@@ -14,7 +14,7 @@
                 <div class="mb-4">
                   <div class="row">
                     <div class="col-md-6 mb-3">
-                      <label class="form-label">Ticket Services</label>
+                      <label class="form-label">ID</label>
                       <input type="text" class="form-control" :value="serviceId" disabled />
                     </div>
                     <div class="col-md-6 mb-3">
@@ -86,7 +86,7 @@
                       <input
                         type="number"
                         v-model.number="item.quantity"
-                        class="form-control"
+                        class="form-control shadow-none"
                         required
                         min="1"
                         :max="getMaxQuantity(item.no_spareparts)"
@@ -118,7 +118,7 @@
                 type="button"
                 class="btn btn-danger text-white"
                 @click="handleSubmit"
-                :disabled="loading || !isFormValid"
+                :disabled="loading"
               >
                 {{ loading ? 'Submitting...' : 'Submit Request' }}
               </button>
@@ -247,26 +247,72 @@ const updateSparepartDetails = (index) => {
 }
 
 const handleSubmit = async () => {
+  if (!validateForm()) {
+    showToast('Please fill all required fields correctly', 'error')
+    return
+  }
+
   loading.value = true
   try {
+    // Ensure all values are properly formatted
+    const requestData = {
+      spareparts: formData.value.spareparts.map((item) => ({
+        spareparts_devices_id: Number(item.spareparts_devices_id) || null,
+        no_spareparts: item.no_spareparts,
+        quantity: Number(item.quantity),
+      })),
+    }
+
+    // Add CSRF token to headers
+    const config = {
+      headers: {
+        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]'),
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+    }
+
     const response = await axios.post(
-      `/api/services/${props.serviceId}/sparepart-requests`,
-      formData.value,
+      `services/${props.serviceId}/sparepart-requests`,
+      requestData,
+      config,
     )
 
-    showToast(response.data.message || 'Sparepart request submitted successfully', 'success')
-    emit('update')
-    closeModal()
+    if (response.data.message) {
+      showToast(response.data.message, 'success')
+      emit('update')
+      closeModal()
+    }
   } catch (error) {
     console.error('Failed to submit sparepart request:', error)
-    showToast(error.response?.data?.message || 'Failed to submit request', 'error')
+    const errorMessage = error.response?.data?.message || 'Failed to submit request'
+    showToast(errorMessage, 'error')
   } finally {
     loading.value = false
   }
 }
+
+// Add form validation function
+const validateForm = () => {
+  return formData.value.spareparts.every(
+    (item) =>
+      item.spareparts_devices_id &&
+      item.no_spareparts &&
+      item.quantity > 0 &&
+      item.quantity <= getMaxQuantity(item.no_spareparts),
+  )
+}
 </script>
 
 <style scoped>
+input:focus {
+  border-color: #d22c36;
+}
+
+textarea:focus {
+  border-color: #d22c36;
+}
+
 .modal-overlay {
   position: fixed;
   top: 0;
