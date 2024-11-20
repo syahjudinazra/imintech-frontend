@@ -157,6 +157,11 @@ export default [
         name: 'Done Stocks',
         to: '/services/done-stocks',
       },
+      {
+        component: 'CNavItem',
+        name: 'Temporary Note',
+        to: '/services/temporary-note',
+      },
     ],
   },
   {

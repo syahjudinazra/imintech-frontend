@@ -30,6 +30,8 @@
     "bootstrap": "^5.3.3",
     "chart.js": "^4.4.2",
     "jquery": "^3.7.1",
+    "jspdf": "^2.5.2",
+    "jspdf-autotable": "^3.8.4",
     "lodash": "^4.17.21",
     "lodash-es": "^4.17.21",
     "moment": "^2.30.1",

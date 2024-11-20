@@ -155,6 +155,12 @@ const routes = [
             component: () => import('@/views/services/DoneStocks.vue'),
             meta: { requiresAuth: true },
           },
+          {
+            path: '/services/temporary-note',
+            name: 'Temporary Note',
+            component: () => import('@/views/services/TemporaryNote.vue'),
+            meta: { requiresAuth: true },
+          },
         ],
       },
       {
