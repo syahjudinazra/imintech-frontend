@@ -73,8 +73,7 @@
                           :key="part.id"
                           :value="part.no_spareparts"
                         >
-                          {{ part.no_spareparts }} - {{ part.name }} (Stock: {{ part.quantity }},
-                          Price: ${{ part.price }})
+                          {{ part.no_spareparts }} - {{ part.name }} (Stock: {{ part.quantity }})
                         </option>
                       </select>
                       <div class="invalid-feedback">Please select a sparepart</div>
