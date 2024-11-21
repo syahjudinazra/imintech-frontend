@@ -32,7 +32,7 @@
         <ImportStocks @import-complete="refreshList" />
         <MoveSn
           :customer="customers"
-          :stocks-devices="stocksDevice"
+          :stocks-devices="devices"
           :location="locations"
           @move-complete="refreshList"
         />

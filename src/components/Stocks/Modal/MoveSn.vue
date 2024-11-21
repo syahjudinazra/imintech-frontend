@@ -61,12 +61,6 @@
                     border-cell
                     buttons-pagination
                   >
-                    <template #item-stocks_devices_id="{ stocks_devices_id }">
-                      {{ getDeviceName(stocks_devices_id) }}
-                    </template>
-                    <template #item-customers_id="{ customers_id }">
-                      {{ getCustomerName(customers_id) }}
-                    </template>
                     <template #item-action="{ serial_number }">
                       <a
                         @click="removeSerialNumber(serial_number)"
@@ -108,7 +102,7 @@
                   <label for="customers_id" class="form-label fw-bold">Customers</label>
                   <v-select
                     v-model="formData.customers_id"
-                    :options="customers"
+                    :options="props.customer"
                     :reduce="(customer) => customer.id"
                     label="name"
                     :searchable="true"
@@ -128,7 +122,11 @@
                 <!-- Date exit -->
                 <div class="mb-3">
                   <label class="form-label">Date exit</label>
-                  <VueDatePicker :enable-time-picker="false" v-model="formData.date_exit" />
+                  <VueDatePicker
+                    :enable-time-picker="false"
+                    v-model="formData.date_out"
+                    @update:model-value="formatDate"
+                  />
                 </div>
 
                 <!--Location-->
@@ -136,7 +134,7 @@
                   <label for="location" class="form-label fw-bold">Location</label>
                   <v-select
                     v-model="formData.locations_id"
-                    :options="locations"
+                    :options="props.location"
                     :reduce="(location) => location.id"
                     label="name"
                     :searchable="true"
@@ -167,7 +165,6 @@
             </div>
 
             <div class="modal-footer">
-              <!-- Show Cancel button only in initial view -->
               <button
                 v-if="!showEditForm"
                 type="button"
@@ -177,7 +174,6 @@
                 Cancel
               </button>
 
-              <!-- Show Back and Submit buttons in edit form -->
               <template v-else>
                 <button
                   type="button"
@@ -217,15 +213,33 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, defineProps, defineEmits } from 'vue'
 import { CIcon } from '@coreui/icons-vue'
 import { cilTruck } from '@coreui/icons'
 import axios from 'axios'
+import { showToast } from '@/utilities/toast'
 import CheckSnSideBar from './CheckSnSideBar.vue'
 
+// Define props with default values
+const props = defineProps({
+  customer: {
+    type: Array,
+    default: () => [],
+  },
+  location: {
+    type: Array,
+    default: () => [],
+  },
+  stocksDevice: {
+    type: Array,
+    default: () => [],
+  },
+})
+
+// Define emits
+const emit = defineEmits(['move-complete'])
+
 // State management
-const stocksDevice = ref([])
-const customers = ref([])
 const loading = ref(false)
 const showModal = ref(false)
 const serialNumbers = ref('')
@@ -237,24 +251,9 @@ const selectedSerialNumbers = ref([])
 const formData = ref({
   status: '',
   customers_id: '',
-  date_exit: '',
+  date_out: '',
   locations_id: '',
   information: '',
-})
-
-const props = defineProps({
-  customer: {
-    type: Array,
-    required: true,
-  },
-  location: {
-    type: Array,
-    required: true,
-  },
-  stocksDevices: {
-    type: Array,
-    required: true,
-  },
 })
 
 // Constants
@@ -276,17 +275,6 @@ const statusOptions = [
   { value: 'Entrust', label: 'Entrust' },
 ]
 
-// Device name lookup
-const getDeviceName = (id) => {
-  const device = stocksDevice.value.find((d) => d.id === id)
-  return device ? device.name : 'Unknown'
-}
-
-const getCustomerName = (id) => {
-  const customer = customers.value.find((d) => d.id === id)
-  return customer ? customer.name : 'Unknown'
-}
-
 const removeSerialNumber = (serial_number) => {
   const index = selectedSerialNumbers.value.findIndex(
     (item) => item.serial_number === serial_number,
@@ -298,7 +286,6 @@ const removeSerialNumber = (serial_number) => {
 
 const closeSidebar = () => {
   showSidebar.value = false
-  // Optional: Clear results after animation completes
   setTimeout(() => {
     searchResults.value = []
   }, 300)
@@ -321,7 +308,7 @@ const resetForm = () => {
   formData.value = {
     status: '',
     customers_id: '',
-    date_exit: '',
+    date_out: '',
     locations_id: '',
     information: '',
   }
@@ -329,6 +316,13 @@ const resetForm = () => {
   selectedSerialNumbers.value = []
   searchResults.value = []
   showSidebar.value = false
+}
+
+const formatDate = (selectedDate) => {
+  if (selectedDate) {
+    const date = selectedDate instanceof Date ? selectedDate : new Date(selectedDate)
+    formData.value.date_out = date.toISOString().split('T')[0]
+  }
 }
 
 const checkSerialNumberInDB = async (sn) => {
@@ -379,17 +373,26 @@ const handleNext = () => {
   }
 }
 
+const handleTableUpdate = () => {
+  // Implement table update logic if needed
+}
+
 const handleSubmit = async () => {
   loading.value = true
   try {
-    const response = await axios.put('stocks/' + selectedSerialNumbers.value, {
+    const response = await axios.put('stocks-move', {
       serialNumbers: selectedSerialNumbers.value,
       formData: formData.value,
     })
-    stocksDevice.value = response.data.data
-    closeModal()
+
+    if (response.data && response.data.data) {
+      emit('move-complete', response.data.data)
+      showToast('Serial Numbers successfully moved', 'success')
+      closeModal()
+    }
   } catch (error) {
     console.error('Error submitting form:', error)
+    showToast(error.response?.data?.message || 'Failed to move Serial Numbers', 'error')
   } finally {
     loading.value = false
   }
