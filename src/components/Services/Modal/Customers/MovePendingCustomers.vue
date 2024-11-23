@@ -90,7 +90,7 @@
                 v-model="movedService.spareparts_id"
                 :options="props.spareparts"
                 :reduce="(sparepart) => sparepart.id"
-                label="name"
+                label="no_spareparts"
                 :searchable="true"
                 :clearable="false"
                 placeholder="Select No Spareparts"
@@ -205,7 +205,7 @@
             </div>
 
             <!-- Status -->
-            <div class="form-group mb-3" hidden>
+            <div class="form-group mb-3">
               <label for="status" class="form-label fw-bold">Status</label>
               <div class="d-flex gap-2">
                 <div class="form-check">
@@ -216,7 +216,6 @@
                     name="status"
                     id="statusValidation"
                     value="Validation Customers"
-                    :checked="movedService.status"
                   />
                   <label class="form-check-label" for="statusValidation">
                     Validation Customers

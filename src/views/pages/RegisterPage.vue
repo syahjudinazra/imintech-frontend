@@ -9,7 +9,7 @@
           <img :src="loginbg3" class="iminkitRegister" alt="iminkit progress image" />
         </div>
         <div class="d-flex justify-content-center align-items-center">
-          <div class="card shadow-lg p-3 mb-5 register-card">
+          <div class="register-card shadow-lg mb-5">
             <div class="card-body">
               <h5 class="card-title text-center mb-4">Register iMin Service</h5>
               <form @submit.prevent="handleSubmit">
@@ -134,6 +134,10 @@ const handleSubmit = () => {
   emailError.value = ''
   passwordError.value = ''
 
+  if (!validateName(name.value)) {
+    nameError.value = 'Please enter your name'
+  }
+
   if (!validateEmail(email.value)) {
     emailError.value = 'Please enter a valid email address'
   }
@@ -150,6 +154,10 @@ const handleSubmit = () => {
   if (!emailError.value && !passwordError.value) {
     getRegister()
   }
+}
+
+const validateName = (name) => {
+  return name.trim().length > 0
 }
 
 const validateEmail = (email) => {
@@ -208,14 +216,18 @@ const clearInput = () => {
 }
 .iminkitRegister {
   height: auto;
-  width: 50rem;
+  width: 45rem;
+}
+.register-card {
+  padding: 2rem;
+  width: 30rem;
+  margin-left: 22rem;
+  border-radius: 10px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+  background-color: #fff;
 }
 .input-group-text {
   background-color: white;
-}
-.card {
-  border-radius: 12px;
-  box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
 }
 
 .btn-danger {
@@ -310,16 +322,21 @@ textarea:focus {
   }
 }
 
-@media (min-width: 1200px) {
+@media (min-width: 1200px) and (max-width: 1399.98px) {
   .hero-register {
-    padding-top: 8rem;
+    height: 75vh;
   }
   .iminkitRegister {
-    width: 50rem;
+    height: auto;
+    width: 40rem;
   }
   .register-card {
-    width: 30rem;
-    margin-left: 10rem;
+    position: fixed;
+    width: 30%;
+    margin-left: 22rem;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
   }
 }
 </style>

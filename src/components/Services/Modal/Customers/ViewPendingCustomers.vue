@@ -87,7 +87,7 @@
 
           <!--Spareparts Number-->
           <div class="mb-3" v-if="sparepartRequests && sparepartRequests.length > 0">
-            <label class="form-label fw-bold">Spareparts Number</label>
+            <label class="form-label fw-bold">No Spareparts Request</label>
             <input
               class="form-control shadow-none bg-light"
               :value="formatSparepartNumbers(sparepartRequests)"

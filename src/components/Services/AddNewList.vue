@@ -268,10 +268,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
-input:focus {
-  border-color: #d22c36;
-}
-
+input:focus,
 textarea:focus {
   border-color: #d22c36;
 }

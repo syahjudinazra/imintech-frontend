@@ -9,7 +9,7 @@
           <img :src="loginbg3" class="iminkitLogin" alt="iminkit progress image" />
         </div>
         <div class="d-flex justify-content-center align-items-center">
-          <div class="login-card shadow-lg p-3 mb-5">
+          <div class="login-card shadow-lg mb-5">
             <div class="card-body">
               <h5 class="card-title text-center mb-4">Login</h5>
               <form @submit.prevent="handleSubmit">
@@ -194,15 +194,15 @@ const clearInput = () => {
   background-size: cover;
 }
 .hero-login {
-  height: 75vh;
+  height: 80vh;
 }
 .iminkitLogin {
   height: auto;
-  width: 40rem;
+  width: 45rem;
 }
 .login-card {
-  position: fixed;
-  width: 30%;
+  padding: 2rem;
+  width: 30rem;
   margin-left: 22rem;
   border-radius: 10px;
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
@@ -289,6 +289,24 @@ textarea:focus {
   .login-card {
     width: 100%;
     margin-left: 2rem;
+  }
+}
+
+@media (min-width: 1200px) and (max-width: 1399.98px) {
+  .hero-login {
+    height: 75vh;
+  }
+  .iminkitLogin {
+    height: auto;
+    width: 40rem;
+  }
+  .login-card {
+    position: fixed;
+    width: 30%;
+    margin-left: 22rem;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
   }
 }
 </style>

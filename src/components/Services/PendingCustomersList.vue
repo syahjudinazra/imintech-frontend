@@ -425,13 +425,11 @@ onMounted(() => {
   --easy-table-header-height: 50px;
   --easy-table-header-font-color: #c1cad4;
 }
-input:focus {
-  border-color: #d22c36;
-}
-
+input:focus,
 textarea:focus {
   border-color: #d22c36;
 }
+
 .loader {
   width: 50px;
   aspect-ratio: 1;
