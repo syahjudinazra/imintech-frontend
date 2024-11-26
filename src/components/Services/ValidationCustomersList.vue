@@ -31,15 +31,6 @@
         <template #item-date_in_services="{ date_in_services }">
           {{ formatDate(date_in_services) }}
         </template>
-        <template #item-services_devices_id="{ services_devices_id }">
-          {{ getDeviceName(services_devices_id) }}
-        </template>
-        <template #items="{ item }">
-          <tr>
-            <td>{{ item.serial_number }}</td>
-            <td>{{ item.customers }}</td>
-          </tr>
-        </template>
         <template #item-action="item">
           <div class="d-flex gap-2">
             <a href="#" class="head-text text-decoration-none" @click.prevent="viewModal(item)"
@@ -89,9 +80,6 @@
     <ViewValidationCustomers
       ref="viewModalRef"
       :service="viewService"
-      :service-device="servicesDevice"
-      :usages="usages"
-      :technicians="technicians"
       :sparepart-requests="sparepartRequests"
       @close="closeViewModal"
     />
@@ -243,11 +231,6 @@ watch(
   },
   { deep: true },
 )
-
-const getDeviceName = (id) => {
-  const device = servicesDevice.value.find((d) => d.id === id)
-  return device ? device.name : 'Unknown'
-}
 
 const fetchServicesDevice = async () => {
   try {

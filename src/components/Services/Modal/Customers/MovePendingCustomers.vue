@@ -85,7 +85,7 @@
 
             <!-- No Spareparts -->
             <div class="mb-3">
-              <label for="serviceDevice" class="form-label fw-bold"> No Spareparts </label>
+              <label for="spareparts_id" class="form-label fw-bold"> No Spareparts </label>
               <v-select
                 v-model="movedService.spareparts_id"
                 :options="props.spareparts"
@@ -94,7 +94,7 @@
                 :searchable="true"
                 :clearable="false"
                 placeholder="Select No Spareparts"
-                id="spareparts"
+                id="spareparts_id"
               >
                 <template #no-options="{ search, searching }">
                   <template v-if="searching">

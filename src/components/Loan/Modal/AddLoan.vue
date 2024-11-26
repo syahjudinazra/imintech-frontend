@@ -16,26 +16,29 @@
           <h5 class="modal-title" id="addForm_label">Add Data</h5>
           <button type="button" class="btn-close" aria-label="Close" @click="closeModal"></button>
         </div>
-        <form @submit.prevent="addFirmwares">
+        <form @submit.prevent="addLoans">
           <div class="modal-body">
+            <!--Date of entry section-->
             <div class="mb-3">
-              <label class="fw-bold" for="date_loan">Date of Entry</label>
+              <label class="form-label fw-bold" for="date_loan">Date of Entry</label>
               <VueDatePicker v-model="loans.date_loan" :enable-time-picker="false" />
             </div>
             <div class="mb-3">
               <label for="serial_number" class="form-label fw-bold">Serial Number</label>
               <input
-                v-model="firmwares.serial_number"
+                v-model="loans.serial_number"
                 type="text"
                 class="form-control shadow-none"
                 id="serial_number"
                 placeholder="Input Serial Number"
               />
             </div>
+
+            <!--Device type section-->
             <div class="mb-3">
               <label for="loan_devices_id" class="form-label fw-bold">Device type</label>
               <v-select
-                v-model="firmwares.loan_devices_id"
+                v-model="loans.loan_devices_id"
                 :options="loansDevice"
                 :reduce="(device) => device.id"
                 label="name"
@@ -52,10 +55,12 @@
                 </template>
               </v-select>
             </div>
+
+            <!--RAM section-->
             <div class="mb-3">
               <label for="rams_id" class="form-label fw-bold">RAM</label>
               <v-select
-                v-model="firmwares.rams_id"
+                v-model="loans.rams_id"
                 :options="rams"
                 :reduce="(ram) => ram.id"
                 label="name"
@@ -72,10 +77,12 @@
                 </template>
               </v-select>
             </div>
+
+            <!--Android section-->
             <div class="mb-3">
               <label for="androids_id" class="form-label fw-bold">Android</label>
               <v-select
-                v-model="firmwares.androids_id"
+                v-model="loans.androids_id"
                 :options="androids"
                 :reduce="(android) => android.id"
                 label="name"
@@ -92,27 +99,19 @@
                 </template>
               </v-select>
             </div>
+
+            <!--Customers section-->
             <div class="mb-3">
-              <label for="version" class="form-label fw-bold">Version</label>
-              <input
-                v-model="firmwares.version"
-                type="text"
-                class="form-control shadow-none"
-                id="version"
-                placeholder="Input version"
-              />
-            </div>
-            <div class="mb-3">
-              <label for="android" class="form-label fw-bold">Android</label>
+              <label for="customers_id" class="form-label fw-bold">Customers</label>
               <v-select
-                v-model="firmwares.androids_id"
-                :options="androids"
-                :reduce="(android) => android.id"
+                v-model="loans.customers_id"
+                :options="customers"
+                :reduce="(customer) => customer.id"
                 label="name"
                 :searchable="true"
                 :clearable="false"
-                placeholder="Select Android"
-                id="android"
+                placeholder="Select Customers"
+                id="customers_id"
               >
                 <template #no-options="{ search, searching }">
                   <template v-if="searching">
@@ -122,25 +121,75 @@
                 </template>
               </v-select>
             </div>
+
+            <!--Address section-->
             <div class="mb-3">
-              <label for="flash" class="form-label fw-bold">Flash Link</label>
+              <label class="form-label fw-bold" for="address">Address</label>
+              <textarea
+                v-model="loans.address"
+                class="form-control shadow-none"
+                id="address"
+                placeholder="Input Address"
+                required
+              ></textarea>
+            </div>
+
+            <!--Sales section-->
+            <div class="mb-3">
+              <label for="sales_id" class="form-label fw-bold">Sales</label>
+              <v-select
+                v-model="loans.sales_id"
+                :options="sales"
+                :reduce="(sales) => sales.id"
+                label="name"
+                :searchable="true"
+                :clearable="false"
+                placeholder="Select Sales"
+                id="sales_id"
+              >
+                <template #no-options="{ search, searching }">
+                  <template v-if="searching">
+                    No results found for <em>{{ search }}</em>
+                  </template>
+                  <em v-else>Start typing to search...</em>
+                </template>
+              </v-select>
+            </div>
+
+            <!-- Phone number section-->
+            <div class="mb-3">
+              <label for="phone_number" class="form-label fw-bold">Phone Number</label>
               <input
-                v-model="firmwares.flash"
+                v-model="loans.phone_number"
                 type="text"
                 class="form-control shadow-none"
-                id="flash"
-                placeholder="Input flash link"
+                id="phone_number"
+                placeholder="Input Phone Number"
               />
             </div>
+
+            <!-- Sender section-->
             <div class="mb-3">
-              <label for="ota" class="form-label fw-bold">Ota Link</label>
+              <label for="sender" class="form-label fw-bold">Sender</label>
               <input
-                v-model="firmwares.ota"
+                v-model="loans.sender"
                 type="text"
                 class="form-control shadow-none"
-                id="ota"
-                placeholder="Input ota link"
+                id="sender"
+                placeholder="Input Sender"
               />
+            </div>
+
+            <!--Shipping equipment section-->
+            <div class="mb-3">
+              <label class="form-label fw-bold" for="shipping_equipment">Shipping Equipment</label>
+              <textarea
+                v-model="loans.shipping_equipment"
+                class="form-control shadow-none"
+                id="shipping_equipment"
+                placeholder="Example: Adaptor, Box, Ducking etc..."
+                required
+              ></textarea>
             </div>
           </div>
           <div class="modal-footer">
@@ -161,22 +210,21 @@ import { showToast } from '@/utilities/toast'
 import vSelect from 'vue-select'
 import 'vue-select/dist/vue-select.css'
 
-const firmwares = ref({
-  firmwares_devices_id: '',
-  version: '',
-  androids_id: '',
-  flash: '',
-  ota: '',
-})
+const loans = ref({})
 
-const firmwaresDevice = ref([])
+const loansDevice = ref([])
 const androids = ref([])
-let addForm
+const rams = ref([])
+const customers = ref([])
+const sales = ref([])
 
-const fetchFirmwaresDevice = async () => {
+let addForm
+const emit = defineEmits(['customer-added'])
+
+const fetchLoansDevice = async () => {
   try {
-    const response = await axios.get('firmwares-device')
-    firmwaresDevice.value = response.data.firmwaresdevice
+    const response = await axios.get('loans-device')
+    loansDevice.value = response.data.data
   } catch (error) {
     console.error('Data not found', error)
   }
@@ -185,7 +233,34 @@ const fetchFirmwaresDevice = async () => {
 const fetchAndroid = async () => {
   try {
     const response = await axios.get('android')
-    androids.value = response.data.android
+    androids.value = response.data.data
+  } catch (error) {
+    console.error('Data not found', error)
+  }
+}
+
+const fetchRam = async () => {
+  try {
+    const response = await axios.get('ram')
+    rams.value = response.data.data
+  } catch (error) {
+    console.error('Data not found', error)
+  }
+}
+
+const fetchCustomers = async () => {
+  try {
+    const response = await axios.get('customers')
+    customers.value = response.data.data
+  } catch (error) {
+    console.error('Data not found', error)
+  }
+}
+
+const fetchSales = async () => {
+  try {
+    const response = await axios.get('sales')
+    sales.value = response.data.data
   } catch (error) {
     console.error('Data not found', error)
   }
@@ -193,8 +268,11 @@ const fetchAndroid = async () => {
 
 onMounted(() => {
   addForm = new Modal(document.getElementById('addForm'), {})
-  fetchFirmwaresDevice()
+  fetchLoansDevice()
   fetchAndroid()
+  fetchRam()
+  fetchCustomers()
+  fetchSales()
 })
 
 function openModal() {
@@ -205,28 +283,63 @@ function closeModal() {
   addForm.hide()
 }
 
-const addFirmwares = async () => {
+const addLoans = async () => {
   try {
     // Prepare form data
     const formData = new FormData()
-    formData.append('firmwares_devices_id', firmwares.value.firmwares_devices_id)
-    formData.append('version', firmwares.value.version)
-    formData.append('androids_id', firmwares.value.androids_id)
-    formData.append('flash', firmwares.value.flash)
-    formData.append('ota', firmwares.value.ota)
+    const mysqlDate = formatDateForMySQL(loans.value.date_loan)
+    formData.append('date_loan', mysqlDate)
+    formData.append('serial_number', loans.value.serial_number)
+    formData.append('loan_devices_id', loans.value.loan_devices_id)
+    formData.append('rams_id', loans.value.rams_id)
+    formData.append('androids_id', loans.value.androids_id)
+    formData.append('customers_id', loans.value.customers_id)
+    formData.append('address', loans.value.address)
+    formData.append('sales_id', loans.value.sales_id)
+    formData.append('phone_number', loans.value.phone_number)
+    formData.append('sender', loans.value.sender)
+    formData.append('shipping_equipment', loans.value.shipping_equipment)
 
-    const response = await axios.post('firmwares', formData, {
+    const response = await axios.post('loans', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
     })
-    console.log('Data added successfully:', response.data.message)
-    showToast(response.data.message, 'success')
-    closeModal()
+
+    if (response.data.success) {
+      showToast(response.data.message, 'success')
+      closeModal()
+      // Clear the form
+      loans.value = {}
+      // Emit event to refresh parent
+      emit('customer-added')
+    } else {
+      showToast(response.data.message || 'Failed to add loan', 'error')
+    }
   } catch (error) {
-    console.error('Error add data:', error)
-    showToast(error.data.message, 'error')
+    console.error('Error adding data:', error)
+    const errorMessage =
+      error.response?.data?.message || error.message || 'An error occurred while adding the loan'
+    showToast(errorMessage, 'error')
   }
+}
+// Format date for MySQL
+const formatDateForMySQL = (date) => {
+  if (!date) return null
+  const d = new Date(date)
+  return (
+    d.getFullYear() +
+    '-' +
+    String(d.getMonth() + 1).padStart(2, '0') +
+    '-' +
+    String(d.getDate()).padStart(2, '0') +
+    ' ' +
+    String(d.getHours()).padStart(2, '0') +
+    ':' +
+    String(d.getMinutes()).padStart(2, '0') +
+    ':' +
+    String(d.getSeconds()).padStart(2, '0')
+  )
 }
 </script>
 

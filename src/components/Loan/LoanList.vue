@@ -2,21 +2,20 @@
   <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center">
       <div class="add-button">
-        <AddLoan @customer-added="refreshCustomers" />
+        <AddLoan @customer-added="refreshTable" />
       </div>
       <div class="d-flex align-items-center gap-2">
         <ExportLoan />
         <ImportLoan />
-        <Search :onSearch="updateSearch" />
+        <Search :onSearch="handleSearch" />
       </div>
     </div>
     <div class="mt-2">
       <EasyDataTable
         v-model:server-options="serverOptions"
-        :server-items-length="serverItemsLength"
-        @update:options="serverOptions = $event"
+        :server-items-length="totalRecords"
         :headers="headers"
-        :items="loans"
+        :items="formattedLoans"
         :loading="loading"
         :theme-color="baseColor"
         :rows-per-page="10"
@@ -25,227 +24,165 @@
         show-index
         border-cell
         buttons-pagination
+        @update:options="handleTableUpdate"
       >
         <template #loading>
           <div class="loader"></div>
         </template>
         <template #empty-message>
-          <p>Data not found</p>
-        </template>
-        <template #item-loan_devices_id="{ loan_devices_id }">
-          {{ getDeviceName(loan_devices_id) }}
-        </template>
-        <template #items="{ item }">
-          <tr>
-            <td>{{ item.date_loan }}</td>
-            <td>{{ item.serial_number }}</td>
-          </tr>
+          <p>No loan data found</p>
         </template>
         <template #item-action="item">
           <div class="d-flex gap-2">
-            <a href="#" class="head-text text-decoration-none" @click="editModal(item)">Edit</a>
-            <a href="#" class="head-text text-decoration-none" @click="deleteModal(item)">Delete</a>
+            <a href="#" class="head-text text-decoration-none" @click.prevent="showEditModal(item)"
+              >Edit</a
+            >
+            <a
+              href="#"
+              class="head-text text-decoration-none"
+              @click.prevent="showDeleteModal(item)"
+              >Delete</a
+            >
           </div>
         </template>
       </EasyDataTable>
     </div>
-  </div>
 
-  <!--Edit Modal-->
-  <div
-    class="modal fade"
-    id="editForm"
-    tabindex="-1"
-    aria-labelledby="editForm_label"
-    aria-hidden="true"
-  >
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="editForm_label">Edit Data</h5>
-          <button type="button" class="btn-close" aria-label="Close" @click="closeModal"></button>
-        </div>
-        <form @submit.prevent="updateCustomers" enctype="multipart/form-data">
-          <div class="modal-body">
-            <div class="mb-3">
-              <label for="name" class="form-label fw-bold">Name</label>
-              <input
-                v-model="editCustomers.name"
-                type="text"
-                class="form-control shadow-none"
-                id="name"
-              />
-            </div>
-            <div class="mb-3">
-              <label for="phone" class="form-label fw-bold">Phone</label>
-              <input
-                v-model="editCustomers.phone"
-                type="number"
-                class="form-control shadow-none"
-                id="phone"
-              />
-            </div>
-            <div class="mb-3">
-              <label for="address" class="form-label fw-bold">Address</label>
-              <textarea
-                v-model="editCustomers.address"
-                type="text"
-                class="form-control shadow-none"
-                id="address"
-              />
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" @click="closeModal">Close</button>
-            <button type="submit" class="btn btn-primary">Submit</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  <!--Delete Modal-->
-  <div class="modal fade show" id="deleteForm">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Delete Data</h5>
-          <button type="button" class="btn-close" aria-label="Close" @click="closeModal"></button>
-        </div>
-        <div class="modal-body">
-          <p>Are you sure want delete this data?</p>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" @click="closeModal">Close</button>
-          <button type="button" class="btn btn-danger text-white" @click="deleteCustomers">
-            Delete
-          </button>
-        </div>
-      </div>
-    </div>
+    <EditLoan
+      ref="editModalRef"
+      :loan-data="selectedLoan"
+      @close="selectedLoan = {}"
+      @refresh="refreshTable"
+    />
+    <DeleteLoan
+      ref="deleteModalRef"
+      :loan-id="selectedLoan.id"
+      @close="selectedLoan = {}"
+      @refresh="refreshTable"
+    />
   </div>
 </template>
+Last edited 1 minute ago
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
-import { Modal } from 'bootstrap'
+import { ref, computed, onMounted } from 'vue'
 import axios from 'axios'
 import { showToast } from '@/utilities/toast'
-import AddLoan from '../Loan/Modal/AddLoan.vue'
+import AddLoan from './Modal/AddLoan.vue'
 import Search from '../Layouts/SearchAll.vue'
-import ExportLoan from '../Loan/Excel/ExportLoan.vue'
-import ImportLoan from '../Loan/Excel/ImportLoan.vue'
-import { mockServerItems, refreshData } from '../../mock/mockLoans'
+import ExportLoan from './Excel/ExportLoan.vue'
+import ImportLoan from './Excel/ImportLoan.vue'
+import EditLoan from './Modal/EditLoan.vue'
+import DeleteLoan from './Modal/DeleteLoan.vue'
 
-let editForm
-let deleteForm
-const editCustomers = ref({})
+// Constants and refs
+const baseColor = '#e55353'
 const loading = ref(true)
 const loans = ref([])
-const id = ref(null)
+const totalRecords = ref(0)
+const selectedLoan = ref({})
+const editModalRef = ref(null)
+const deleteModalRef = ref(null)
 
-const token = localStorage.getItem('token')
-// Constants
-const baseColor = '#e55353'
-const headers = ref([
-  { text: 'Customers', value: 'name' },
-  { text: 'Phone Number', value: 'phone' },
-  { text: 'Address', value: 'address' },
+const headers = [
+  { text: 'Date', value: 'date_loan' },
+  { text: 'Serial Number', value: 'serial_number' },
+  { text: 'Device Type', value: 'loan_devices_id' },
+  { text: 'Customer', value: 'customers_id' },
   { text: 'Action', value: 'action' },
-])
+]
 
-const serverItemsLength = ref(0)
 const serverOptions = ref({
   page: 1,
   rowsPerPage: 10,
-  sortBy: 'name',
+  sortBy: 'date_loan',
   sortType: 'desc',
-  searchTerm: '',
+  search: '',
 })
 
-const refreshCustomers = () => {
-  refreshData()
-  loadFromServer()
-}
+// Computed property to format loans data
+const formattedLoans = computed(() => {
+  return loans.value.map((loan) => ({
+    id: loan.id,
+    date_loan: loan.date_loan || '-',
+    serial_number: loan.serial_number || '-',
+    loan_devices_id: loan.loan_devices_id || '-',
+    customers_id: loan.customers_id || '-',
+    rams_id: loan.rams_id || '-',
+    androids_id: loan.androids_id || '-',
+    sales_id: loan.sales_id || '-',
+  }))
+})
 
-const loadFromServer = async () => {
+// Setup axios
+const token = localStorage.getItem('token')
+axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+
+// Methods
+const loadData = async () => {
   loading.value = true
   try {
-    const { serverCurrentPageItems, serverTotalItemsLength } = await mockServerItems(
-      serverOptions.value,
-      token,
-    )
-    loans.value = serverCurrentPageItems
-    serverItemsLength.value = serverTotalItemsLength
+    const params = {
+      draw: 1,
+      start: (serverOptions.value.page - 1) * serverOptions.value.rowsPerPage,
+      length: serverOptions.value.rowsPerPage,
+      search: { value: serverOptions.value.search },
+      order: [
+        {
+          column: headers.findIndex((h) => h.value === serverOptions.value.sortBy),
+          dir: serverOptions.value.sortType,
+        },
+      ],
+    }
+
+    const response = await axios.get('loans', { params })
+
+    if (response.data.data) {
+      loans.value = response.data.data
+      totalRecords.value = response.data.recordsTotal || response.data.data.length
+    } else {
+      loans.value = []
+      totalRecords.value = 0
+    }
   } catch (error) {
-    console.error('Error loading data', error)
-    showToast('Failed to load loans data.', 'error')
+    console.error('Error loading loans:', error)
+    showToast(error.response?.data?.message || 'Failed to load loan data', 'error')
+    loans.value = []
+    totalRecords.value = 0
   } finally {
     loading.value = false
   }
 }
 
-const updateSearch = (term) => {
-  serverOptions.value.searchTerm = term
-  serverOptions.value.page = 1 // Reset to first page when searching
-  loadFromServer()
+const handleTableUpdate = (options) => {
+  serverOptions.value = { ...options }
+  loadData()
 }
 
-watch(
-  serverOptions,
-  () => {
-    loadFromServer()
-  },
-  { deep: true },
-)
+const handleSearch = (term) => {
+  serverOptions.value.search = term
+  serverOptions.value.page = 1
+  loadData()
+}
+
+const refreshTable = () => {
+  loadData()
+}
+
+// Modal handlers
+const showEditModal = (loan) => {
+  selectedLoan.value = { ...loan }
+  editModalRef.value?.showModal()
+}
+
+const showDeleteModal = (loan) => {
+  selectedLoan.value = { ...loan }
+  deleteModalRef.value?.showModal()
+}
 
 onMounted(() => {
-  editForm = new Modal(document.getElementById('editForm'))
-  deleteForm = new Modal(document.getElementById('deleteForm'))
-  loadFromServer()
+  loadData()
 })
-
-const updateCustomers = async () => {
-  try {
-    const response = await axios.put(`customers/${id.value}`, editCustomers.value)
-    showToast(response.data.message, 'success')
-    closeModal()
-    refreshCustomers()
-  } catch (error) {
-    console.error('Data failed to change', error)
-    showToast(error.data.message, 'error')
-    closeModal()
-  }
-}
-
-const deleteCustomers = async () => {
-  try {
-    const response = await axios.delete(`customers/${id.value}`)
-    showToast(response.data.message, 'success')
-    closeModal()
-    refreshCustomers()
-  } catch (error) {
-    console.error('Data failed to delete', error)
-    showToast(error.data.message, 'error')
-    closeModal()
-  }
-}
-
-function editModal(customer) {
-  editCustomers.value = { ...customer }
-  id.value = customer.id
-  editForm.show()
-}
-
-function deleteModal(customer) {
-  id.value = customer.id
-  deleteForm.show()
-}
-
-function closeModal() {
-  editForm.hide()
-  deleteForm.hide()
-}
 </script>
 
 <style scoped>

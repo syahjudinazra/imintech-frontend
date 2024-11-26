@@ -74,7 +74,7 @@ async function AddLoanDevice() {
   }
 
   try {
-    const response = await axios.post('loan-device', loanDevice.value)
+    const response = await axios.post('loans-device', loanDevice.value)
     console.log('Data added successfully:', response.data.message)
     showToast(response.data.message, 'success')
     closeModal()

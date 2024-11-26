@@ -194,7 +194,7 @@ const clearInput = () => {
   background-size: cover;
 }
 .hero-login {
-  height: 75vh;
+  height: 80vh;
 }
 .iminkitLogin {
   height: auto;

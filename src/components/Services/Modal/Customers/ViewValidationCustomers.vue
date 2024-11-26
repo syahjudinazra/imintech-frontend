@@ -54,7 +54,7 @@
             <label class="form-label fw-bold">Device Type</label>
             <input
               class="form-control shadow-none bg-light"
-              :value="getDeviceName(service?.services_devices_id)"
+              :value="service?.services_devices_id"
               id="services_devices_id"
               name="services_devices_id"
               readonly
@@ -78,7 +78,7 @@
             <label class="form-label fw-bold">Usages</label>
             <input
               class="form-control shadow-none bg-light"
-              :value="getUsagesName(service?.usages_id)"
+              :value="service?.usages_id"
               id="usages_id"
               name="usages_id"
               readonly
@@ -122,7 +122,7 @@
             <label class="form-label fw-bold">Technicians</label>
             <input
               class="form-control shadow-none bg-light"
-              :value="getTechniciansName(service?.technicians_id)"
+              :value="service?.technicians_id"
               id="technicians_id"
               name="technicians_id"
               readonly
@@ -134,13 +134,12 @@
             <label class="form-label fw-bold">No Sparepart</label>
             <input
               class="form-control shadow-none bg-light"
-              :value="service?.no_spareparts"
+              :value="service.no_spareparts"
               id="no_spareparts"
               name="no_spareparts"
               readonly
             />
           </div>
-
           <!--SN Cannibal-->
           <div class="mb-3">
             <label class="form-label fw-bold">SN Cannibal</label>
@@ -279,14 +278,6 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
-  usages: {
-    type: Array,
-    default: () => [],
-  },
-  technicians: {
-    type: Array,
-    default: () => [],
-  },
   sparepartRequests: {
     type: Array,
     default: () => [],
@@ -298,36 +289,27 @@ const viewModal = ref(null)
 const imageModal = ref(null)
 const selectedImage = ref('')
 
-// Parse string array from API response
 const parseArrayString = (arrayString) => {
   if (!arrayString) return []
   try {
-    // Remove the outer brackets and split by comma
     const cleanString = arrayString.replace(/^\[|\]$/g, '').trim()
     if (!cleanString) return []
-    return cleanString.split(',').map(
-      (item) => item.trim().replace(/^"|"$/g, ''), // Remove quotes
-    )
+    return cleanString.split(',').map((item) => item.trim().replace(/^"|"$/g, ''))
   } catch (error) {
     console.error('Error parsing array string:', error)
     return []
   }
 }
 
-// Clean path utility function
 const cleanPath = (path) => {
   if (!path) return ''
 
-  // Remove any quotes if present
   path = path.replace(/['"]/g, '')
 
-  // Replace all backslashes with forward slashes
   path = path.replace(/\\/g, '/')
 
-  // Replace multiple consecutive slashes with a single slash
   path = path.replace(/\/+/g, '/')
 
-  // If it's a full URL, preserve the double slash after protocol
   if (path.startsWith('http:') || path.startsWith('https:')) {
     path = path.replace(/^(https?:)\//, '$1//')
   }
@@ -335,17 +317,14 @@ const cleanPath = (path) => {
   return path
 }
 
-// Get image URL from path
 const getImageUrl = (path) => {
   return cleanPath(path)
 }
 
-// Get document URL from path
 const getDocumentUrl = (path) => {
   return cleanPath(path)
 }
 
-// Extract filename from path
 const getFileName = (path) => {
   const matches = path.match(/[^\\/]+$/)
   return matches ? matches[0].replace(/"/g, '') : 'Document'
@@ -375,21 +354,6 @@ const customDateFormat = 'dd/MM/yyyy'
 const formatDateForPicker = (date) => {
   if (!date) return null
   return new Date(date)
-}
-
-const getDeviceName = (id) => {
-  const device = props.serviceDevice.find((d) => d.id === id)
-  return device ? device.name : 'N/A'
-}
-
-const getUsagesName = (id) => {
-  const usage = props.usages.find((u) => u.id === id)
-  return usage ? usage.name : 'N/A'
-}
-
-const getTechniciansName = (id) => {
-  const usage = props.technicians.find((u) => u.id === id)
-  return usage ? usage.name : 'N/A'
 }
 
 const formatSparepartNumbers = (requests) => {
