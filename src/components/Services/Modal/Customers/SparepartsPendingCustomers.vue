@@ -253,7 +253,6 @@ const handleSubmit = async () => {
 
   loading.value = true
   try {
-    // Ensure all values are properly formatted
     const requestData = {
       spareparts: formData.value.spareparts.map((item) => ({
         spareparts_devices_id: Number(item.spareparts_devices_id) || null,
@@ -262,7 +261,11 @@ const handleSubmit = async () => {
       })),
     }
 
-    // Add CSRF token to headers
+    const sparepartsDetails = requestData.spareparts.map((item) => ({
+      no_spareparts: item.no_spareparts,
+    }))
+    emit('spareparts-submitted', sparepartsDetails)
+
     const config = {
       headers: {
         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]'),

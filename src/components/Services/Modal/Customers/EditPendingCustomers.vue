@@ -23,6 +23,7 @@
                 class="form-control shadow-none"
                 id="ticket_services"
                 required
+                readonly
               />
             </div>
 

@@ -39,15 +39,26 @@
             <input
               v-model="sales.phone"
               type="number"
-              class="form-control shadow-none"
+              :class="['form-control shadow-none', { 'is-invalid': phoneError }]"
               id="phone"
               placeholder="Input phone min:10"
+              @input="validatePhone"
             />
+            <div class="invalid-feedback" v-if="phoneError">
+              Phone number must be at least 10 digits long
+            </div>
           </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" @click="closeModal">Close</button>
-          <button type="button" class="btn btn-danger text-white" @click="AddSales">Submit</button>
+          <button
+            type="button"
+            class="btn btn-danger text-white"
+            @click="AddSales"
+            :disabled="!isFormValid"
+          >
+            Submit
+          </button>
         </div>
       </div>
     </div>
@@ -55,32 +66,38 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { Modal } from 'bootstrap'
 import axios from 'axios'
 import { showToast } from '@/utilities/toast'
 
-const sales = ref({
-  name: '',
-  phone: '',
-})
+const sales = ref({})
+const phoneError = ref(false)
+
 let addForm
 
-onMounted(() => {
-  addForm = new Modal(document.getElementById('addForm'), {})
+const isFormValid = computed(() => {
+  return (
+    sales.value.name &&
+    sales.value.phone &&
+    sales.value.phone.toString().length >= 10 &&
+    !phoneError.value
+  )
 })
 
-function openModal() {
-  addForm.show()
-}
-
-function closeModal() {
-  addForm.hide()
+function validatePhone() {
+  const phoneNumber = sales.value.phone.toString()
+  phoneError.value = phoneNumber.length < 10
 }
 
 async function AddSales() {
   if (!sales.value.name) {
     showToast('Input sales name', 'error')
+    return
+  }
+
+  if (!sales.value.phone || sales.value.phone.toString().length < 10) {
+    showToast('Phone number must be at least 10 digits long', 'error')
     return
   }
 
@@ -94,6 +111,18 @@ async function AddSales() {
     showToast(error.data.message, 'error')
   }
 }
+
+function openModal() {
+  addForm.show()
+}
+
+function closeModal() {
+  addForm.hide()
+}
+
+onMounted(() => {
+  addForm = new Modal(document.getElementById('addForm'), {})
+})
 </script>
 
 <style scoped>

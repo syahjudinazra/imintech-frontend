@@ -86,7 +86,13 @@
           </div>
 
           <!--Spareparts Number-->
-          <div class="mb-3" v-if="sparepartRequests && sparepartRequests.length > 0">
+          <div
+            class="mb-3"
+            v-if="
+              (sparepartRequests && sparepartRequests.length > 0) ||
+              (sparepartsDetails && sparepartsDetails.length > 0)
+            "
+          >
             <label class="form-label fw-bold">No Spareparts Request</label>
             <input
               class="form-control shadow-none bg-light"
@@ -129,17 +135,18 @@
             />
           </div>
 
-          <!--No Sparepart-->
+          <!--No Spareparts-->
           <div class="mb-3">
-            <label class="form-label fw-bold">No Sparepart</label>
+            <label class="form-label fw-bold">No Spareparts</label>
             <input
               class="form-control shadow-none bg-light"
-              :value="service.no_spareparts"
+              :value="service?.no_spareparts"
               id="no_spareparts"
               name="no_spareparts"
               readonly
             />
           </div>
+
           <!--SN Cannibal-->
           <div class="mb-3">
             <label class="form-label fw-bold">SN Cannibal</label>
@@ -282,6 +289,10 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
+  sparepartsDetails: {
+    type: Array,
+    default: () => [],
+  },
 })
 
 const emit = defineEmits(['close'])
@@ -357,8 +368,15 @@ const formatDateForPicker = (date) => {
 }
 
 const formatSparepartNumbers = (requests) => {
-  if (!requests || requests.length === 0) return 'No spareparts requested'
-  return requests.map((req) => req.no_spareparts).join(', ')
+  if (requests && requests.length > 0) {
+    return requests.map((req) => req.no_spareparts).join(', ')
+  }
+
+  if (props.sparepartsDetails && props.sparepartsDetails.length > 0) {
+    return props.sparepartsDetails.map((item) => `${item.no_spareparts}`).join(', ')
+  }
+
+  return 'No spareparts requested'
 }
 
 defineExpose({

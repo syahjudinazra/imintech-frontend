@@ -85,24 +85,14 @@
 
             <!-- No Spareparts -->
             <div class="mb-3">
-              <label for="spareparts_id" class="form-label fw-bold"> No Spareparts </label>
-              <v-select
-                v-model="movedService.spareparts_id"
-                :options="props.spareparts"
-                :reduce="(sparepart) => sparepart.id"
-                label="no_spareparts"
-                :searchable="true"
-                :clearable="false"
-                placeholder="Select No Spareparts"
-                id="spareparts_id"
-              >
-                <template #no-options="{ search, searching }">
-                  <template v-if="searching">
-                    No results found for <em>{{ search }}</em>
-                  </template>
-                  <em v-else>Start typing to search...</em>
-                </template>
-              </v-select>
+              <label for="no_spareparts" class="form-label fw-bold">No Spareparts</label>
+              <input
+                v-model="movedService.no_spareparts"
+                type="text"
+                class="form-control shadow-none"
+                id="no_spareparts"
+                placeholder="Input No Spareparts"
+              />
             </div>
 
             <!-- SN Cannibal -->
@@ -416,8 +406,8 @@ const moveForm = async () => {
 
   // Add other required fields
   formData.append('technicians_id', movedService.technicians_id)
-  formData.append('spareparts_id', movedService.spareparts_id)
   formData.append('repair', movedService.repair || '')
+  formData.append('no_spareparts', movedService.no_spareparts || '')
   formData.append('sn_kanibal', movedService.sn_kanibal || '')
   formData.append('date_out_services', formattedDate || '')
   formData.append('note', movedService.note || '')
