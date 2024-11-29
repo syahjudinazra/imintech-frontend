@@ -20,7 +20,7 @@
               <input
                 v-model="editedService.ticket_services"
                 type="text"
-                class="form-control bg-light shadow-none"
+                class="form-control shadow-none bg-light"
                 id="ticket_services"
                 readonly
               />
@@ -94,7 +94,7 @@
               <input
                 v-model="editedService.serial_number"
                 type="text"
-                class="form-control bg-light shadow-none"
+                class="form-control shadow-none bg-light"
                 id="serial_number"
                 readonly
               />
@@ -133,6 +133,63 @@
               />
             </div>
 
+            <!--Repair-->
+            <div class="mb-3">
+              <label for="repair" class="form-label fw-bold">Repair</label>
+              <textarea
+                v-model="editedService.repair"
+                class="form-control shadow-none"
+                id="repair"
+              />
+            </div>
+
+            <!--Technicians-->
+            <div class="mb-3">
+              <label for="technician" class="form-label fw-bold">Technicians</label>
+              <v-select
+                v-model="editedService.technicians_id"
+                :options="technicians"
+                :reduce="(technician) => technician.id"
+                label="name"
+                :searchable="true"
+                :clearable="false"
+                placeholder="Select Technicians"
+                id="technician"
+                required
+              >
+                <template #no-options="{ search, searching }">
+                  <template v-if="searching">
+                    No results found for <em>{{ search }}</em>
+                  </template>
+                  <em v-else>Start typing to search...</em>
+                </template>
+              </v-select>
+            </div>
+
+            <!--No Spareparts-->
+            <div class="mb-3">
+              <label for="no_spareparts" class="form-label fw-bold">No Spareparts</label>
+              <input
+                v-model="editedService.no_spareparts"
+                type="text"
+                class="form-control shadow-none"
+                id="no_spareparts"
+                required
+              />
+            </div>
+
+            <!--SN Cannibal-->
+            <div class="mb-3">
+              <label for="sn_kanibal" class="form-label fw-bold">SN Cannibal</label>
+              <input
+                v-model="editedService.sn_kanibal"
+                type="text"
+                class="form-control shadow-none"
+                id="sn_kanibal"
+                required
+              />
+            </div>
+
             <!--Date of Entry-->
             <div class="mb-3">
               <label class="fw-bold" for="date_in_services">Date of Entry</label>
@@ -141,6 +198,17 @@
                 :enable-time-picker="false"
                 :format="customDateFormat"
                 :model-value="formatDateForPicker(editedService.date_in_services)"
+              />
+            </div>
+
+            <!--Completion Date-->
+            <div class="mb-3">
+              <label class="fw-bold" for="date_out_services">Completion Date</label>
+              <VueDatePicker
+                v-model="editedService.date_out_services"
+                :enable-time-picker="false"
+                :format="customDateFormat"
+                :model-value="formatDateForPicker(editedService.date_out_services)"
               />
             </div>
 
@@ -182,6 +250,10 @@ const props = defineProps({
     default: () => [],
   },
   usages: {
+    type: Array,
+    default: () => [],
+  },
+  technicians: {
     type: Array,
     default: () => [],
   },

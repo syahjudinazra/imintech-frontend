@@ -128,7 +128,7 @@
             required
           ></textarea>
         </div>
-        <div class="form-group mb-3">
+        <div class="form-group mb-3" hidden>
           <label for="status" class="form-label fw-bold">Status</label>
           <div class="d-flex gap-2">
             <div class="form-check">
@@ -140,7 +140,7 @@
                 id="statusPending"
                 value="Pending Customers"
               />
-              <label class="form-check-label" for="status">Pending Customers</label>
+              <label class="form-check-label" for="statusPending">Pending Customers</label>
             </div>
           </div>
         </div>
@@ -167,7 +167,7 @@ const services = ref({
   usages_id: null,
   damage: '',
   note: 'Tanggal Pembelian:\nKelengkapan:',
-  status: '',
+  status: 'Pending Customers',
 })
 
 const servicesDevice = ref([])
@@ -222,7 +222,6 @@ const addServices = async () => {
     const formData = new FormData()
     Object.entries(services.value).forEach(([key, value]) => {
       if (key === 'date_in_services' && value) {
-        // Format date as YYYY-MM-DD
         formData.append(key, new Date(value).toISOString().split('T')[0])
       } else {
         formData.append(key, value)

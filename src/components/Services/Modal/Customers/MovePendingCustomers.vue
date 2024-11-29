@@ -195,7 +195,7 @@
             </div>
 
             <!-- Status -->
-            <div class="form-group mb-3">
+            <div class="form-group mb-3" hidden>
               <label for="status" class="form-label fw-bold">Status</label>
               <div class="d-flex gap-2">
                 <div class="form-check">
@@ -450,7 +450,14 @@ watch(
   (newService) => {
     if (newService) {
       initialService.value = cloneDeep(newService)
-      Object.assign(movedService, cloneDeep(newService))
+
+      // Clone the service and explicitly set status to 'Validation Customers'
+      const serviceClone = cloneDeep(newService)
+      Object.assign(movedService, serviceClone)
+
+      // Always set status to 'Validation Customers'
+      movedService.status = 'Validation Customers'
+
       if (movedService.date_out_services) {
         movedService.date_out_services = formatDateForPicker(movedService.date_out_services)
       }

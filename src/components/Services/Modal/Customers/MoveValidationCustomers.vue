@@ -9,73 +9,136 @@
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="moveForm_label">Move Data</h5>
-          <button type="button" class="btn-close" aria-label="Close" @click="closeModal" />
+          <h5 class="modal-title" id="moveForm_label">Move Status</h5>
+          <button
+            type="button"
+            class="btn-close shadow-none"
+            aria-label="Close"
+            @click="closeModal"
+          />
         </div>
-        <form @submit.prevent="moveForm">
-          <div class="modal-body">
-            <!-- Status -->
-            <div class="form-group mb-3">
-              <label for="status" class="form-label fw-bold">Status</label>
-              <div class="d-flex gap-2">
-                <div class="form-check">
-                  <input
-                    v-model="movedService.status"
-                    class="form-check-input"
-                    type="radio"
-                    name="status"
-                    id="statusPending"
-                    value="Pending Customers"
-                  />
-                  <label class="form-check-label" for="statusPending"> Pending Customers </label>
+
+        <div class="modal-body">
+          <!-- Tabs Navigation -->
+          <ul class="nav nav-tabs mb-3" id="moveFormTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button
+                class="nav-link active"
+                id="status-tab"
+                data-bs-toggle="tab"
+                data-bs-target="#status-content"
+                type="button"
+                role="tab"
+              >
+                Status
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button
+                class="nav-link"
+                id="copy-tab"
+                data-bs-toggle="tab"
+                data-bs-target="#copy-content"
+                type="button"
+                role="tab"
+              >
+                Copy Data
+              </button>
+            </li>
+          </ul>
+
+          <form @submit.prevent="moveForm">
+            <!-- Tab Content -->
+            <div class="tab-content" id="moveFormTabsContent">
+              <!-- Status Tab -->
+              <div class="tab-pane fade show active" id="status-content" role="tabpanel">
+                <div class="form-group">
+                  <label class="form-label fw-bold">Status</label>
+                  <div class="d-flex">
+                    <div class="form-check me-2">
+                      <input
+                        v-model="status"
+                        class="form-check-input"
+                        type="radio"
+                        name="status"
+                        id="statusPending"
+                        value="Pending Customers"
+                      />
+                      <label class="form-check-label" for="statusPending">
+                        Pending Customers
+                      </label>
+                    </div>
+                    <div class="form-check me-2">
+                      <input
+                        v-model="status"
+                        class="form-check-input"
+                        type="radio"
+                        name="status"
+                        id="statusValidation"
+                        value="Validation Customers"
+                      />
+                      <label class="form-check-label" for="statusValidation">
+                        Validation Customers
+                      </label>
+                    </div>
+                    <div class="form-check">
+                      <input
+                        v-model="status"
+                        class="form-check-input"
+                        type="radio"
+                        name="status"
+                        id="statusDone"
+                        value="Done Customers"
+                      />
+                      <label class="form-check-label" for="statusDone"> Done Customers </label>
+                    </div>
+                  </div>
                 </div>
-                <div class="form-check">
-                  <input
-                    v-model="movedService.status"
-                    class="form-check-input"
-                    type="radio"
-                    name="status"
-                    id="statusValidation"
-                    value="Validation Customers"
-                  />
-                  <label class="form-check-label" for="statusValidation">
-                    Validation Customers
-                  </label>
-                </div>
-                <div class="form-check">
-                  <input
-                    v-model="movedService.status"
-                    class="form-check-input"
-                    type="radio"
-                    name="status"
-                    id="statusDone"
-                    value="Done Customers"
-                  />
-                  <label class="form-check-label" for="statusDone"> Done Customers </label>
+              </div>
+
+              <!-- Copy Data Tab -->
+              <div class="tab-pane fade" id="copy-content" role="tabpanel">
+                <div class="form-group">
+                  <div class="d-flex justify-content-between mb-2">
+                    <label class="form-label fw-bold">Copy Data</label>
+                    <button
+                      type="button"
+                      class="btn btn-secondary btn-sm shadow-none"
+                      @click="copyText"
+                    >
+                      Copy
+                    </button>
+                  </div>
+                  <div class="copy-content">
+                    <pre ref="copyContentRef" class="border p-2 bg-light">{{
+                      formattedCopyContent
+                    }}</pre>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" @click="closeModal">Close</button>
-            <button type="submit" class="btn btn-danger text-white" :disabled="!isDataChanged">
-              Submit
-            </button>
-          </div>
-        </form>
+            <div class="modal-footer mt-3">
+              <button type="button" class="btn btn-secondary" @click="closeModal">Close</button>
+              <button
+                type="submit"
+                class="btn btn-danger text-white"
+                :disabled="!status || status === initialStatus"
+              >
+                Submit
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, watch, onMounted, reactive } from 'vue'
+import { ref, watch, onMounted, computed, defineProps, defineEmits, defineExpose } from 'vue'
 import { Modal } from 'bootstrap'
 import { showToast } from '@/utilities/toast'
-import { cloneDeep } from 'lodash-es'
-import '@vuepic/vue-datepicker/dist/main.css'
-import 'vue-select/dist/vue-select.css'
 
 const props = defineProps({
   service: {
@@ -88,82 +151,35 @@ const props = defineProps({
 const emit = defineEmits(['update', 'close'])
 
 // State
-const isDataChanged = ref(false)
-const initialService = ref(null)
-const movedService = reactive({})
-const changedFields = reactive({})
+const status = ref('')
+const initialStatus = ref('')
+const copyContentRef = ref(null)
 let moveModal = null
 
-// File upload refs
-const imageInput = ref(null)
-const documentInput = ref(null)
-const imageFiles = ref([])
-const documentFiles = ref([])
-const imagePreviewUrls = ref([])
+// Computed property for formatted copy content
+const formattedCopyContent = computed(() =>
+  `
+${props.service.customers}
+${props.service.services_devices_id}
+${props.service.serial_number}
+*Status :* ${props.service.status}
 
-const formatDateForPicker = (date) => {
-  if (!date) return null
-  return new Date(date)
-}
+*Kerusakan :*
+${props.service.damage}
 
-const formatDateForServer = (date) => {
-  if (!date) return null
-  const d = new Date(date)
-  return d.toISOString().split('T')[0]
-}
+*Perbaikan :*
+${props.service.repair}
 
-const moveForm = async () => {
-  if (!isDataChanged.value) {
-    showToast('No changes detected.', 'error')
-    return
-  }
+*No Sparepart :*
+${props.service.no_spareparts}
 
-  const formData = new FormData()
+*Teknisi :*
+${props.service.technicians_id}
 
-  const formattedDate = formatDateForServer(movedService.date_out_services)
-
-  Object.keys(changedFields).forEach((key) => {
-    if (key !== 'images' && key !== 'documents') {
-      if (key === 'date_out_services') {
-        formData.append(key, formattedDate)
-      } else {
-        formData.append(key, movedService[key])
-      }
-    }
-  })
-
-  // Append files
-  imageFiles.value.forEach((file) => {
-    formData.append('images[]', file)
-  })
-
-  documentFiles.value.forEach((file) => {
-    formData.append('documents[]', file)
-  })
-
-  // Add other required fields
-  formData.append('technicians_id', movedService.technicians_id)
-  formData.append('repair', movedService.repair || '')
-  formData.append('no_spareparts', movedService.no_spareparts || '')
-  formData.append('sn_kanibal', movedService.sn_kanibal || '')
-  formData.append('date_out_services', formattedDate || '')
-  formData.append('note', movedService.note || '')
-  formData.append('status', movedService.status || '')
-
-  emit('update', formData)
-  hideModal()
-}
-
-// Reset form
-const resetForm = () => {
-  imageFiles.value = []
-  documentFiles.value = []
-  imagePreviewUrls.value = []
-  if (imageInput.value) imageInput.value.value = ''
-  if (documentInput.value) documentInput.value.value = ''
-  Object.keys(changedFields).forEach((key) => delete changedFields[key])
-  isDataChanged.value = false
-}
+*Catatan :*
+${props.service.note}
+`.trim(),
+)
 
 // Modal handlers
 const showModal = () => {
@@ -171,46 +187,59 @@ const showModal = () => {
 }
 
 const hideModal = () => {
-  resetForm()
   moveModal?.hide()
 }
 
 const closeModal = () => {
-  resetForm()
+  status.value = initialStatus.value
   hideModal()
   emit('close')
 }
 
-// Watchers
+const moveForm = async () => {
+  if (!status.value || status.value === initialStatus.value) {
+    showToast('No changes detected.', 'error')
+    return
+  }
+
+  const formData = new FormData()
+  formData.append('status', status.value)
+
+  emit('update', formData)
+  hideModal()
+}
+
+const copyText = () => {
+  if (!copyContentRef.value) return
+
+  try {
+    const textToCopy = copyContentRef.value.textContent || copyContentRef.value.innerText
+
+    navigator.clipboard
+      .writeText(textToCopy)
+      .then(() => {
+        showToast('Text copied to clipboard.', 'success')
+      })
+      .catch((err) => {
+        console.error('Failed to copy text: ', err)
+        showToast('Failed to copy text.', 'error')
+      })
+  } catch (error) {
+    console.error('Failed to copy text: ', error)
+    showToast('Failed to copy text.', 'error')
+  }
+}
+
+// Watch for service prop changes
 watch(
   () => props.service,
   (newService) => {
     if (newService) {
-      initialService.value = cloneDeep(newService)
-      Object.assign(movedService, cloneDeep(newService))
-      if (movedService.date_out_services) {
-        movedService.date_out_services = formatDateForPicker(movedService.date_out_services)
-      }
+      status.value = newService.status || ''
+      initialStatus.value = newService.status || ''
     }
   },
-  { immediate: true, deep: true },
-)
-
-watch(
-  movedService,
-  (newValue) => {
-    if (initialService.value) {
-      Object.keys(newValue).forEach((key) => {
-        if (JSON.stringify(newValue[key]) !== JSON.stringify(initialService.value[key])) {
-          changedFields[key] = true
-        } else {
-          delete changedFields[key]
-        }
-      })
-      isDataChanged.value = Object.keys(changedFields).length > 0
-    }
-  },
-  { deep: true },
+  { immediate: true },
 )
 
 // Lifecycle
@@ -228,6 +257,16 @@ defineExpose({
 <style scoped>
 input:focus,
 textarea:focus {
+  border-color: #d22c36;
+}
+
+.nav-tabs .nav-link.active {
+  color: #d22c36;
+  border-color: #d22c36 #d22c36 #fff;
+}
+
+.nav-tabs .nav-link:hover {
+  color: #d22c36;
   border-color: #d22c36;
 }
 </style>

@@ -61,12 +61,6 @@
                 <a
                   href="#"
                   class="dropdown-item head-text text-decoration-none"
-                  @click.prevent="reqModal(item)"
-                  >Request Spareparts</a
-                >
-                <a
-                  href="#"
-                  class="dropdown-item head-text text-decoration-none"
                   @click.prevent="deleteModal(item)"
                   >Delete</a
                 >
@@ -84,32 +78,21 @@
       @close="closeViewModal"
     />
 
-    <EditPendingCustomers
+    <EditValidationCustomers
       ref="editModalRef"
       :service="editService"
       :service-device="servicesDevice"
       :usages="usages"
+      :technicians="technicians"
       @update="updateServices"
       @close="closeEditModal"
     />
 
-    <MovePendingCustomers
+    <MoveValidationCustomers
       ref="moveModalRef"
       :service="moveService"
-      :technicians="technicians"
-      :spareparts="spareparts"
       @update="moveServices"
       @close="closeMoveModal"
-    />
-
-    <RequestPendingCustomers
-      v-model="showRequestModal"
-      :service-id="selectedServiceId"
-      :spareparts="spareparts"
-      :spareparts-device="sparepartsDevice"
-      :customer-name="selectedCustomerName"
-      @update="reqSpareparts"
-      @close="closeReqModal"
     />
 
     <DeletePendingCustomers
@@ -125,9 +108,8 @@ import { ref, onMounted, watch } from 'vue'
 import axios from 'axios'
 import { showToast } from '@/utilities/toast'
 import ViewValidationCustomers from '../Services/Modal/Customers/ViewValidationCustomers.vue'
-import MovePendingCustomers from '../Services/Modal/Customers/MovePendingCustomers.vue'
-import RequestPendingCustomers from '../Services/Modal/Customers/SparepartsPendingCustomers.vue'
-import EditPendingCustomers from '../Services/Modal/Customers/EditPendingCustomers.vue'
+import MoveValidationCustomers from '../Services/Modal/Customers/MoveValidationCustomers.vue'
+import EditValidationCustomers from '../Services/Modal/Customers/EditValidationCustomers.vue'
 import DeletePendingCustomers from '../Services/Modal/Customers/DeletePendingCustomers.vue'
 import Search from '../Layouts/SearchAll.vue'
 import { mockServerItems, refreshData } from '../../mock/mockValidationCustomers'
@@ -149,11 +131,6 @@ const viewService = ref({})
 const moveService = ref({})
 const editService = ref({})
 const loading = ref(true)
-
-// New refs for Request Spareparts modal
-const showRequestModal = ref(false)
-const selectedServiceId = ref(null)
-const selectedCustomerName = ref('')
 
 const token = localStorage.getItem('token')
 // Constants
@@ -351,12 +328,6 @@ const moveModal = (service) => {
   moveModalRef.value.showModal()
 }
 
-const reqModal = (service) => {
-  selectedServiceId.value = service.id
-  selectedCustomerName.value = service.customers
-  showRequestModal.value = true
-}
-
 const editModal = (service) => {
   editService.value = { ...service }
   id.value = service.id
@@ -374,12 +345,6 @@ const closeViewModal = () => {
 
 const closeMoveModal = () => {
   moveModalRef.value.hideModal()
-}
-
-const closeReqModal = () => {
-  showRequestModal.value = false
-  selectedServiceId.value = null
-  selectedCustomerName.value = ''
 }
 
 const closeEditModal = () => {
