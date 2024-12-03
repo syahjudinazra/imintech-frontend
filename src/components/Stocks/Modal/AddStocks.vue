@@ -92,6 +92,7 @@
                 v-model="stocks.date_in"
                 :enable-time-picker="false"
                 :format="customFormat"
+                placeholder="Select Date"
               />
             </div>
 

@@ -21,7 +21,11 @@
             <!--Date of entry section-->
             <div class="mb-3">
               <label class="form-label fw-bold" for="date_loan">Date of Entry</label>
-              <VueDatePicker v-model="loans.date_loan" :enable-time-picker="false" />
+              <VueDatePicker
+                v-model="loans.date_loan"
+                :enable-time-picker="false"
+                placeholder="Select Date"
+              />
             </div>
             <div class="mb-3">
               <label for="serial_number" class="form-label fw-bold">Serial Number</label>

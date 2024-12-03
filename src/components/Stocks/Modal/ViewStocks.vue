@@ -70,6 +70,7 @@
               :model-value="formatDateForPicker(stockDetails.date_in)"
               id="date_in"
               name="date_in"
+              placeholder="Select Date"
               readonly
             />
           </div>
@@ -85,6 +86,7 @@
               :model-value="formatDateForPicker(stockDetails.date_out)"
               id="date_out"
               name="date_out"
+              placeholder="Select Date"
               readonly
             />
           </div>

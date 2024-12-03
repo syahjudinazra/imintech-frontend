@@ -206,11 +206,9 @@
                     type="radio"
                     name="status"
                     id="statusValidation"
-                    value="Validation Customers"
+                    value="Validation Stocks"
                   />
-                  <label class="form-check-label" for="statusValidation">
-                    Validation Customers
-                  </label>
+                  <label class="form-check-label" for="statusValidation"> Validation Stocks </label>
                 </div>
               </div>
             </div>
@@ -452,12 +450,12 @@ watch(
     if (newService) {
       initialService.value = cloneDeep(newService)
 
-      // Clone the service and explicitly set status to 'Validation Customers'
+      // Clone the service and explicitly set status to 'Validation Stocks'
       const serviceClone = cloneDeep(newService)
       Object.assign(movedService, serviceClone)
 
-      // Always set status to 'Validation Customers'
-      movedService.status = 'Validation Customers'
+      // Always set status to 'Validation Stocks'
+      movedService.status = 'Validation Stocks'
 
       if (movedService.date_out_services) {
         movedService.date_out_services = formatDateForPicker(movedService.date_out_services)

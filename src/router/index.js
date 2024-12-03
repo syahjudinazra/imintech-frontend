@@ -46,14 +46,14 @@ const routes = [
             meta: { requiresAuth: true },
           },
           {
-            path: 'services',
-            name: 'Services',
+            path: 'in-services',
+            name: 'In Services',
             component: () => import('@/views/stocks/ServicesStocks.vue'),
             meta: { requiresAuth: true },
           },
           {
-            path: 'loan',
-            name: 'Loan',
+            path: 'in-loan',
+            name: 'In Loan',
             component: () => import('@/views/stocks/LoanStocks.vue'),
             meta: { requiresAuth: true },
           },

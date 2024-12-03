@@ -37,12 +37,12 @@ export default [
       {
         component: 'CNavItem',
         name: 'Services',
-        to: '/stocks/services',
+        to: '/stocks/in-services',
       },
       {
         component: 'CNavItem',
         name: 'Loan',
-        to: '/stocks/loan',
+        to: '/stocks/in-loan',
       },
       {
         component: 'CNavItem',

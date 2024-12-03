@@ -54,7 +54,7 @@
             <label class="form-label fw-bold">Device Type</label>
             <input
               class="form-control shadow-none bg-light"
-              :value="getDeviceName(service?.services_devices_id)"
+              :value="service?.services_devices_id"
               id="services_devices_id"
               name="services_devices_id"
               readonly
@@ -78,7 +78,7 @@
             <label class="form-label fw-bold">Usages</label>
             <input
               class="form-control shadow-none bg-light"
-              :value="getUsagesName(service?.usages_id)"
+              :value="service?.usages_id"
               id="usages_id"
               name="usages_id"
               readonly
@@ -116,6 +116,7 @@
               :format="customDateFormat"
               id="date_in_services"
               name="date_in_services"
+              placeholder="Select Date"
               readonly
             />
           </div>
@@ -150,14 +151,6 @@ const props = defineProps({
     type: Object,
     default: () => ({}),
   },
-  serviceDevice: {
-    type: Array,
-    default: () => [],
-  },
-  usages: {
-    type: Array,
-    default: () => [],
-  },
   sparepartRequests: {
     type: Array,
     default: () => [],
@@ -174,17 +167,6 @@ const formatDateForPicker = (date) => {
   return new Date(date)
 }
 
-const getDeviceName = (id) => {
-  const device = props.serviceDevice.find((d) => d.id === id)
-  return device ? device.name : 'N/A'
-}
-
-const getUsagesName = (id) => {
-  const usage = props.usages.find((u) => u.id === id)
-  return usage ? usage.name : 'N/A'
-}
-
-// New function to format sparepart numbers
 const formatSparepartNumbers = (requests) => {
   if (!requests || requests.length === 0) return 'No spareparts requested'
   return requests.map((req) => req.no_spareparts).join(', ')

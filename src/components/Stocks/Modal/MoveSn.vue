@@ -126,6 +126,7 @@
                     :enable-time-picker="false"
                     v-model="formData.date_out"
                     @update:model-value="formatDate"
+                    placeholder="Select Date"
                   />
                 </div>
 

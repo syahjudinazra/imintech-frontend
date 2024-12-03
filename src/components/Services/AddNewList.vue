@@ -20,6 +20,8 @@
           />
           <small class="text-secondary">The serial number must be in the stocks data</small>
         </div>
+
+        <!--Ticket Service Section-->
         <div class="form-group mb-3">
           <label class="fw-bold" for="ticket_services">Ticket Service</label>
           <div class="d-flex">
@@ -36,10 +38,18 @@
             </button>
           </div>
         </div>
+
+        <!--Date of Entry Section-->
         <div class="form-group mb-3">
           <label class="fw-bold" for="date_in_services">Date of Entry</label>
-          <VueDatePicker v-model="services.date_in_services" :enable-time-picker="false" />
+          <VueDatePicker
+            v-model="services.date_in_services"
+            :enable-time-picker="false"
+            placeholder="Select Date"
+          />
         </div>
+
+        <!--Owner Section-->
         <div class="form-group mb-3">
           <label class="fw-bold">Owner</label><br />
           <div class="form-check form-check-inline">
@@ -65,6 +75,7 @@
             <label class="form-check-label" for="customers">Customers</label>
           </div>
         </div>
+
         <div class="form-group mb-3">
           <label class="fw-bold" for="customers">Customers</label>
           <input
@@ -76,6 +87,8 @@
             required
           />
         </div>
+
+        <!--Device Type Section-->
         <div class="form-group mb-3">
           <label for="services_devices_id" class="form-label fw-bold">Device type</label>
           <v-select
@@ -92,6 +105,8 @@
             </template>
           </v-select>
         </div>
+
+        <!--Usages Section-->
         <div class="form-group mb-3">
           <label for="usages_id" class="form-label fw-bold">Choose Usage</label>
           <v-select
@@ -108,6 +123,8 @@
             </template>
           </v-select>
         </div>
+
+        <!--Damage Section-->
         <div class="form-group mb-3">
           <label class="fw-bold" for="damage">Damage</label>
           <textarea
@@ -118,6 +135,8 @@
             required
           ></textarea>
         </div>
+
+        <!--Notes Section-->
         <div class="form-group mb-3">
           <label class="fw-bold" for="note">Notes</label>
           <textarea
@@ -128,19 +147,30 @@
             required
           ></textarea>
         </div>
-        <div class="form-group mb-3" hidden>
+
+        <!--Status Section-->
+        <div class="form-group mb-3">
           <label for="status" class="form-label fw-bold">Status</label>
           <div class="d-flex gap-2">
             <div class="form-check">
               <input
+                :value="'Pending Customers'"
                 v-model="services.status"
                 class="form-check-input"
                 type="radio"
-                name="status"
-                id="statusPending"
-                value="Pending Customers"
+                id="statusPendingCustomers"
               />
-              <label class="form-check-label" for="statusPending">Pending Customers</label>
+              <label class="form-check-label" for="statusPendingCustomers">Pending Customers</label>
+            </div>
+            <div class="form-check">
+              <input
+                :value="'Pending Stocks'"
+                v-model="services.status"
+                class="form-check-input"
+                type="radio"
+                id="statusPendingStocks"
+              />
+              <label class="form-check-label" for="statusPendingStocks">Pending Stocks</label>
             </div>
           </div>
         </div>
@@ -167,7 +197,7 @@ const services = ref({
   usages_id: null,
   damage: '',
   note: 'Tanggal Pembelian:\nKelengkapan:',
-  status: 'Pending Customers',
+  status: '',
 })
 
 const servicesDevice = ref([])
@@ -236,11 +266,17 @@ const addServices = async () => {
     showToast(response.data.message, 'success')
     clearInput()
   } catch (error) {
-    console.error('Error adding service:', error)
+    console.error('Error adding service:', {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+      headers: error.response?.headers,
+    })
+
     if (error.response && error.response.data && error.response.data.message) {
       showToast(error.response.data.message, 'error')
     } else {
-      showToast('An error occurred while adding the service', 'error')
+      showToast('Failed to add service. Please try again later.', 'error')
     }
   } finally {
     isLoading.value = false
@@ -252,7 +288,7 @@ const clearInput = () => {
     if (key === 'note') {
       services.value[key] = 'Tanggal Pembelian:\nKelengkapan:'
     } else if (key === 'status') {
-      services.value[key] = 'Pending'
+      services.value[key] = ''
     } else {
       services.value[key] = ''
     }

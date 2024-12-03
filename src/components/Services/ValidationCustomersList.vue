@@ -95,11 +95,7 @@
       @close="closeMoveModal"
     />
 
-    <DeletePendingCustomers
-      ref="deleteModalRef"
-      @delete="deleteServices"
-      @close="closeDeleteModal"
-    />
+    <DeleteServices ref="deleteModalRef" @delete="deleteServices" @close="closeDeleteModal" />
   </div>
 </template>
 
@@ -110,7 +106,7 @@ import { showToast } from '@/utilities/toast'
 import ViewValidationCustomers from '../Services/Modal/Customers/ViewValidationCustomers.vue'
 import MoveValidationCustomers from '../Services/Modal/Customers/MoveValidationCustomers.vue'
 import EditValidationCustomers from '../Services/Modal/Customers/EditValidationCustomers.vue'
-import DeletePendingCustomers from '../Services/Modal/Customers/DeletePendingCustomers.vue'
+import DeleteServices from '../Services/Modal/DeleteServices.vue'
 import Search from '../Layouts/SearchAll.vue'
 import { mockServerItems, refreshData } from '../../mock/mockValidationCustomers'
 

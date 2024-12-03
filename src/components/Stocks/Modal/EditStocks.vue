@@ -89,6 +89,7 @@
                 :format="customDateFormat"
                 :model-value="formatDateForPicker(editedStock.date_in)"
                 id="date_in"
+                placeholder="Select Date"
               />
             </div>
 
@@ -101,6 +102,7 @@
                 :format="customDateFormat"
                 :model-value="formatDateForPicker(editedStock.date_out)"
                 id="date_out"
+                placeholder="Select Date"
               />
             </div>
 

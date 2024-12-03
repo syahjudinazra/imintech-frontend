@@ -141,6 +141,7 @@
                 :enable-time-picker="false"
                 :format="customDateFormat"
                 :model-value="formatDateForPicker(editedService.date_in_services)"
+                placeholder="Select Date"
               />
             </div>
 
