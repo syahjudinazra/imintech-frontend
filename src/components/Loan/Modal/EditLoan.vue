@@ -9,42 +9,186 @@
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="editForm_label">Edit Loan Data</h5>
+          <h5 class="modal-title" id="editForm_label">Edit Data</h5>
           <button type="button" class="btn-close" aria-label="Close" @click="closeModal"></button>
         </div>
-        <form @submit.prevent="updateLoan" enctype="multipart/form-data">
+        <form @submit.prevent="editForm">
           <div class="modal-body">
+            <!--Date of Entry-->
+            <div class="mb-3">
+              <label class="fw-bold" for="date_loan">Date of Entry</label>
+              <VueDatePicker
+                v-model="editedLoan.date_loan"
+                :enable-time-picker="false"
+                :format="customDateFormat"
+                :model-value="formatDateForPicker(editedLoan.date_loan)"
+                placeholder="Select Date"
+              />
+            </div>
+
+            <!--Serial Number-->
             <div class="mb-3">
               <label for="serial_number" class="form-label fw-bold">Serial Number</label>
               <input
-                v-model="editLoanData.serial_number"
+                v-model="editedLoan.serial_number"
                 type="text"
-                class="form-control shadow-none"
+                class="form-control shadow-none bg-light"
                 id="serial_number"
+                readonly
               />
             </div>
+
+            <!--Device Type-->
             <div class="mb-3">
-              <label for="loan_devices_id" class="form-label fw-bold">Device Type</label>
+              <label for="loanDevice" class="form-label fw-bold">Device Type</label>
+              <v-select
+                v-model="editedLoan.loan_devices_id"
+                :options="loanDevice"
+                :reduce="(device) => device.id"
+                label="name"
+                :searchable="true"
+                :clearable="false"
+                placeholder="Select Device Type"
+                id="loanDevice"
+                required
+              >
+                <template #no-options="{ search, searching }">
+                  <template v-if="searching">
+                    No results found for <em>{{ search }}</em>
+                  </template>
+                  <em v-else>Start typing to search...</em>
+                </template>
+              </v-select>
+            </div>
+
+            <!--RAM Section-->
+            <div class="mb-3">
+              <label for="rams" class="form-label fw-bold">RAM</label>
+              <v-select
+                v-model="editedLoan.rams_id"
+                :options="rams"
+                :reduce="(ram) => ram.id"
+                label="name"
+                :searchable="true"
+                :clearable="false"
+                placeholder="Select Device Type"
+                id="rams"
+              >
+                <template #no-options="{ search, searching }">
+                  <template v-if="searching">
+                    No results found for <em>{{ search }}</em>
+                  </template>
+                  <em v-else>Start typing to search...</em>
+                </template>
+              </v-select>
+            </div>
+
+            <!--Android Section-->
+            <div class="mb-3">
+              <label for="androids" class="form-label fw-bold">Android</label>
+              <v-select
+                v-model="editedLoan.androids_id"
+                :options="androids"
+                :reduce="(android) => android.id"
+                label="name"
+                :searchable="true"
+                :clearable="false"
+                placeholder="Select Device Type"
+                id="androids"
+                required
+              >
+                <template #no-options="{ search, searching }">
+                  <template v-if="searching">
+                    No results found for <em>{{ search }}</em>
+                  </template>
+                  <em v-else>Start typing to search...</em>
+                </template>
+              </v-select>
+            </div>
+
+            <!--Customers Section-->
+            <div class="mb-3">
+              <label for="customers" class="form-label fw-bold">Customers</label>
+              <v-select
+                v-model="editedLoan.customers_id"
+                :options="customers"
+                :reduce="(customer) => customer.id"
+                label="name"
+                :searchable="true"
+                :clearable="false"
+                placeholder="Select Device Type"
+                id="customers"
+                required
+              >
+                <template #no-options="{ search, searching }">
+                  <template v-if="searching">
+                    No results found for <em>{{ search }}</em>
+                  </template>
+                  <em v-else>Start typing to search...</em>
+                </template>
+              </v-select>
+            </div>
+
+            <!--Sales Section-->
+            <div class="mb-3">
+              <label for="sales" class="form-label fw-bold">Sales</label>
+              <v-select
+                v-model="editedLoan.sales_id"
+                :options="sales"
+                :reduce="(sales) => sales.id"
+                label="name"
+                :searchable="true"
+                :clearable="false"
+                placeholder="Select Device Type"
+                id="sales"
+                required
+              >
+                <template #no-options="{ search, searching }">
+                  <template v-if="searching">
+                    No results found for <em>{{ search }}</em>
+                  </template>
+                  <em v-else>Start typing to search...</em>
+                </template>
+              </v-select>
+            </div>
+
+            <!--Phone Number-->
+            <div class="mb-3">
+              <label for="phone_number" class="form-label fw-bold">Phone Number</label>
               <input
-                v-model="editLoanData.loan_devices_id"
+                v-model="editedLoan.phone_number"
                 type="text"
                 class="form-control shadow-none"
-                id="loan_devices_id"
+                id="phone_number"
               />
             </div>
+
+            <!--Sender-->
             <div class="mb-3">
-              <label for="customers_id" class="form-label fw-bold">Customer</label>
+              <label for="sender" class="form-label fw-bold">Sender</label>
               <input
-                v-model="editLoanData.customers_id"
+                v-model="editedLoan.sender"
                 type="text"
                 class="form-control shadow-none"
-                id="customers_id"
+                id="sender"
+              />
+            </div>
+
+            <!--Shipping Equipment-->
+            <div class="mb-3">
+              <label for="shipping_equipment" class="form-label fw-bold">Shipping Equipment</label>
+              <textarea
+                v-model="editedLoan.shipping_equipment"
+                class="form-control shadow-none"
+                id="shipping_equipment"
               />
             </div>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" @click="closeModal">Close</button>
-            <button type="submit" class="btn btn-primary">Update</button>
+            <button type="submit" class="btn btn-danger text-white" :disabled="!isDataChanged">
+              Submit
+            </button>
           </div>
         </form>
       </div>
@@ -53,44 +197,183 @@
 </template>
 
 <script setup>
-import { ref, defineEmits, defineProps } from 'vue'
+import { ref, watch, defineProps, defineEmits, onMounted, reactive } from 'vue'
 import { Modal } from 'bootstrap'
-import axios from 'axios'
+import vSelect from 'vue-select'
+import VueDatePicker from '@vuepic/vue-datepicker'
+import '@vuepic/vue-datepicker/dist/main.css'
+import 'vue-select/dist/vue-select.css'
 import { showToast } from '@/utilities/toast'
+import { cloneDeep } from 'lodash-es'
 
 const props = defineProps({
-  loanData: {
+  loan: {
     type: Object,
-    required: true,
+    default: () => ({}),
+  },
+  loanDevice: {
+    type: Array,
+    default: () => [],
+  },
+  rams: {
+    type: Array,
+    default: () => [],
+  },
+  androids: {
+    type: Array,
+    default: () => [],
+  },
+  customers: {
+    type: Array,
+    default: () => [],
+  },
+  sales: {
+    type: Array,
+    default: () => [],
   },
 })
 
-const emit = defineEmits(['close', 'refresh'])
+const emit = defineEmits(['update', 'close'])
 
-const editLoanData = ref({ ...props.loanData })
-let modal = null
+// Refs and reactive states
+const editModal = ref(null)
+const isDataChanged = ref(false)
+const initialLoan = ref(null)
+const editedLoan = reactive({})
+const changedFields = reactive({})
 
-const updateLoan = async () => {
+// Date formatting
+const customDateFormat = 'dd/MM/yyyy'
+
+const formatDateForPicker = (date) => {
+  if (!date) return null
+  return new Date(date)
+}
+
+// Watchers
+watch(
+  () => props.loan,
+  (newLoan) => {
+    if (newLoan) {
+      initialLoan.value = cloneDeep(newLoan)
+      Object.assign(editedLoan, cloneDeep(newLoan))
+      if (editedLoan.date_loan) {
+        editedLoan.date_loan = formatDateForPicker(editedLoan.date_loan)
+      }
+    }
+  },
+  { immediate: true, deep: true },
+)
+
+watch(
+  editedLoan,
+  (newValue) => {
+    if (initialLoan.value) {
+      Object.keys(newValue).forEach((key) => {
+        if (JSON.stringify(newValue[key]) !== JSON.stringify(initialLoan.value[key])) {
+          changedFields[key] = true
+        } else {
+          delete changedFields[key]
+        }
+      })
+      isDataChanged.value = Object.keys(changedFields).length > 0
+    }
+  },
+  { deep: true },
+)
+
+// Form submission
+const editForm = () => {
+  if (!isDataChanged.value) {
+    showToast('No changes detected.', 'error')
+    return
+  }
+
   try {
-    const response = await axios.put(`loans/${editLoanData.value.id}`, editLoanData.value)
-    showToast(response.data.message || 'Loan updated successfully', 'success')
-    closeModal()
-    emit('refresh')
+    const updatedService = { id: editedLoan.id }
+    Object.keys(changedFields).forEach((key) => {
+      updatedService[key] = editedLoan[key]
+    })
+
+    if (updatedService.date_loan) {
+      updatedService.date_loan = updatedService.date_loan.toISOString().split('T')[0]
+    }
+
+    if (updatedService.usages_id) {
+      updatedService.usage = updatedService.usages_id
+    }
+
+    emit('update', updatedService)
+    hideModal()
   } catch (error) {
-    console.error('Error updating loan:', error)
-    showToast(error.response?.data?.message || 'Failed to update loan', 'error')
+    console.error('Error updating service:', error)
+    showToast('Failed to update service.', 'error')
   }
 }
 
+// Modal functions
+const showModal = () => {
+  editModal.value.show()
+}
+
 const closeModal = () => {
-  modal?.hide()
+  hideModal()
   emit('close')
 }
 
-const showModal = () => {
-  editLoanData.value = { ...props.loanData }
-  modal.show()
+const hideModal = () => {
+  editModal.value.hide()
+  Object.keys(editedLoan).forEach((key) => delete editedLoan[key])
+  isDataChanged.value = false
 }
 
-defineExpose({ showModal })
+defineExpose({
+  showModal,
+  hideModal,
+})
+
+onMounted(() => {
+  editModal.value = new Modal(document.getElementById('editForm'))
+})
 </script>
+
+<style scoped>
+input:focus,
+textarea:focus {
+  border-color: #d22c36;
+}
+
+.v-select {
+  --vs-controls-color: #6c757d;
+  --vs-border-color: #ced4da;
+
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #212529;
+  background-color: #fff;
+  background-clip: padding-box;
+  border-radius: 0.25rem;
+}
+
+.v-select .vs__dropdown-toggle {
+  padding: 0;
+  border: none;
+}
+
+.v-select .vs__selected-options {
+  padding: 0;
+}
+
+.v-select .vs__search::placeholder {
+  color: #6c757d;
+}
+
+.v-select .vs__clear {
+  display: none;
+}
+
+.v-select.vs--open .vs__dropdown-toggle {
+  border-bottom-color: transparent;
+}
+</style>

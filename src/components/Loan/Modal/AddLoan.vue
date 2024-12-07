@@ -27,6 +27,8 @@
                 placeholder="Select Date"
               />
             </div>
+
+            <!--Serial Number Section-->
             <div class="mb-3">
               <label for="serial_number" class="form-label fw-bold">Serial Number</label>
               <input
@@ -124,18 +126,6 @@
                   <em v-else>Start typing to search...</em>
                 </template>
               </v-select>
-            </div>
-
-            <!--Address section-->
-            <div class="mb-3">
-              <label class="form-label fw-bold" for="address">Address</label>
-              <textarea
-                v-model="loans.address"
-                class="form-control shadow-none"
-                id="address"
-                placeholder="Input Address"
-                required
-              ></textarea>
             </div>
 
             <!--Sales section-->

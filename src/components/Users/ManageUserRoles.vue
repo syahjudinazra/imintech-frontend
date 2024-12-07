@@ -16,6 +16,7 @@
               label="name"
               :clearable="false"
               placeholder="Select a user"
+              @update:modelValue="loadUserPermissions"
             />
           </div>
 
@@ -36,7 +37,7 @@
             >
           </div>
 
-          <!-- Assign Permissions (Disabled until a role is assigned) -->
+          <!-- Assign Permissions -->
           <div class="mb-3">
             <label class="form-label">Assign Permissions</label>
             <div class="d-flex flex-wrap">
@@ -52,6 +53,7 @@
                       :value="`${action} ${page}`"
                       v-model="selectedPermissions"
                       :disabled="!roleAssigned"
+                      :checked="userPermissions.includes(`${action} ${page}`)"
                     />
                     <label class="form-check-label" :for="`${page}-${action}`">
                       {{ `${action} ${page}` }}
@@ -67,6 +69,7 @@
                       :value="`move SN ${page}`"
                       v-model="selectedPermissions"
                       :disabled="!roleAssigned"
+                      :checked="userPermissions.includes(`move SN ${page}`)"
                     />
                     <label class="form-check-label" :for="`${page}-moveSN`">
                       {{ `move SN ${page}` }}
@@ -136,6 +139,7 @@ const roles = ref([])
 const selectedUser = ref(null)
 const selectedRole = ref('')
 const selectedPermissions = ref([])
+const userPermissions = ref([])
 const message = ref('')
 const roleAssigned = ref(false)
 const currentPage = ref(1)
@@ -194,6 +198,28 @@ const fetchRolesAndPermissions = async () => {
   }
 }
 
+const loadUserPermissions = async () => {
+  if (!selectedUser.value) return
+
+  try {
+    const token = localStorage.getItem('token')
+    const response = await axios.get(`users/${selectedUser.value}/permissions`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+
+    // Reset state when loading new user
+    userPermissions.value = response.data.permissions
+    selectedRole.value = response.data.role || ''
+    roleAssigned.value = !!selectedRole.value
+    selectedPermissions.value = userPermissions.value
+  } catch (error) {
+    console.error(error)
+    showToast('Failed to load user permissions', 'error')
+  }
+}
+
 const assignRole = async () => {
   if (!selectedUser.value || !selectedRole.value) {
     showToast('Please select both a user and a role', 'error')
@@ -216,7 +242,7 @@ const assignRole = async () => {
     fetchUsers()
   } catch (error) {
     console.error(error)
-    showToast(error.data.message, 'error')
+    showToast(error.response.data.message, 'error')
   }
 }
 
@@ -227,7 +253,7 @@ const handleRoleChange = () => {
 
 const assignPermissions = async () => {
   if (!selectedUser.value || selectedPermissions.value.length === 0) {
-    message.value = 'Please select a user and at least one permission'
+    showToast('Please select a user and at least one permission', 'error')
     return
   }
 
@@ -245,7 +271,7 @@ const assignPermissions = async () => {
     showToast(response.data.message, 'success')
   } catch (error) {
     console.error(error)
-    showToast(error.data.message, 'error')
+    showToast(error.response.data.message, 'error')
   }
 }
 
@@ -285,8 +311,8 @@ onMounted(() => {
 })
 
 watch(selectedUser, () => {
-  if (selectedRole.value) {
-    assignRole()
+  if (selectedUser.value) {
+    loadUserPermissions()
   }
 })
 </script>
