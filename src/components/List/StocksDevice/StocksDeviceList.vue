@@ -30,11 +30,6 @@
         <template #empty-message>
           <p>Data not found</p>
         </template>
-        <template #items="{ item }">
-          <tr>
-            <td>{{ item.name }}</td>
-          </tr>
-        </template>
         <template #item-action="item">
           <div class="d-flex gap-2">
             <a href="#" class="head-text text-decoration-none" @click="editModal(item)">Edit</a>
@@ -109,7 +104,7 @@ import axios from 'axios'
 import { showToast } from '@/utilities/toast'
 import AddStocksDevice from '../StocksDevice/Modal/AddStocksDevice'
 import Search from '../../Layouts/SearchAll'
-import { mockServerItems, refreshData } from '../../../mock/mockStocksDevice'
+import { mockServerItems } from '../../../mock/mockStocksDevice'
 
 let editForm
 let deleteForm
@@ -122,7 +117,7 @@ const token = localStorage.getItem('token')
 // Constants
 const baseColor = '#e55353'
 const headers = ref([
-  { text: 'Stocks Device', value: 'name' },
+  { text: 'Name', value: 'name' },
   { text: 'Action', value: 'action' },
 ])
 
@@ -136,7 +131,6 @@ const serverOptions = ref({
 })
 
 const refreshList = () => {
-  refreshData()
   loadFromServer()
 }
 

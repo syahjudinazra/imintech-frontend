@@ -30,11 +30,6 @@
         <template #empty-message>
           <p>Data not found</p>
         </template>
-        <template #items="{ item }">
-          <tr>
-            <td>{{ item.name }}</td>
-          </tr>
-        </template>
         <template #item-action="item">
           <div class="d-flex gap-2">
             <a href="#" class="head-text text-decoration-none" @click="editModal(item)">Edit</a>
@@ -67,7 +62,7 @@ import AddFirmwaresDevice from '../FirmwaresDevice/Modal/AddFirmwaresDevice.vue'
 import EditFirmwaresDevice from '../FirmwaresDevice/Modal/EditFirmwaresDevice.vue'
 import DeleteFirmwaresDevice from '../FirmwaresDevice/Modal/DeleteFirmwaresDevice.vue'
 import Search from '../../Layouts/SearchAll'
-import { mockServerItems, refreshData } from '../../../mock/mockFirmwaresDevice'
+import { mockServerItems } from '../../../mock/mockFirmwaresDevice'
 
 const editModalRef = ref(null)
 const deleteModalRef = ref(null)
@@ -80,7 +75,7 @@ const token = localStorage.getItem('token')
 // Constants
 const baseColor = '#e55353'
 const headers = ref([
-  { text: 'Firmwares Device', value: 'name' },
+  { text: 'Name', value: 'name' },
   { text: 'Action', value: 'action' },
 ])
 
@@ -94,7 +89,6 @@ const serverOptions = ref({
 })
 
 const refreshList = () => {
-  refreshData()
   loadFromServer()
 }
 

@@ -30,13 +30,6 @@
         <template #empty-message>
           <p>Data not found</p>
         </template>
-        <template #items="{ item }">
-          <tr>
-            <td>{{ item.name }}</td>
-            <td>{{ item.phone }}</td>
-            <td>{{ item.address }}</td>
-          </tr>
-        </template>
         <template #item-action="item">
           <div class="d-flex gap-2">
             <a href="#" class="head-text text-decoration-none" @click="editModal(item)">Edit</a>
@@ -120,7 +113,7 @@ import axios from 'axios'
 import { showToast } from '@/utilities/toast'
 import AddSales from '../Sales/Modal/AddSales.vue'
 import Search from '../../Layouts/SearchAll'
-import { mockServerItems, refreshData } from '../../../mock/mockSales'
+import { mockServerItems } from '../../../mock/mockSales'
 
 let editForm
 let deleteForm
@@ -148,7 +141,6 @@ const serverOptions = ref({
 })
 
 const refreshSales = () => {
-  refreshData()
   loadFromServer()
 }
 

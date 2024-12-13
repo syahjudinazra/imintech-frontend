@@ -5,6 +5,8 @@
         <AddLoan @data-added="refreshList()" />
       </div>
       <div class="others d-flex align-items-center gap-2">
+        <ExportLoans />
+        <ImportLoans />
         <Search :onSearch="updateSearch" />
       </div>
     </div>
@@ -83,23 +85,13 @@
       :androids="androids"
       :customers="customers"
       :sales="sales"
-      @update="updateServices"
+      @update="updateLoans"
       @close="closeEditModal"
     />
 
-    <MoveLoan
-      ref="moveModalRef"
-      :loan="moveLoan"
-      :loan-device="loanDevice"
-      :rams="rams"
-      :androids="androids"
-      :customers="customers"
-      :sales="sales"
-      @update="moveLoans"
-      @close="closeMoveModal"
-    />
+    <MoveLoan ref="moveModalRef" :loan="moveLoan" @update="moveLoans" @close="closeMoveModal" />
 
-    <DeleteLoan ref="deleteModalRef" @delete="deleteServices" @close="closeDeleteModal" />
+    <DeleteLoan ref="deleteModalRef" @delete="deleteLoans" @close="closeDeleteModal" />
   </div>
 </template>
 
@@ -107,11 +99,13 @@
 import { ref, onMounted, watch } from 'vue'
 import axios from 'axios'
 import { showToast } from '@/utilities/toast'
-import AddLoan from '../Loan/Modal/AddLoan.vue'
-import ViewLoan from '../Loan/Modal/ViewLoan.vue'
-import MoveLoan from '../Loan/Modal/MoveLoan.vue'
-import EditLoan from '../Loan/Modal/EditLoan.vue'
-import DeleteLoan from '../Loan/Modal/DeleteLoan.vue'
+import AddLoan from './Modal/AddLoan.vue'
+import ViewLoan from './Modal/ViewLoan.vue'
+import MoveLoan from './Modal/MoveLoan.vue'
+import EditLoan from './Modal/EditLoan.vue'
+import DeleteLoan from './Modal/DeleteLoan.vue'
+import ExportLoans from './Excel/ExportLoan.vue'
+import ImportLoans from './Excel/ImportLoan.vue'
 import Search from '../Layouts/SearchAll.vue'
 import { mockServerItems, refreshData } from '../../mock/mockLoans'
 
@@ -259,9 +253,9 @@ const fetchSales = async () => {
   }
 }
 
-const updateServices = async (updatedServices) => {
+const updateLoans = async (updatedLoans) => {
   try {
-    const response = await axios.put(`services/${id.value}`, updatedServices)
+    const response = await axios.put(`loans/${id.value}`, updatedLoans)
     showToast(response.data.message, 'success')
     closeEditModal()
     refreshList()
@@ -273,7 +267,7 @@ const updateServices = async (updatedServices) => {
 
 const moveLoans = async (formData) => {
   try {
-    const response = await axios.post(`services-move/${id.value}`, formData, {
+    const response = await axios.post(`loans-move/${id.value}`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -287,9 +281,9 @@ const moveLoans = async (formData) => {
   }
 }
 
-const deleteServices = async () => {
+const deleteLoans = async () => {
   try {
-    const response = await axios.delete(`services/${id.value}`)
+    const response = await axios.delete(`loans/${id.value}`)
     showToast(response.data.message, 'success')
     closeDeleteModal()
     refreshList()
@@ -300,26 +294,26 @@ const deleteServices = async () => {
   }
 }
 
-const viewModal = async (service) => {
-  viewLoan.value = { ...service }
-  id.value = service.id
+const viewModal = async (loan) => {
+  viewLoan.value = { ...loan }
+  id.value = loan.id
   viewModalRef.value.showModal()
 }
 
-const moveModal = (service) => {
-  moveLoan.value = { ...service }
-  id.value = service.id
+const moveModal = (loan) => {
+  moveLoan.value = { ...loan }
+  id.value = loan.id
   moveModalRef.value.showModal()
 }
 
-const editModal = (service) => {
-  editLoan.value = { ...service }
-  id.value = service.id
+const editModal = (loan) => {
+  editLoan.value = { ...loan }
+  id.value = loan.id
   editModalRef.value.showModal()
 }
 
-const deleteModal = (service) => {
-  id.value = service.id
+const deleteModal = (loan) => {
+  id.value = loan.id
   deleteModalRef.value.showModal()
 }
 

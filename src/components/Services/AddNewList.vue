@@ -59,7 +59,7 @@
               type="radio"
               id="stocks"
               value="Stocks"
-              @change="updateCustomers"
+              @change="updateOwnerRelatedFields"
             />
             <label class="form-check-label" for="stocks">Stocks</label>
           </div>
@@ -70,7 +70,7 @@
               type="radio"
               id="customers"
               value="Customers"
-              @change="updateCustomers"
+              @change="updateOwnerRelatedFields"
             />
             <label class="form-check-label" for="customers">Customers</label>
           </div>
@@ -149,7 +149,7 @@
         </div>
 
         <!--Status Section-->
-        <div class="form-group mb-3">
+        <div class="form-group mb-3" hidden>
           <label for="status" class="form-label fw-bold">Status</label>
           <div class="d-flex gap-2">
             <div class="form-check">
@@ -204,11 +204,13 @@ const servicesDevice = ref([])
 const usages = ref([])
 const isLoading = ref(false)
 
-const updateCustomers = () => {
+const updateOwnerRelatedFields = () => {
   if (services.value.owner === 'Stocks') {
     services.value.customers = 'iMin ID'
+    services.value.status = 'Pending Stocks'
   } else {
     services.value.customers = ''
+    services.value.status = 'Pending Customers'
   }
 }
 
@@ -224,7 +226,7 @@ function generateTicketService() {
 watch(
   () => services.value.owner,
   () => {
-    updateCustomers()
+    updateOwnerRelatedFields()
   },
 )
 

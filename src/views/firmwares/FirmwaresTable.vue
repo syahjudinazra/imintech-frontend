@@ -32,15 +32,6 @@
         <template #empty-message>
           <p>Data not found</p>
         </template>
-        <template #items="{ item }">
-          <tr>
-            <td>{{ getDeviceName(item.firmwares_devices_id) }}</td>
-            <td>{{ item.version }}</td>
-            <td>{{ getAndroidName(item.androids_id) }}</td>
-            <td>{{ item.flash }}</td>
-            <td>{{ item.ota }}</td>
-          </tr>
-        </template>
         <template #item-action="item">
           <div class="d-flex gap-2">
             <a
@@ -194,16 +185,6 @@ async function fetchUserRole() {
   } catch (error) {
     console.error('Error fetching user roles:', error)
   }
-}
-
-const getDeviceName = (id) => {
-  const device = firmwaresDevice.value.find((d) => d.id === id)
-  return device ? device.name : 'Unknown'
-}
-
-const getAndroidName = (id) => {
-  const android = androids.value.find((a) => a.id === id)
-  return android ? android.name : 'Unknown'
 }
 
 const fetchFirmwaresDevice = async () => {

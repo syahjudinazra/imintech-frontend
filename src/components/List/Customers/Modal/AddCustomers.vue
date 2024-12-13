@@ -5,6 +5,7 @@
 
   <!-- Modal -->
   <div
+    ref="modalElement"
     class="modal fade"
     id="addForm"
     tabindex="-1"
@@ -75,7 +76,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, onUnmounted } from 'vue'
 import { Modal } from 'bootstrap'
 import axios from 'axios'
 import { showToast } from '@/utilities/toast'
@@ -87,10 +88,19 @@ const customers = ref({
 })
 const phoneError = ref(false)
 const token = localStorage.getItem('token')
-let addForm
+const modalElement = ref(null)
+let addForm = ref(null)
 
 onMounted(() => {
-  addForm = new Modal(document.getElementById('addForm'), {})
+  if (modalElement.value) {
+    addForm.value = new Modal(modalElement.value)
+  }
+})
+
+onUnmounted(() => {
+  if (addForm.value) {
+    addForm.value.dispose()
+  }
 })
 
 const isFormValid = computed(() => {
@@ -114,11 +124,16 @@ function openModal() {
     address: '',
   }
   phoneError.value = false
-  addForm.show()
+
+  if (addForm.value) {
+    addForm.value.show()
+  }
 }
 
 function closeModal() {
-  addForm.hide()
+  if (addForm.value) {
+    addForm.value.hide()
+  }
 }
 
 async function AddCustomers() {
@@ -147,6 +162,7 @@ async function AddCustomers() {
   }
 }
 </script>
+
 <style scoped>
 input:focus {
   border-color: #d22c36;

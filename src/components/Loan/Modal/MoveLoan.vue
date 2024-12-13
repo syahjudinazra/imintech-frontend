@@ -14,134 +14,40 @@
         </div>
         <form @submit.prevent="moveForm">
           <div class="modal-body">
-            <!-- Serial Number -->
+            <!-- Returned Date -->
             <div class="mb-3">
-              <label for="serial_number" class="form-label fw-bold"> Serial number </label>
-              <input
-                v-model="movedLoan.serial_number"
-                type="text"
-                class="form-control bg-light shadow-none"
-                id="serial_number"
-                readonly
-              />
-            </div>
-
-            <!-- Customers -->
-            <div class="mb-3">
-              <label for="customers" class="form-label fw-bold">Customers</label>
-              <input
-                v-model="movedLoan.customers"
-                type="text"
-                class="form-control bg-light shadow-none"
-                id="customers"
-                readonly
-              />
-            </div>
-
-            <!-- Damage -->
-            <div class="mb-3">
-              <label for="damage" class="form-label fw-bold"> Damage </label>
-              <textarea
-                v-model="movedLoan.damage"
-                class="form-control bg-light shadow-none"
-                id="damage"
-                readonly
-              />
-            </div>
-
-            <!-- Repair -->
-            <div class="mb-3">
-              <label for="repair" class="form-label fw-bold"> Repair </label>
-              <textarea
-                v-model="movedLoan.repair"
-                class="form-control shadow-none"
-                id="repair"
-                placeholder="Input Repair"
-              />
-            </div>
-
-            <!-- Technician -->
-            <div class="mb-3">
-              <label for="technician" class="form-label fw-bold"> Technician </label>
-              <v-select
-                v-model="movedLoan.technicians_id"
-                :options="props.technicians"
-                :reduce="(technician) => technician.id"
-                label="name"
-                :searchable="true"
-                :clearable="false"
-                placeholder="Select Technician"
-                id="technician"
-                required
-              >
-                <template #no-options="{ search, searching }">
-                  <template v-if="searching">
-                    No results found for <em>{{ search }}</em>
-                  </template>
-                  <em v-else>Start typing to search...</em>
-                </template>
-              </v-select>
-            </div>
-
-            <!-- No Spareparts -->
-            <div class="mb-3">
-              <label for="no_spareparts" class="form-label fw-bold">No Spareparts</label>
-              <input
-                v-model="movedLoan.no_spareparts"
-                type="text"
-                class="form-control shadow-none"
-                id="no_spareparts"
-                placeholder="Input No Spareparts"
-              />
-            </div>
-
-            <!-- SN Cannibal -->
-            <div class="mb-3">
-              <label for="sn_kanibal" class="form-label fw-bold">SN Cannibal</label>
-              <input
-                v-model="movedLoan.sn_kanibal"
-                type="text"
-                class="form-control shadow-none"
-                id="sn_kanibal"
-                placeholder="Input SN Cannibal"
-              />
-            </div>
-
-            <!-- Date Exit -->
-            <div class="mb-3">
-              <label for="date_out_services" class="form-label fw-bold">Date exit</label>
+              <label for="date_loan_back" class="form-label fw-bold">Returned Date</label>
               <VueDatePicker
-                v-model="movedLoan.date_out_services"
+                v-model="movedLoan.date_loan_back"
                 :enable-time-picker="false"
                 :format="customDateFormat"
-                :model-value="formatDateForPicker(movedLoan.date_out_services)"
+                :model-value="formatDateForPicker(movedLoan.date_loan_back)"
                 @update:model-value="handleDateChange"
                 placeholder="Select Date"
               />
             </div>
 
-            <!-- Note -->
+            <!-- Recipient -->
             <div class="mb-3">
-              <label for="note" class="form-label fw-bold"> Note </label>
-              <textarea v-model="movedLoan.note" class="form-control shadow-none" id="note" />
+              <label for="recipient" class="form-label fw-bold">Recipient</label>
+              <input
+                v-model="movedLoan.recipient"
+                type="text"
+                class="form-control shadow-none"
+                id="recipient"
+                placeholder="Input recipient"
+              />
             </div>
 
-            <!-- Status -->
-            <div class="form-group mb-3" hidden>
-              <label for="status" class="form-label fw-bold">Status</label>
-              <div class="d-flex gap-2">
-                <div class="form-check">
-                  <input
-                    v-model="movedLoan.status"
-                    class="form-check-input"
-                    type="radio"
-                    name="status"
-                    id="statusValidation"
-                    value="Validation Stocks"
-                  />
-                  <label class="form-check-label" for="statusValidation"> Validation Stocks </label>
-                </div>
-              </div>
+            <!-- Equipment Back -->
+            <div class="mb-3">
+              <label for="equipment_back" class="form-label fw-bold"> Equipment Back </label>
+              <textarea
+                v-model="movedLoan.equipment_back"
+                class="form-control shadow-none"
+                id="equipment_back"
+                placeholder="Input equipment back"
+              />
             </div>
           </div>
 
@@ -160,7 +66,6 @@
 <script setup>
 import { ref, watch, onMounted, reactive } from 'vue'
 import { Modal } from 'bootstrap'
-import vSelect from 'vue-select'
 import VueDatePicker from '@vuepic/vue-datepicker'
 import { showToast } from '@/utilities/toast'
 import { cloneDeep } from 'lodash-es'
@@ -173,33 +78,13 @@ const props = defineProps({
     required: true,
     default: () => ({}),
   },
-  loanDevice: {
-    type: Array,
-    default: () => [],
-  },
-  rams: {
-    type: Array,
-    default: () => [],
-  },
-  androids: {
-    type: Array,
-    default: () => [],
-  },
-  customers: {
-    type: Array,
-    default: () => [],
-  },
-  sales: {
-    type: Array,
-    default: () => [],
-  },
 })
 
 const emit = defineEmits(['update', 'close'])
 
 // State
 const isDataChanged = ref(false)
-const initialService = ref(null)
+const initialLoan = ref(null)
 const movedLoan = reactive({})
 const changedFields = reactive({})
 let moveModal = null
@@ -219,8 +104,8 @@ const formatDateForServer = (date) => {
 }
 
 const handleDateChange = (newDate) => {
-  movedLoan.date_out_services = newDate
-  changedFields.date_out_services = true
+  movedLoan.date_loan_back = newDate
+  changedFields.date_loan_back = true
   isDataChanged.value = true
 }
 
@@ -230,32 +115,15 @@ const moveForm = async () => {
     return
   }
 
-  const formData = new FormData()
+  // Prepare payload with explicitly set status
+  const payload = {
+    date_loan_back: formatDateForServer(movedLoan.date_loan_back) || '',
+    recipient: movedLoan.recipient || '',
+    equipment_back: movedLoan.equipment_back || '',
+    status: 'Returned',
+  }
 
-  // Format date before sending to server
-  const formattedDate = formatDateForServer(movedLoan.date_out_services)
-
-  // Append basic form fields
-  Object.keys(changedFields).forEach((key) => {
-    if (key !== 'images' && key !== 'documents') {
-      if (key === 'date_out_services') {
-        formData.append(key, formattedDate)
-      } else {
-        formData.append(key, movedLoan[key])
-      }
-    }
-  })
-
-  // Add other required fields
-  formData.append('technicians_id', movedLoan.technicians_id)
-  formData.append('repair', movedLoan.repair || '')
-  formData.append('no_spareparts', movedLoan.no_spareparts || '')
-  formData.append('sn_kanibal', movedLoan.sn_kanibal || '')
-  formData.append('date_out_services', formattedDate || '')
-  formData.append('note', movedLoan.note || '')
-  formData.append('status', movedLoan.status || '')
-
-  emit('update', formData)
+  emit('update', payload)
   hideModal()
 }
 
@@ -283,20 +151,16 @@ const closeModal = () => {
 
 // Watchers
 watch(
-  () => props.service,
-  (newService) => {
-    if (newService) {
-      initialService.value = cloneDeep(newService)
+  () => props.loan,
+  (newLoan) => {
+    if (newLoan) {
+      initialLoan.value = cloneDeep(newLoan)
 
-      // Clone the service and explicitly set status to 'Validation Stocks'
-      const serviceClone = cloneDeep(newService)
-      Object.assign(movedLoan, serviceClone)
+      const loanClone = cloneDeep(newLoan)
+      Object.assign(movedLoan, loanClone)
 
-      // Always set status to 'Validation Stocks'
-      movedLoan.status = 'Validation Stocks'
-
-      if (movedLoan.date_out_services) {
-        movedLoan.date_out_services = formatDateForPicker(movedLoan.date_out_services)
+      if (movedLoan.date_loan_back) {
+        movedLoan.date_loan_back = formatDateForPicker(movedLoan.date_loan_back)
       }
     }
   },
@@ -306,9 +170,9 @@ watch(
 watch(
   movedLoan,
   (newValue) => {
-    if (initialService.value) {
+    if (initialLoan.value) {
       Object.keys(newValue).forEach((key) => {
-        if (JSON.stringify(newValue[key]) !== JSON.stringify(initialService.value[key])) {
+        if (JSON.stringify(newValue[key]) !== JSON.stringify(initialLoan.value[key])) {
           changedFields[key] = true
         } else {
           delete changedFields[key]

@@ -129,11 +129,11 @@ import { ref, onMounted, watch } from 'vue'
 import { Modal } from 'bootstrap'
 import axios from 'axios'
 import { showToast } from '@/utilities/toast'
-import AddCustomers from '../Customers/Modal/AddCustomers'
+import AddCustomers from './Modal/AddCustomers.vue'
 import Search from '../../Layouts/SearchAll'
 import ExportCustomers from '../Customers/Excel/ExportCustomers.vue'
 import ImportCustomers from '../Customers/Excel/ImportCustomers.vue'
-import { mockServerItems, refreshData } from '../../../mock/mockCustomers'
+import { mockServerItems } from '../../../mock/mockCustomers'
 
 let editForm
 let deleteForm
@@ -162,7 +162,6 @@ const serverOptions = ref({
 })
 
 const refreshCustomers = () => {
-  refreshData()
   loadFromServer()
 }
 
@@ -185,7 +184,7 @@ const loadFromServer = async () => {
 
 const updateSearch = (term) => {
   serverOptions.value.searchTerm = term
-  serverOptions.value.page = 1 // Reset to first page when searching
+  serverOptions.value.page = 1
   loadFromServer()
 }
 
