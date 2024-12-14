@@ -107,7 +107,7 @@ import DeleteLoan from './Modal/DeleteLoan.vue'
 import ExportLoans from './Excel/ExportLoan.vue'
 import ImportLoans from './Excel/ImportLoan.vue'
 import Search from '../Layouts/SearchAll.vue'
-import { mockServerItems, refreshData } from '../../mock/mockLoans'
+import { mockServerItems } from '../../mock/mockLoans'
 
 // Refs
 const id = ref(null)
@@ -164,7 +164,6 @@ const formatDate = (date) => {
 }
 
 const refreshList = () => {
-  refreshData()
   loadFromServer()
 }
 

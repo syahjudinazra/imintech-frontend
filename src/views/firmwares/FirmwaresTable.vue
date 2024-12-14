@@ -82,10 +82,10 @@ import AddFirmwares from '../../components/Firmwares/Modal/AddFirmwares.vue'
 import EditFirmwares from '../../components/Firmwares/Modal/EditFirmwares.vue'
 import DeleteFirmwares from '../../components/Firmwares/Modal/DeleteFirmwares.vue'
 import Search from '../../components/Layouts/SearchAll'
-import { mockServerItems, refreshData } from '../../mock/mockFirmwares'
 import ExportFirmwares from '../../components/Firmwares/Excel/ExportFirmwares.vue'
 import ImportFirmwares from '../../components/Firmwares/Excel/ImportFirmwares.vue'
 import StatusPage from '../../components/StatusPage/404Page.vue'
+import { mockServerItems } from '../../mock/mockFirmwares'
 
 const id = ref(null)
 const firmwares = ref([])
@@ -119,7 +119,6 @@ const serverOptions = ref({
 })
 
 const refreshList = () => {
-  refreshData()
   loadFromServer()
 }
 

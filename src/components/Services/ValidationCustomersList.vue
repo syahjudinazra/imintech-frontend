@@ -108,7 +108,7 @@ import MoveValidationCustomers from '../Services/Modal/Customers/MoveValidationC
 import EditValidationCustomers from '../Services/Modal/Customers/EditValidationCustomers.vue'
 import DeleteServices from '../Services/Modal/DeleteServices.vue'
 import Search from '../Layouts/SearchAll.vue'
-import { mockServerItems, refreshData } from '../../mock/mockValidationCustomers'
+import { mockServerItems } from '../../mock/mockValidationCustomers'
 
 // Refs
 const id = ref(null)
@@ -166,7 +166,6 @@ const formatDate = (date) => {
 }
 
 const refreshList = () => {
-  refreshData()
   loadFromServer()
 }
 

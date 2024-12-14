@@ -126,7 +126,7 @@ import RequestPendingCustomers from '../Services/Modal/Customers/SparepartsPendi
 import EditPendingCustomers from '../Services/Modal/Customers/EditPendingCustomers.vue'
 import DeleteServices from '../Services/Modal/DeleteServices.vue'
 import Search from '../Layouts/SearchAll.vue'
-import { mockServerItems, refreshData } from '../../mock/mockPendingCustomers'
+import { mockServerItems } from '../../mock/mockPendingCustomers'
 
 // Refs
 const id = ref(null)
@@ -189,7 +189,6 @@ const formatDate = (date) => {
 }
 
 const refreshList = () => {
-  refreshData()
   loadFromServer()
 }
 

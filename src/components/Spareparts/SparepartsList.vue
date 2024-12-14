@@ -105,7 +105,7 @@ import QuantityManagement from '../Spareparts/Modal/QuantityManagement.vue'
 import Search from '../Layouts/SearchAll'
 import ExportSpareparts from '../Spareparts/Excel/ExportSpareparts.vue'
 import ImportSpareparts from '../Spareparts/Excel/ImportSpareparts.vue'
-import { mockServerItems, refreshData } from '@/mock/mockSpareparts'
+import { mockServerItems } from '@/mock/mockSpareparts'
 
 const id = ref(null)
 const spareparts = ref([])
@@ -140,7 +140,6 @@ const serverOptions = ref({
 })
 
 const refreshList = () => {
-  refreshData()
   loadFromServer()
 }
 

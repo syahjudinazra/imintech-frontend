@@ -108,7 +108,7 @@ import MoveDoneStocks from '../Services/Modal/Stocks/MoveDoneStocks.vue'
 import EditDoneCustomers from '../Services/Modal/Customers/EditDoneCustomers.vue'
 import DeleteServices from '../Services/Modal/DeleteServices.vue'
 import Search from '../Layouts/SearchAll.vue'
-import { mockServerItems, refreshData } from '../../mock/mockDoneStocks'
+import { mockServerItems } from '../../mock/mockDoneStocks'
 
 // Refs
 const id = ref(null)
@@ -166,7 +166,6 @@ const formatDate = (date) => {
 }
 
 const refreshList = () => {
-  refreshData()
   loadFromServer()
 }
 
