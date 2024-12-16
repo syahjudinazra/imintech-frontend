@@ -25,15 +25,6 @@
         <template #empty-message>
           <p>Data not found</p>
         </template>
-        <template #item-stocks_devices_id="{ stocks_devices_id }">
-          {{ getDeviceName(stocks_devices_id) }}
-        </template>
-        <template #item-customers_id="{ customers_id }">
-          {{ getCustomerName(customers_id) }}
-        </template>
-        <template #item-locations_id="{ locations_id }">
-          {{ getLocationName(locations_id) }}
-        </template>
         <template #item-status="{ status }">
           <span :class="getStatusBadgeClass(status)" class="px-2 py-1 rounded-pill">
             {{ status }}
@@ -45,13 +36,6 @@
         <template #item-date_out="{ date_out }">
           {{ formatDate(date_out) }}
         </template>
-        <template #items="{ item }">
-          <tr>
-            <td>{{ item.serial_number }}</td>
-            <td>{{ item.no_invoice }}</td>
-          </tr>
-        </template>
-
         <template #item-action="item">
           <div class="d-flex gap-2">
             <a
@@ -131,7 +115,7 @@ import EditStocks from '../../components/Stocks/Modal/EditStocks.vue'
 import ViewStocks from '../../components/Stocks/Modal/ViewStocks.vue'
 import DeleteStocks from '../../components/Stocks/Modal/DeleteStocks.vue'
 import Search from '../../components/Layouts/SearchAll'
-import { mockServerItems, refreshData } from '../../mock/Stocks/mockEntrust'
+import { mockServerItems } from '../../mock/Stocks/mockEntrust'
 
 const id = ref(null)
 const stocks = ref([])
@@ -151,7 +135,7 @@ const userRole = ref('')
 const baseColor = '#e55353'
 const headers = ref([
   { text: 'Serial Number', value: 'serial_number' },
-  { text: 'Devices', value: 'stocks_devices_id' },
+  { text: 'Devices', value: 'stocks_devices' },
   { text: 'No Invoice', value: 'no_invoice' },
   { text: 'Date of Entry', value: 'date_in' },
   { text: 'Date Exit', value: 'date_out' },
@@ -170,7 +154,6 @@ const serverOptions = ref({
 })
 
 const refreshList = () => {
-  refreshData()
   loadFromServer()
 }
 
@@ -271,21 +254,6 @@ async function fetchUserRole() {
   } catch (error) {
     console.error('Error fetching user roles:', error)
   }
-}
-
-const getDeviceName = (id) => {
-  const device = stocksDevice.value.find((d) => d.id === id)
-  return device?.name || 'N/A'
-}
-
-const getCustomerName = (id) => {
-  const customer = customers.value.find((c) => c.id === id)
-  return customer?.name || 'N/A'
-}
-
-const getLocationName = (id) => {
-  const location = locations.value.find((l) => l.id === id)
-  return location ? location.name : 'N/A'
 }
 
 const fetchStocksDevice = async () => {

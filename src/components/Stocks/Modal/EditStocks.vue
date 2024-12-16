@@ -29,7 +29,7 @@
             <div class="mb-3">
               <label for="stocksDevice" class="form-label fw-bold">Device Type</label>
               <v-select
-                v-model="editedStock.stocks_devices_id"
+                v-model="editedStock.stocks_devices"
                 :options="stocksDevice"
                 :reduce="(device) => device.id"
                 label="name"
@@ -159,6 +159,71 @@
                 class="form-control shadow-none"
                 id="information"
               />
+            </div>
+
+            <!--Status Section-->
+            <div class="form-group mb-3">
+              <label for="status" class="form-label fw-bold">Status</label>
+              <div class="form-check">
+                <input
+                  :value="'Warehouse'"
+                  v-model="editedStock.status"
+                  class="form-check-input"
+                  type="radio"
+                  id="statusWarehouse"
+                />
+                <label class="form-check-label" for="statusWarehouse">Warehouse</label>
+              </div>
+              <div class="form-check">
+                <input
+                  :value="'Services'"
+                  v-model="editedStock.status"
+                  class="form-check-input"
+                  type="radio"
+                  id="statusServices"
+                />
+                <label class="form-check-label" for="statusServices">Services</label>
+              </div>
+              <div class="form-check">
+                <input
+                  :value="'Loan'"
+                  v-model="editedStock.status"
+                  class="form-check-input"
+                  type="radio"
+                  id="statusLoan"
+                />
+                <label class="form-check-label" for="statusLoan">Loan</label>
+              </div>
+              <div class="form-check">
+                <input
+                  :value="'Sold'"
+                  v-model="editedStock.status"
+                  class="form-check-input"
+                  type="radio"
+                  id="statusSold"
+                />
+                <label class="form-check-label" for="statusSold">Sold</label>
+              </div>
+              <div class="form-check">
+                <input
+                  :value="'Damage'"
+                  v-model="editedStock.status"
+                  class="form-check-input"
+                  type="radio"
+                  id="statusDamage"
+                />
+                <label class="form-check-label" for="statusDamage">Damage</label>
+              </div>
+              <div class="form-check">
+                <input
+                  :value="'Entrust'"
+                  v-model="editedStock.status"
+                  class="form-check-input"
+                  type="radio"
+                  id="statusEntrust"
+                />
+                <label class="form-check-label" for="statusEntrust">Entrust</label>
+              </div>
             </div>
           </div>
           <div class="modal-footer">
@@ -319,12 +384,14 @@ onMounted(() => {
 </script>
 
 <style scoped>
-input:focus {
+input:focus,
+textarea:focus {
   border-color: #d22c36;
 }
 
-textarea:focus {
+input[type='radio']:checked {
   border-color: #d22c36;
+  background-color: #d22c36;
 }
 
 .v-select {

@@ -30,9 +30,9 @@
             <label class="form-label fw-bold">Device Type</label>
             <input
               class="form-control shadow-none bg-light"
-              :value="getDeviceName(stockDetails.stocks_devices_id)"
-              id="stocks_devices_id"
-              name="stocks_devices_id"
+              v-model="stockDetails.stocks_devices"
+              id="stocks_devices"
+              name="stocks_devices"
               readonly
             />
           </div>
@@ -42,7 +42,7 @@
             <label class="form-label fw-bold">SKU Device Type</label>
             <input
               class="form-control shadow-none bg-light"
-              :value="getSkuDeviceName(stockDetails.stocks_sku_devices_id)"
+              v-model="stockDetails.stocks_sku_devices_id"
               readonly
             />
           </div>
@@ -96,7 +96,7 @@
             <label class="form-label fw-bold">Customer</label>
             <input
               class="form-control shadow-none bg-light"
-              :value="getCustomerName(stockDetails.customers_id)"
+              v-model="stockDetails.customers_id"
               readonly
             />
           </div>
@@ -106,7 +106,7 @@
             <label class="form-label fw-bold">Location</label>
             <input
               class="form-control shadow-none bg-light"
-              :value="getLocationName(stockDetails.locations_id)"
+              v-model="stockDetails.locations_id"
               readonly
             />
           </div>
@@ -146,16 +146,11 @@
 <script setup>
 import { ref, defineEmits, onMounted } from 'vue'
 import { Modal } from 'bootstrap'
-import axios from 'axios'
 import VueDatePicker from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
 
 const emit = defineEmits(['close'])
 const stockDetails = ref({})
-const stocksDevice = ref([])
-const customers = ref([])
-const locations = ref([])
-const skuDevices = ref([])
 
 let viewModal
 
@@ -185,62 +180,6 @@ const formatDate = (date) => {
   }
 }
 
-const getDeviceName = (id) => {
-  const device = stocksDevice.value.find((d) => d.id === id)
-  return device ? device.name : 'N/A'
-}
-
-const getSkuDeviceName = (id) => {
-  const skuDevice = skuDevices.value.find((s) => s.id === id)
-  return skuDevice ? skuDevice.name : 'N/A'
-}
-
-const getCustomerName = (id) => {
-  const customer = customers.value.find((c) => c.id === id)
-  return customer ? customer.name : 'N/A'
-}
-
-const getLocationName = (id) => {
-  const location = locations.value.find((l) => l.id === id)
-  return location ? location.name : 'N/A'
-}
-
-const fetchStocksDevice = async () => {
-  try {
-    const response = await axios.get('stocks-device')
-    stocksDevice.value = response.data.data
-  } catch (error) {
-    console.error('Data not found', error)
-  }
-}
-
-const fetchSkuDevice = async () => {
-  try {
-    const response = await axios.get('stocks-sku-device')
-    skuDevices.value = response.data.data
-  } catch (error) {
-    console.error('Data not found', error)
-  }
-}
-
-const fetchCustomers = async () => {
-  try {
-    const response = await axios.get('customers')
-    customers.value = response.data.data
-  } catch (error) {
-    console.error('Data not found', error)
-  }
-}
-
-const fetchLocations = async () => {
-  try {
-    const response = await axios.get('location')
-    locations.value = response.data.data
-  } catch (error) {
-    console.error('Data not found', error)
-  }
-}
-
 const showModal = (stock) => {
   stockDetails.value = {
     ...stock,
@@ -266,20 +205,13 @@ defineExpose({
 })
 
 onMounted(() => {
-  fetchStocksDevice()
-  fetchSkuDevice()
-  fetchCustomers()
-  fetchLocations()
   formatDate()
   viewModal = new Modal(document.getElementById('viewForm'))
 })
 </script>
 
 <style scoped>
-input:focus {
-  border-color: #d22c36;
-}
-
+input:focus,
 textarea:focus {
   border-color: #d22c36;
 }
