@@ -1,5 +1,5 @@
 <template>
-  <div class="container-fluid">
+  <div class="container-fluid" v-if="userRole === 'superadmin'">
     <div class="d-flex justify-content-between align-items-center">
       <div class="add-button">
         <AddFirmwaresDevice @data-added="refreshList()" />
@@ -39,6 +39,8 @@
       </EasyDataTable>
     </div>
   </div>
+  <p v-else-if="userRole === ''">Loading...</p>
+  <StatusPage v-else />
 
   <EditFirmwaresDevice
     ref="editModalRef"
@@ -62,6 +64,7 @@ import AddFirmwaresDevice from '../FirmwaresDevice/Modal/AddFirmwaresDevice.vue'
 import EditFirmwaresDevice from '../FirmwaresDevice/Modal/EditFirmwaresDevice.vue'
 import DeleteFirmwaresDevice from '../FirmwaresDevice/Modal/DeleteFirmwaresDevice.vue'
 import Search from '../../Layouts/SearchAll'
+import StatusPage from '../../../components/StatusPage/404Page.vue'
 import { mockServerItems } from '../../../mock/mockFirmwaresDevice'
 
 const editModalRef = ref(null)
@@ -70,6 +73,7 @@ const editFirmwaresDevice = ref({})
 const loading = ref(true)
 const firmwaresdevice = ref([])
 const id = ref(null)
+const userRole = ref('')
 
 const token = localStorage.getItem('token')
 // Constants
@@ -90,6 +94,16 @@ const serverOptions = ref({
 
 const refreshList = () => {
   loadFromServer()
+}
+
+async function fetchUserRole() {
+  try {
+    const response = await axios.get('user')
+    const roles = response.data.roles || []
+    userRole.value = roles.some((role) => role.name === 'superadmin') ? 'superadmin' : 'user'
+  } catch (error) {
+    console.error('Error fetching user roles:', error)
+  }
 }
 
 const loadFromServer = async () => {
@@ -125,6 +139,7 @@ watch(
 
 onMounted(() => {
   loadFromServer()
+  fetchUserRole()
 })
 
 const updateFirmwaresDevice = async (updatedFirmwaresDevice) => {

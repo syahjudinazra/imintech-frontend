@@ -150,9 +150,9 @@ const getLogin = async () => {
     })
 
     const token = response.data.token
-    const user = JSON.stringify(response.data.users)
+    const user = response.data.users
     localStorage.setItem('token', token)
-    localStorage.setItem('users', user)
+    localStorage.setItem('users', JSON.stringify(user))
     showToast('Login successfully', 'success')
     router.push({ name: 'Dashboard' })
   } catch (error) {

@@ -32,7 +32,7 @@ const initialCustomer = ref(null)
 
 const confirmDelete = () => {
   if (initialCustomer.value) {
-    emit('delete', initialCustomer.value.id)
+    emit('delete')
   } else {
     console.error('No customer selected for deletion')
   }

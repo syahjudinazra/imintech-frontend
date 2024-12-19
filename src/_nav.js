@@ -59,6 +59,15 @@ export default [
         name: 'Entrust',
         to: '/stocks/entrust',
       },
+      {
+        component: 'CBadge',
+        name: 'Log Activity',
+      },
+      {
+        component: 'CNavItem',
+        name: 'Stocks Activity',
+        to: '/stocks/stocks-activity',
+      },
     ],
   },
   {
@@ -109,6 +118,15 @@ export default [
         component: 'CNavItem',
         name: 'Returned',
         to: '/loan/returned',
+      },
+      {
+        component: 'CBadge',
+        name: 'Log Activity',
+      },
+      {
+        component: 'CNavItem',
+        name: 'Loan Activity',
+        to: '/loan/loan-activity',
       },
     ],
   },

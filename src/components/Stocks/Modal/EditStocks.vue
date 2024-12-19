@@ -29,7 +29,7 @@
             <div class="mb-3">
               <label for="stocksDevice" class="form-label fw-bold">Device Type</label>
               <v-select
-                v-model="editedStock.stocks_devices"
+                v-model="editedStock.stocks_devices_id"
                 :options="stocksDevice"
                 :reduce="(device) => device.id"
                 label="name"

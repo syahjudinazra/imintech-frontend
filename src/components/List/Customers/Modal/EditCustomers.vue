@@ -12,7 +12,7 @@
           <h5 class="modal-title" id="editForm_label">Edit Data</h5>
           <button type="button" class="btn-close" aria-label="Close" @click="closeModal"></button>
         </div>
-        <form @submit.prevent="updateCustomers" enctype="multipart/form-data">
+        <form @submit.prevent="editForm">
           <div class="modal-body">
             <div class="mb-3">
               <label for="name" class="form-label fw-bold">Name</label>
@@ -53,74 +53,31 @@
 </template>
 
 <script setup>
-import { ref, watch, defineProps, defineEmits, onMounted, reactive } from 'vue'
+import { ref, watch, defineProps, defineEmits, onMounted } from 'vue'
 import { Modal } from 'bootstrap'
-import { showToast } from '@/utilities/toast'
-import 'vue-select/dist/vue-select.css'
-import { cloneDeep } from 'lodash-es'
 
 const props = defineProps({
-  customer: {
-    type: Object,
-    default: () => ({}),
-  },
+  customers: Object,
 })
 
 const emit = defineEmits(['update', 'close'])
-const isDataChanged = ref(false)
-const initialCustomer = ref(null)
-const editedCustomer = reactive({})
-const changedFields = reactive({})
+const editedCustomer = ref({ ...props.customers })
 
 watch(
-  () => props.customer,
-  (newCustomer) => {
-    if (newCustomer) {
-      initialCustomer.value = cloneDeep(newCustomer)
-      Object.assign(editedCustomer, cloneDeep(newCustomer))
-    }
-  },
-  { immediate: true, deep: true },
-)
-
-watch(
-  editedCustomer,
+  () => props.customers,
   (newValue) => {
-    if (initialCustomer.value) {
-      Object.keys(newValue).forEach((key) => {
-        if (JSON.stringify(newValue[key]) !== JSON.stringify(initialCustomer.value[key])) {
-          changedFields[key] = true
-        } else {
-          delete changedFields[key]
-        }
-      })
-      isDataChanged.value = Object.keys(changedFields).length > 0
-    }
+    editedCustomer.value = { ...newValue }
   },
   { deep: true },
 )
 
 let editModal
 
-const updateCustomers = () => {
-  if (!isDataChanged.value) {
-    showToast('No changes detected.', 'error')
-    return
-  }
-
-  const updatedCustomer = { id: editedCustomer.id }
-  Object.keys(changedFields).forEach((key) => {
-    if (editedCustomer[key] !== undefined && editedCustomer[key] !== '') {
-      updatedCustomer[key] = editedCustomer[key]
-    }
-  })
-
-  emit('update', updatedCustomer)
-  hideModal()
+const editForm = () => {
+  emit('update', editedCustomer.value)
 }
 
 const closeModal = () => {
-  hideModal()
   emit('close')
 }
 

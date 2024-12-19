@@ -5,7 +5,7 @@ export const mockServerItems = async (options) => {
   const { page = 1, rowsPerPage = 10, sortBy = 'id', sortType = 'asc', searchTerm = '' } = options
 
   try {
-    const response = await axios.get('stocks', {
+    const response = await axios.get('stocks-all', {
       params: {
         page,
         rowsPerPage,
@@ -20,7 +20,7 @@ export const mockServerItems = async (options) => {
       serverTotalItemsLength: response.data.total,
     }
   } catch (error) {
-    console.error('Error fetching stocks stocks:', error)
+    console.error('Error fetching stocks', error)
     throw error
   }
 }

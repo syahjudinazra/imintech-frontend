@@ -1,10 +1,10 @@
 <template>
-  <div class="container-fluid">
+  <div class="container-fluid" v-if="userRole === 'superadmin'">
     <div class="d-flex justify-content-between align-items-center">
-      <div class="add-customers-button">
-        <AddCustomers @customer-added="refreshCustomers" />
+      <div class="add-button">
+        <AddCustomers @customer-added="refreshList" />
       </div>
-      <div class="others-customers d-flex align-items-center gap-2">
+      <div class="others d-flex align-items-center gap-2">
         <ExportCustomers />
         <ImportCustomers />
         <Search :onSearch="updateSearch" />
@@ -32,13 +32,6 @@
         <template #empty-message>
           <p>Data not found</p>
         </template>
-        <template #items="{ item }">
-          <tr>
-            <td>{{ item.name }}</td>
-            <td>{{ item.phone }}</td>
-            <td>{{ item.address }}</td>
-          </tr>
-        </template>
         <template #item-action="item">
           <div class="d-flex gap-2">
             <a href="#" class="head-text text-decoration-none" @click="editModal(item)">Edit</a>
@@ -48,99 +41,39 @@
       </EasyDataTable>
     </div>
   </div>
+  <p v-else-if="userRole === ''">Loading...</p>
+  <StatusPage v-else />
 
-  <!--Edit Modal-->
-  <div
-    class="modal fade"
-    id="editForm"
-    tabindex="-1"
-    aria-labelledby="editForm_label"
-    aria-hidden="true"
-  >
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="editForm_label">Edit Data</h5>
-          <button type="button" class="btn-close" aria-label="Close" @click="closeModal"></button>
-        </div>
-        <form @submit.prevent="updateCustomers" enctype="multipart/form-data">
-          <div class="modal-body">
-            <div class="mb-3">
-              <label for="name" class="form-label fw-bold">Name</label>
-              <input
-                v-model="editCustomers.name"
-                type="text"
-                class="form-control shadow-none"
-                id="name"
-              />
-            </div>
-            <div class="mb-3">
-              <label for="phone" class="form-label fw-bold">Phone</label>
-              <input
-                v-model="editCustomers.phone"
-                type="number"
-                class="form-control shadow-none"
-                id="phone"
-              />
-            </div>
-            <div class="mb-3">
-              <label for="address" class="form-label fw-bold">Address</label>
-              <textarea
-                v-model="editCustomers.address"
-                type="text"
-                class="form-control shadow-none"
-                id="address"
-              />
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" @click="closeModal">Close</button>
-            <button type="submit" class="btn btn-primary">Submit</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
+  <EditCustomers
+    ref="editModalRef"
+    :customers="editCustomers"
+    @update="updateCustomers"
+    @close="closeEditModal"
+  />
 
-  <!--Delete Modal-->
-  <div class="modal fade show" id="deleteForm">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Delete Data</h5>
-          <button type="button" class="btn-close" aria-label="Close" @click="closeModal"></button>
-        </div>
-        <div class="modal-body">
-          <p>Are you sure want delete this data?</p>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" @click="closeModal">Close</button>
-          <button type="button" class="btn btn-danger text-white" @click="deleteCustomers">
-            Delete
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
+  <DeleteCustomers ref="deleteModalRef" @delete="deleteCustomers" @close="closeDeleteModal" />
 </template>
 
 <script setup>
 import { ref, onMounted, watch } from 'vue'
-import { Modal } from 'bootstrap'
 import axios from 'axios'
 import { showToast } from '@/utilities/toast'
 import AddCustomers from './Modal/AddCustomers.vue'
+import EditCustomers from './Modal/EditCustomers.vue'
+import DeleteCustomers from './Modal/DeleteCustomers.vue'
 import Search from '../../Layouts/SearchAll'
 import ExportCustomers from '../Customers/Excel/ExportCustomers.vue'
 import ImportCustomers from '../Customers/Excel/ImportCustomers.vue'
+import StatusPage from '../../../components/StatusPage/404Page.vue'
 import { mockServerItems } from '../../../mock/mockCustomers'
 
-let editForm
-let deleteForm
+const editModalRef = ref(null)
+const deleteModalRef = ref(null)
 const editCustomers = ref({})
 const loading = ref(true)
 const customers = ref([])
 const id = ref(null)
+const userRole = ref('')
 
 const token = localStorage.getItem('token')
 // Constants
@@ -161,8 +94,18 @@ const serverOptions = ref({
   searchTerm: '',
 })
 
-const refreshCustomers = () => {
+const refreshList = () => {
   loadFromServer()
+}
+
+async function fetchUserRole() {
+  try {
+    const response = await axios.get('user')
+    const roles = response.data.roles || []
+    userRole.value = roles.some((role) => role.name === 'superadmin') ? 'superadmin' : 'user'
+  } catch (error) {
+    console.error('Error fetching user roles:', error)
+  }
 }
 
 const loadFromServer = async () => {
@@ -197,21 +140,20 @@ watch(
 )
 
 onMounted(() => {
-  editForm = new Modal(document.getElementById('editForm'))
-  deleteForm = new Modal(document.getElementById('deleteForm'))
   loadFromServer()
+  fetchUserRole()
 })
 
-const updateCustomers = async () => {
+const updateCustomers = async (updatedCustomersDevice) => {
   try {
-    const response = await axios.put(`customers/${id.value}`, editCustomers.value)
+    const response = await axios.put(`customers/${id.value}`, updatedCustomersDevice)
     showToast(response.data.message, 'success')
-    closeModal()
-    refreshCustomers()
+    closeEditModal()
+    refreshList()
   } catch (error) {
     console.error('Data failed to change', error)
     showToast(error.data.message, 'error')
-    closeModal()
+    closeEditModal()
   }
 }
 
@@ -219,29 +161,32 @@ const deleteCustomers = async () => {
   try {
     const response = await axios.delete(`customers/${id.value}`)
     showToast(response.data.message, 'success')
-    closeModal()
-    refreshCustomers()
+    closeDeleteModal()
+    refreshList()
   } catch (error) {
     console.error('Data failed to delete', error)
     showToast(error.data.message, 'error')
-    closeModal()
+    closeDeleteModal()
   }
 }
 
 function editModal(customer) {
   editCustomers.value = { ...customer }
   id.value = customer.id
-  editForm.show()
+  editModalRef.value.showModal()
 }
 
 function deleteModal(customer) {
   id.value = customer.id
-  deleteForm.show()
+  deleteModalRef.value.showModal(customer)
 }
 
-function closeModal() {
-  editForm.hide()
-  deleteForm.hide()
+function closeEditModal() {
+  editModalRef.value.hideModal()
+}
+
+function closeDeleteModal() {
+  deleteModalRef.value.hideModal()
 }
 </script>
 

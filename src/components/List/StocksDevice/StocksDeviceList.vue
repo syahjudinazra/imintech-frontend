@@ -1,5 +1,5 @@
 <template>
-  <div class="container-fluid">
+  <div class="container-fluid" v-if="userRole === 'superadmin'">
     <div class="d-flex justify-content-between align-items-center">
       <div class="add-button">
         <AddStocksDevice @data-added="refreshList()" />
@@ -39,6 +39,8 @@
       </EasyDataTable>
     </div>
   </div>
+  <p v-else-if="userRole === ''">Loading...</p>
+  <StatusPage v-else />
 
   <!--Edit Modal-->
   <div
@@ -104,6 +106,7 @@ import axios from 'axios'
 import { showToast } from '@/utilities/toast'
 import AddStocksDevice from '../StocksDevice/Modal/AddStocksDevice'
 import Search from '../../Layouts/SearchAll'
+import StatusPage from '../../../components/StatusPage/404Page.vue'
 import { mockServerItems } from '../../../mock/mockStocksDevice'
 
 let editForm
@@ -112,6 +115,7 @@ const editStocksDevice = ref({})
 const loading = ref(true)
 const stocksdevice = ref([])
 const id = ref(null)
+const userRole = ref('')
 
 const token = localStorage.getItem('token')
 // Constants
@@ -132,6 +136,16 @@ const serverOptions = ref({
 
 const refreshList = () => {
   loadFromServer()
+}
+
+async function fetchUserRole() {
+  try {
+    const response = await axios.get('user')
+    const roles = response.data.roles || []
+    userRole.value = roles.some((role) => role.name === 'superadmin') ? 'superadmin' : 'user'
+  } catch (error) {
+    console.error('Error fetching user roles:', error)
+  }
 }
 
 const loadFromServer = async () => {
@@ -169,6 +183,7 @@ onMounted(() => {
   editForm = new Modal(document.getElementById('editForm'))
   deleteForm = new Modal(document.getElementById('deleteForm'))
   loadFromServer()
+  fetchUserRole()
 })
 
 const updateStocksDevice = async () => {

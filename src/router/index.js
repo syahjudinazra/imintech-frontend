@@ -75,6 +75,12 @@ const routes = [
             component: () => import('@/views/stocks/EntrustStocks.vue'),
             meta: { requiresAuth: true },
           },
+          {
+            path: 'stocks-activity',
+            name: 'Stocks Activity',
+            component: () => import('@/views/stocks/StocksActivity.vue'),
+            meta: { requiresAuth: true },
+          },
         ],
       },
       {
@@ -98,6 +104,12 @@ const routes = [
             path: '/loan/returned',
             name: 'Returned',
             component: () => import('@/views/Loan/ReturnedTable.vue'),
+            meta: { requiresAuth: true },
+          },
+          {
+            path: 'loan-activity',
+            name: 'Loan Activity',
+            component: () => import('@/views/Loan/LoanActivity.vue'),
             meta: { requiresAuth: true },
           },
         ],
@@ -509,6 +521,11 @@ const routes = [
         name: 'ForgotPassword',
         component: () => import('@/views/pages/ForgotPassword'),
       },
+      {
+        path: 'ask-permissions',
+        name: 'askPermissions',
+        component: () => import('@/components/StatusPage/404Page'),
+      },
     ],
   },
   {
@@ -529,13 +546,18 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const isLoggedIn = localStorage.getItem('token')
 
+  // Check if user is logged in
   if (to.name === 'LoginPage' && isLoggedIn) {
     next({ name: 'Dashboard' })
-  } else if (to.meta.requiresAuth && !isLoggedIn) {
-    next({ name: 'LoginPage' })
-  } else {
-    next()
+    return
   }
+
+  if (to.meta.requiresAuth && !isLoggedIn) {
+    next({ name: 'LoginPage' })
+    return
+  }
+
+  next()
 })
 
 export default router

@@ -135,7 +135,7 @@ const userRole = ref('')
 const baseColor = '#e55353'
 const headers = ref([
   { text: 'Serial Number', value: 'serial_number' },
-  { text: 'Devices', value: 'stocks_devices' },
+  { text: 'Devices', value: 'stocks_devices_id' },
   { text: 'No Invoice', value: 'no_invoice' },
   { text: 'Date of Entry', value: 'date_in' },
   { text: 'Date Exit', value: 'date_out' },
