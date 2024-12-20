@@ -70,7 +70,7 @@ const baseColor = '#e55353'
 const headers = ref([
   { text: 'Causer', value: 'causer_name' },
   { text: 'Serial Number', value: 'subject_details.serial_number' },
-  { text: 'Device', value: 'subject_details.stocks_device' },
+  { text: 'Device', value: 'subject_details.services_device' },
   { text: 'Before', value: 'changes.old' },
   { text: 'After', value: 'changes.attributes' },
   { text: 'Description', value: 'description' },
@@ -103,7 +103,7 @@ watch(
 const loadActivityLogs = async () => {
   loading.value = true
   try {
-    const response = await axios.get('activity', {
+    const response = await axios.get('services-activity', {
       params: {
         page: serverOptions.value.page,
         per_page: serverOptions.value.rowsPerPage,

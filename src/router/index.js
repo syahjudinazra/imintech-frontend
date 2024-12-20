@@ -173,6 +173,12 @@ const routes = [
             component: () => import('@/views/services/TemporaryNote.vue'),
             meta: { requiresAuth: true },
           },
+          {
+            path: '/services/services-activity',
+            name: 'Services Activity',
+            component: () => import('@/views/services/ServicesActivity.vue'),
+            meta: { requiresAuth: true },
+          },
         ],
       },
       {

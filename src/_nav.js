@@ -176,9 +176,18 @@ export default [
         to: '/services/done-stocks',
       },
       {
+        component: 'CBadge',
+        name: 'Others',
+      },
+      {
         component: 'CNavItem',
         name: 'Temporary Note',
         to: '/services/temporary-note',
+      },
+      {
+        component: 'CNavItem',
+        name: 'Services Activity',
+        to: '/services/services-activity',
       },
     ],
   },
