@@ -203,9 +203,13 @@ export default [
         to: '/spareparts/list-spareparts',
       },
       {
+        component: 'CBadge',
+        name: 'Log Activity',
+      },
+      {
         component: 'CNavItem',
-        name: 'Log History',
-        to: '/spareparts/log-history',
+        name: 'Spareparts Activity',
+        to: '/spareparts/spareparts-activity',
       },
     ],
   },
@@ -224,6 +228,15 @@ export default [
         component: 'CNavItem',
         name: 'Firmwares Table',
         to: '/firmwares/table',
+      },
+      {
+        component: 'CBadge',
+        name: 'Log Activity',
+      },
+      {
+        component: 'CNavItem',
+        name: 'Firmwares Activity',
+        to: '/firmwares/firmwares-activity',
       },
     ],
   },

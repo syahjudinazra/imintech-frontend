@@ -201,63 +201,52 @@
           </div>
 
           <!-- Images Section -->
-          <div class="mb-3" v-if="service?.images">
+          <div class="mb-3" v-if="service?.images && parsedImages.length > 0">
             <label class="form-label fw-bold">Payment Images</label>
             <div class="d-flex flex-wrap gap-2">
               <div
-                v-for="(imagePath, index) in parseArrayString(service.images)"
+                v-for="(imagePath, index) in parsedImages"
                 :key="index"
-                class="position-relative"
+                class="position-relative border rounded p-2"
               >
-                <img
-                  :src="getImageUrl(imagePath)"
-                  class="img-thumbnail"
-                  style="height: 100px; width: 100px; object-fit: cover"
-                  @click="openImageModal(getImageUrl(imagePath))"
-                  alt="Service Image"
-                />
+                <div class="text-center mb-2">
+                  <i class="bi bi-file-image text-primary" style="font-size: 2rem"></i>
+                </div>
+                <div class="text-center">
+                  <button
+                    class="btn btn-sm btn-primary"
+                    @click="downloadFile(imagePath, `image-${index + 1}`)"
+                    title="Download Image"
+                  >
+                    <i class="bi bi-download me-1"></i>
+                    Image {{ index + 1 }}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
 
           <!-- Documents Section -->
-          <div class="mb-3" v-if="service?.documents">
+          <div class="mb-3" v-if="service?.documents && parsedDocuments.length > 0">
             <label class="form-label fw-bold">Invoice Documents</label>
-            <div class="mt-2">
+            <div class="d-flex flex-wrap gap-2">
               <div
-                v-for="(docPath, index) in parseArrayString(service.documents)"
+                v-for="(docPath, index) in parsedDocuments"
                 :key="index"
-                class="d-flex align-items-center gap-2 mb-2"
+                class="position-relative border rounded p-2"
               >
-                <i class="bi bi-file-earmark-pdf text-danger"></i>
-                <a :href="getDocumentUrl(docPath)" target="_blank" class="text-decoration-none">
-                  {{ getFileName(docPath) }}
-                </a>
-              </div>
-            </div>
-          </div>
-
-          <!-- Image Preview Modal -->
-          <div
-            class="modal fade"
-            id="imageModal"
-            tabindex="-1"
-            aria-labelledby="imageModalLabel"
-            aria-hidden="true"
-          >
-            <div class="modal-dialog modal-lg">
-              <div class="modal-content">
-                <div class="modal-header">
-                  <h5 class="modal-title" id="imageModalLabel">Image Preview</h5>
-                  <button
-                    type="button"
-                    class="btn-close"
-                    data-bs-dismiss="modal"
-                    aria-label="Close"
-                  ></button>
+                <div class="text-center mb-2">
+                  <i class="bi bi-file-pdf text-danger" style="font-size: 2rem"></i>
                 </div>
-                <div class="modal-body text-center">
-                  <img :src="selectedImage" class="img-fluid" alt="Preview" />
+                <div class="text-center">
+                  <button
+                    class="btn btn-sm btn-danger"
+                    @click="downloadFile(docPath, `document-${index + 1}`)"
+                    title="Download Document"
+                  >
+                    <i class="bi bi-download me-1"></i>
+                    Document {{ index + 1 }}
+                  </button>
                 </div>
               </div>
             </div>
@@ -273,7 +262,7 @@
 </template>
 
 <script setup>
-import { ref, defineProps, defineEmits, onMounted } from 'vue'
+import { ref, defineProps, defineEmits, onMounted, computed } from 'vue'
 import { Modal } from 'bootstrap'
 import VueDatePicker from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
@@ -299,54 +288,62 @@ const props = defineProps({
 
 const emit = defineEmits(['close'])
 const viewModal = ref(null)
-const imageModal = ref(null)
-const selectedImage = ref('')
 
-const parseArrayString = (arrayString) => {
-  if (!arrayString) return []
+// Compute parsed images array from JSON string
+const parsedImages = computed(() => {
+  if (!props.service?.images) return []
   try {
-    const cleanString = arrayString.replace(/^\[|\]$/g, '').trim()
-    if (!cleanString) return []
-    return cleanString.split(',').map((item) => item.trim().replace(/^"|"$/g, ''))
-  } catch (error) {
-    console.error('Error parsing array string:', error)
+    return typeof props.service.images === 'string'
+      ? JSON.parse(props.service.images)
+      : props.service.images
+  } catch (e) {
+    console.error('Error parsing images:', e)
     return []
   }
-}
+})
 
-const cleanPath = (path) => {
-  if (!path) return ''
-
-  path = path.replace(/['"]/g, '')
-
-  path = path.replace(/\\/g, '/')
-
-  path = path.replace(/\/+/g, '/')
-
-  if (path.startsWith('http:') || path.startsWith('https:')) {
-    path = path.replace(/^(https?:)\//, '$1//')
+// Compute parsed documents array from JSON string
+const parsedDocuments = computed(() => {
+  if (!props.service?.documents) return []
+  try {
+    return typeof props.service.documents === 'string'
+      ? JSON.parse(props.service.documents)
+      : props.service.documents
+  } catch (e) {
+    console.error('Error parsing documents:', e)
+    return []
   }
+})
 
-  return path
+// Helper function to get file extension from path
+const getFileExtension = (path) => {
+  return path.split('.').pop().toLowerCase()
 }
 
-const getImageUrl = (path) => {
-  return cleanPath(path)
-}
+// Helper function to download file
+const downloadFile = async (filePath, defaultName) => {
+  try {
+    const response = await fetch(filePath)
+    const blob = await response.blob()
+    const extension = getFileExtension(filePath)
+    const fileName = `${defaultName}.${extension}`
 
-const getDocumentUrl = (path) => {
-  return cleanPath(path)
-}
+    // Create a temporary link element
+    const link = document.createElement('a')
+    link.href = window.URL.createObjectURL(blob)
+    link.download = fileName
 
-const getFileName = (path) => {
-  const matches = path.match(/[^\\/]+$/)
-  return matches ? matches[0].replace(/"/g, '') : 'Document'
-}
+    // Append to body, click, and remove
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
 
-// Modal functions
-const openImageModal = (imageUrl) => {
-  selectedImage.value = imageUrl
-  imageModal.value.show()
+    // Clean up the URL object
+    window.URL.revokeObjectURL(link.href)
+  } catch (error) {
+    console.error('Error downloading file:', error)
+    alert('Failed to download file. Please try again.')
+  }
 }
 
 const showModal = () => {
@@ -388,10 +385,8 @@ defineExpose({
 
 onMounted(() => {
   viewModal.value = new Modal(document.getElementById('viewForm'))
-  imageModal.value = new Modal(document.getElementById('imageModal'))
 })
 </script>
-
 <style scoped>
 input:focus {
   border-color: #d22c36;

@@ -199,9 +199,9 @@ const routes = [
             meta: { requiresAuth: true },
           },
           {
-            path: '/spareparts/log-history',
-            name: 'Log History',
-            component: () => import('@/views/spareparts/LogHistorySpareparts.vue'),
+            path: '/spareparts/spareparts-activity',
+            name: 'Spareparts Activity',
+            component: () => import('@/views/spareparts/SparepartsActivity.vue'),
             meta: { requiresAuth: true },
           },
         ],
@@ -226,6 +226,12 @@ const routes = [
             path: '/firmwares/table',
             name: 'Firmwares Table',
             component: () => import('@/views/firmwares/FirmwaresTable.vue'),
+          },
+          {
+            path: '/firmwares/firmwares-activity',
+            name: 'Firmwares Activity',
+            component: () => import('@/views/firmwares/FirmwaresActivity.vue'),
+            meta: { requiresAuth: true },
           },
           {
             path: '/firmwares/list/m2-202',

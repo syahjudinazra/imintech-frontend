@@ -109,14 +109,7 @@ import { showToast } from '@/utilities/toast'
 import vSelect from 'vue-select'
 import 'vue-select/dist/vue-select.css'
 
-const firmwares = ref({
-  firmwares_devices_id: '',
-  version: '',
-  androids_id: '',
-  flash: '',
-  ota: '',
-})
-
+const firmwares = ref({})
 const firmwaresDevice = ref([])
 const androids = ref([])
 let addForm
@@ -124,7 +117,7 @@ let addForm
 const fetchFirmwaresDevice = async () => {
   try {
     const response = await axios.get('firmwares-device')
-    firmwaresDevice.value = response.data.firmwaresdevice
+    firmwaresDevice.value = response.data.data
   } catch (error) {
     console.error('Data not found', error)
   }
