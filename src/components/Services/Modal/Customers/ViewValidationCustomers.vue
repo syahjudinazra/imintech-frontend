@@ -201,52 +201,52 @@
           </div>
 
           <!-- Images Section -->
-          <div class="mb-3" v-if="service?.images && parsedImages.length > 0">
-            <label class="form-label fw-bold">Payment Images</label>
-            <div class="d-flex flex-wrap gap-2">
+          <div class="mb-3" v-if="parsedImages.length > 0">
+            <label class="form-label fw-bold">Images</label>
+            <div class="row g-3">
               <div
                 v-for="(imagePath, index) in parsedImages"
                 :key="index"
-                class="position-relative border rounded p-2"
+                class="col-md-4 col-sm-6"
               >
-                <div class="text-center mb-2">
-                  <i class="bi bi-file-image text-primary" style="font-size: 2rem"></i>
-                </div>
-                <div class="text-center">
-                  <button
-                    class="btn btn-sm btn-primary"
-                    @click="downloadFile(imagePath, `image-${index + 1}`)"
-                    title="Download Image"
-                  >
-                    <i class="bi bi-download me-1"></i>
-                    Image {{ index + 1 }}
-                  </button>
+                <div class="card h-100">
+                  <div class="position-relative image-container" style="height: 100px">
+                    <img
+                      :src="imagePath"
+                      :alt="`Image ${index + 1}`"
+                      class="card-img-top h-100 w-100 object-fit-cover cursor-pointer"
+                      @click="openImagePreview(imagePath)"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
           </div>
 
           <!-- Documents Section -->
-          <div class="mb-3" v-if="service?.documents && parsedDocuments.length > 0">
-            <label class="form-label fw-bold">Invoice Documents</label>
-            <div class="d-flex flex-wrap gap-2">
+          <div class="mb-3" v-if="parsedDocuments.length > 0">
+            <label class="form-label fw-bold">Documents</label>
+            <div class="row g-3">
               <div
                 v-for="(docPath, index) in parsedDocuments"
                 :key="index"
-                class="position-relative border rounded p-2"
+                class="col-md-4 col-sm-6"
               >
-                <div class="text-center mb-2">
-                  <i class="bi bi-file-pdf text-danger" style="font-size: 2rem"></i>
-                </div>
-                <div class="text-center">
-                  <button
-                    class="btn btn-sm btn-danger"
-                    @click="downloadFile(docPath, `document-${index + 1}`)"
-                    title="Download Document"
-                  >
-                    <i class="bi bi-download me-1"></i>
-                    Document {{ index + 1 }}
-                  </button>
+                <div class="card h-100">
+                  <div class="card-body text-center">
+                    <i class="bi bi-file-pdf text-danger" style="font-size: 3rem"></i>
+                    <p class="mb-2">Document {{ index + 1 }}</p>
+                    <div class="btn-group">
+                      <a
+                        :href="docPath"
+                        target="_blank"
+                        class="btn btn-sm btn-primary text-white"
+                        title="View Document"
+                      >
+                        View
+                      </a>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -255,6 +255,32 @@
 
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" @click="closeModal">Close</button>
+        </div>
+      </div>
+    </div>
+    <!-- Image Preview Modal -->
+    <div
+      v-if="showImagePreview"
+      class="modal fade show"
+      aria-hidden="true"
+      style="display: block; background: rgba(0, 0, 0, 0.8)"
+      @click="closeImagePreview"
+    >
+      <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content bg-transparent border-0">
+          <div class="position-relative">
+            <button
+              type="button"
+              class="btn-close btn-close-white position-absolute top-0 end-0 m-3"
+              @click="closeImagePreview"
+            ></button>
+            <img
+              :src="selectedImage"
+              class="img-fluid"
+              style="max-height: 90vh; width: auto; margin: 0 auto; display: block"
+              @click.stop
+            />
+          </div>
         </div>
       </div>
     </div>
@@ -288,6 +314,8 @@ const props = defineProps({
 
 const emit = defineEmits(['close'])
 const viewModal = ref(null)
+const selectedImage = ref(null)
+const showImagePreview = ref(false)
 
 // Compute parsed images array from JSON string
 const parsedImages = computed(() => {
@@ -315,35 +343,15 @@ const parsedDocuments = computed(() => {
   }
 })
 
-// Helper function to get file extension from path
-const getFileExtension = (path) => {
-  return path.split('.').pop().toLowerCase()
+// Helper functions for image preview
+const openImagePreview = (imagePath) => {
+  selectedImage.value = imagePath
+  showImagePreview.value = true
 }
 
-// Helper function to download file
-const downloadFile = async (filePath, defaultName) => {
-  try {
-    const response = await fetch(filePath)
-    const blob = await response.blob()
-    const extension = getFileExtension(filePath)
-    const fileName = `${defaultName}.${extension}`
-
-    // Create a temporary link element
-    const link = document.createElement('a')
-    link.href = window.URL.createObjectURL(blob)
-    link.download = fileName
-
-    // Append to body, click, and remove
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-
-    // Clean up the URL object
-    window.URL.revokeObjectURL(link.href)
-  } catch (error) {
-    console.error('Error downloading file:', error)
-    alert('Failed to download file. Please try again.')
-  }
+const closeImagePreview = () => {
+  showImagePreview.value = false
+  selectedImage.value = null
 }
 
 const showModal = () => {
@@ -387,6 +395,7 @@ onMounted(() => {
   viewModal.value = new Modal(document.getElementById('viewForm'))
 })
 </script>
+
 <style scoped>
 input:focus {
   border-color: #d22c36;
@@ -404,26 +413,24 @@ textarea:focus {
   --dp-background-color: #f8f9fa;
 }
 
-/* Image gallery styles */
-.img-thumbnail {
-  cursor: pointer;
-  transition: transform 0.2s;
+.image-container {
+  overflow: hidden;
 }
 
-.img-thumbnail:hover {
+.image-container img {
+  transition: transform 0.3s ease;
+  cursor: pointer;
+}
+
+.image-container img:hover {
   transform: scale(1.05);
 }
 
-/* Document styles */
-.bi-file-earmark-pdf {
-  font-size: 1.2rem;
+.object-fit-cover {
+  object-fit: cover;
 }
 
-a {
-  color: #d22c36;
-}
-
-a:hover {
-  color: #aa232b;
+.cursor-pointer {
+  cursor: pointer;
 }
 </style>
