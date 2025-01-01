@@ -132,7 +132,7 @@ const token = localStorage.getItem('token')
 // Constants
 const baseColor = '#e55353'
 const headers = [
-  { text: 'Date in early', value: 'date_in_services' },
+  { text: 'Date of Entry', value: 'date_in_services' },
   { text: 'Serial number', value: 'serial_number' },
   { text: 'Customers', value: 'customers' },
   { text: 'Device type', value: 'services_devices_id' },
