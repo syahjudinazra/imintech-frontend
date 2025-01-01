@@ -69,16 +69,19 @@
             <div class="mb-3">
               <label for="serviceDevice" class="form-label fw-bold">Device Type</label>
               <v-select
-                v-model="editedService.services_devices_id"
-                :options="serviceDevice"
+                v-model="selectedDevice"
+                :options="props.serviceDevice"
                 :reduce="(device) => device.id"
                 label="name"
                 :searchable="true"
                 :clearable="false"
                 placeholder="Select Device Type"
                 id="serviceDevice"
-                required
+                @update:modelValue="handleDeviceChange"
               />
+              <div v-if="validationErrors.services_devices_id" class="text-danger mt-1">
+                {{ validationErrors.services_devices_id[0] }}
+              </div>
             </div>
 
             <!--Serial Number-->
@@ -105,7 +108,6 @@
                 :clearable="false"
                 placeholder="Select Usages"
                 id="usage"
-                required
               />
             </div>
 
@@ -133,16 +135,19 @@
             <div class="mb-3">
               <label for="technician" class="form-label fw-bold">Technicians</label>
               <v-select
-                v-model="editedService.technicians_id"
-                :options="technicians"
+                v-model="selectedTechnician"
+                :options="props.technicians"
                 :reduce="(technician) => technician.id"
                 label="name"
                 :searchable="true"
                 :clearable="false"
                 placeholder="Select Technicians"
                 id="technician"
-                required
+                @update:modelValue="handleTechnicianChange"
               />
+              <div v-if="validationErrors.technicians_id" class="text-danger mt-1">
+                {{ validationErrors.technicians_id[0] }}
+              </div>
             </div>
 
             <!--No Spareparts-->
@@ -242,14 +247,17 @@ const props = defineProps({
 
 const emit = defineEmits(['update', 'close'])
 
-// Refs and reactive states
 const editModal = ref(null)
 const isDataChanged = ref(false)
 const initialService = ref(null)
 const editedService = reactive({})
 const changedFields = reactive({})
+const validationErrors = reactive({})
 
-// Date formatting
+// New refs for v-select components
+const selectedDevice = ref(null)
+const selectedTechnician = ref(null)
+
 const customDateFormat = 'dd/MM/yyyy'
 
 const formatDateForPicker = (date) => {
@@ -263,23 +271,56 @@ const formatDateForServer = (date) => {
   return d.toISOString().split('T')[0]
 }
 
+const handleDeviceChange = (value) => {
+  editedService.services_devices_id = value
+  validationErrors.services_devices_id = null
+}
+
+const handleTechnicianChange = (value) => {
+  editedService.technicians_id = value
+  validationErrors.technicians_id = null
+}
+
+const validateForm = () => {
+  const errors = {}
+
+  if (!editedService.services_devices_id) {
+    errors.services_devices_id = ['Please select a device type']
+  }
+
+  if (!editedService.technicians_id) {
+    errors.technicians_id = ['Please select a technician']
+  }
+
+  Object.assign(validationErrors, errors)
+  return Object.keys(errors).length === 0
+}
+
 const editForm = async () => {
   if (!isDataChanged.value) {
     showToast('No changes detected.', 'error')
     return
   }
 
-  try {
-    const formData = {}
+  if (!validateForm()) {
+    showToast('Please fix the validation errors.', 'error')
+    return
+  }
 
-    // Add all fields from editedService that have changed
-    Object.keys(editedService).forEach((key) => {
-      if (key === 'date_in_services' || key === 'date_out_services') {
-        formData[key] = formatDateForServer(editedService[key])
-      } else {
-        formData[key] = editedService[key]
-      }
-    })
+  try {
+    const formData = {
+      ...editedService,
+      services_devices_id: selectedDevice.value,
+      technicians_id: selectedTechnician.value,
+    }
+
+    // Format dates
+    if (formData.date_in_services) {
+      formData.date_in_services = formatDateForServer(formData.date_in_services)
+    }
+    if (formData.date_out_services) {
+      formData.date_out_services = formatDateForServer(formData.date_out_services)
+    }
 
     await emit('update', formData)
     hideModal()
@@ -289,14 +330,15 @@ const editForm = async () => {
   }
 }
 
-// Reset form
 const resetForm = () => {
   Object.keys(editedService).forEach((key) => delete editedService[key])
   Object.keys(changedFields).forEach((key) => delete changedFields[key])
+  Object.keys(validationErrors).forEach((key) => delete validationErrors[key])
+  selectedDevice.value = null
+  selectedTechnician.value = null
   isDataChanged.value = false
 }
 
-// Modal functions
 const showModal = () => {
   editModal.value.show()
 }
@@ -312,15 +354,22 @@ const hideModal = () => {
   resetForm()
 }
 
-// Watchers
 watch(
   () => props.service,
   (newService) => {
     if (newService) {
       initialService.value = cloneDeep(newService)
       Object.assign(editedService, cloneDeep(newService))
+
+      // Set the select values
+      selectedDevice.value = newService.services_devices_id
+      selectedTechnician.value = newService.technicians_id
+
       if (editedService.date_in_services) {
         editedService.date_in_services = formatDateForPicker(editedService.date_in_services)
+      }
+      if (editedService.date_out_services) {
+        editedService.date_out_services = formatDateForPicker(editedService.date_out_services)
       }
     }
   },
@@ -344,16 +393,15 @@ watch(
   { deep: true },
 )
 
+onMounted(() => {
+  editModal.value = new Modal(document.getElementById('editForm'))
+})
+
 defineExpose({
   showModal,
   hideModal,
 })
-
-onMounted(() => {
-  editModal.value = new Modal(document.getElementById('editForm'))
-})
 </script>
-
 <style scoped>
 input:focus,
 textarea:focus {
