@@ -404,7 +404,6 @@ const moveForm = async () => {
   })
 
   // Add other required fields
-  formData.append('technicians_id', movedService.technicians_id)
   formData.append('repair', movedService.repair || '')
   formData.append('no_spareparts', movedService.no_spareparts || '')
   formData.append('sn_kanibal', movedService.sn_kanibal || '')

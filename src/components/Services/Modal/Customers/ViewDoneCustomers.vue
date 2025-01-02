@@ -201,63 +201,52 @@
           </div>
 
           <!-- Images Section -->
-          <div class="mb-3" v-if="service?.images">
-            <label class="form-label fw-bold">Payment Images</label>
-            <div class="d-flex flex-wrap gap-2">
+          <div class="mb-3" v-if="parsedImages.length > 0">
+            <label class="form-label fw-bold">Images</label>
+            <div class="row g-3">
               <div
-                v-for="(imagePath, index) in parseArrayString(service.images)"
+                v-for="(imagePath, index) in parsedImages"
                 :key="index"
-                class="position-relative"
+                class="col-md-4 col-sm-6"
               >
-                <img
-                  :src="getImageUrl(imagePath)"
-                  class="img-thumbnail"
-                  style="height: 100px; width: 100px; object-fit: cover"
-                  @click="openImageModal(getImageUrl(imagePath))"
-                  alt="Service Image"
-                />
+                <div class="card h-100">
+                  <div class="position-relative image-container" style="height: 100px">
+                    <img
+                      :src="imagePath"
+                      :alt="`Image ${index + 1}`"
+                      class="card-img-top h-100 w-100 object-fit-cover cursor-pointer"
+                      @click="openImagePreview(imagePath)"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
           <!-- Documents Section -->
-          <div class="mb-3" v-if="service?.documents">
-            <label class="form-label fw-bold">Invoice Documents</label>
-            <div class="mt-2">
+          <div class="mb-3" v-if="parsedDocuments.length > 0">
+            <label class="form-label fw-bold">Documents</label>
+            <div class="row g-3">
               <div
-                v-for="(docPath, index) in parseArrayString(service.documents)"
+                v-for="(docPath, index) in parsedDocuments"
                 :key="index"
-                class="d-flex align-items-center gap-2 mb-2"
+                class="col-md-4 col-sm-6"
               >
-                <i class="bi bi-file-earmark-pdf text-danger"></i>
-                <a :href="getDocumentUrl(docPath)" target="_blank" class="text-decoration-none">
-                  {{ getFileName(docPath) }}
-                </a>
-              </div>
-            </div>
-          </div>
-
-          <!-- Image Preview Modal -->
-          <div
-            class="modal fade"
-            id="imageModal"
-            tabindex="-1"
-            aria-labelledby="imageModalLabel"
-            aria-hidden="true"
-          >
-            <div class="modal-dialog modal-lg">
-              <div class="modal-content">
-                <div class="modal-header">
-                  <h5 class="modal-title" id="imageModalLabel">Image Preview</h5>
-                  <button
-                    type="button"
-                    class="btn-close"
-                    data-bs-dismiss="modal"
-                    aria-label="Close"
-                  ></button>
-                </div>
-                <div class="modal-body text-center">
-                  <img :src="selectedImage" class="img-fluid" alt="Preview" />
+                <div class="card h-100">
+                  <div class="card-body text-center">
+                    <i class="bi bi-file-pdf text-danger" style="font-size: 3rem"></i>
+                    <p class="mb-2">Document {{ index + 1 }}</p>
+                    <div class="btn-group">
+                      <a
+                        :href="docPath"
+                        target="_blank"
+                        class="btn btn-sm btn-primary text-white"
+                        title="View Document"
+                      >
+                        View
+                      </a>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -269,11 +258,37 @@
         </div>
       </div>
     </div>
+    <!-- Image Preview Modal -->
+    <div
+      v-if="showImagePreview"
+      class="modal fade show"
+      aria-hidden="true"
+      style="display: block; background: rgba(0, 0, 0, 0.8)"
+      @click="closeImagePreview"
+    >
+      <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content bg-transparent border-0">
+          <div class="position-relative">
+            <button
+              type="button"
+              class="btn-close btn-close-white position-absolute top-0 end-0 m-3"
+              @click="closeImagePreview"
+            ></button>
+            <img
+              :src="selectedImage"
+              class="img-fluid"
+              style="max-height: 90vh; width: auto; margin: 0 auto; display: block"
+              @click.stop
+            />
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, defineProps, defineEmits, onMounted } from 'vue'
+import { ref, defineProps, defineEmits, onMounted, computed } from 'vue'
 import { Modal } from 'bootstrap'
 import VueDatePicker from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
@@ -299,54 +314,44 @@ const props = defineProps({
 
 const emit = defineEmits(['close'])
 const viewModal = ref(null)
-const imageModal = ref(null)
-const selectedImage = ref('')
+const selectedImage = ref(null)
+const showImagePreview = ref(false)
 
-const parseArrayString = (arrayString) => {
-  if (!arrayString) return []
+// Compute parsed images array from JSON string
+const parsedImages = computed(() => {
+  if (!props.service?.images) return []
   try {
-    const cleanString = arrayString.replace(/^\[|\]$/g, '').trim()
-    if (!cleanString) return []
-    return cleanString.split(',').map((item) => item.trim().replace(/^"|"$/g, ''))
-  } catch (error) {
-    console.error('Error parsing array string:', error)
+    return typeof props.service.images === 'string'
+      ? JSON.parse(props.service.images)
+      : props.service.images
+  } catch (e) {
+    console.error('Error parsing images:', e)
     return []
   }
-}
+})
 
-const cleanPath = (path) => {
-  if (!path) return ''
-
-  path = path.replace(/['"]/g, '')
-
-  path = path.replace(/\\/g, '/')
-
-  path = path.replace(/\/+/g, '/')
-
-  if (path.startsWith('http:') || path.startsWith('https:')) {
-    path = path.replace(/^(https?:)\//, '$1//')
+// Compute parsed documents array from JSON string
+const parsedDocuments = computed(() => {
+  if (!props.service?.documents) return []
+  try {
+    return typeof props.service.documents === 'string'
+      ? JSON.parse(props.service.documents)
+      : props.service.documents
+  } catch (e) {
+    console.error('Error parsing documents:', e)
+    return []
   }
+})
 
-  return path
+// Helper functions for image preview
+const openImagePreview = (imagePath) => {
+  selectedImage.value = imagePath
+  showImagePreview.value = true
 }
 
-const getImageUrl = (path) => {
-  return cleanPath(path)
-}
-
-const getDocumentUrl = (path) => {
-  return cleanPath(path)
-}
-
-const getFileName = (path) => {
-  const matches = path.match(/[^\\/]+$/)
-  return matches ? matches[0].replace(/"/g, '') : 'Document'
-}
-
-// Modal functions
-const openImageModal = (imageUrl) => {
-  selectedImage.value = imageUrl
-  imageModal.value.show()
+const closeImagePreview = () => {
+  showImagePreview.value = false
+  selectedImage.value = null
 }
 
 const showModal = () => {
@@ -388,7 +393,6 @@ defineExpose({
 
 onMounted(() => {
   viewModal.value = new Modal(document.getElementById('viewForm'))
-  imageModal.value = new Modal(document.getElementById('imageModal'))
 })
 </script>
 
@@ -409,26 +413,24 @@ textarea:focus {
   --dp-background-color: #f8f9fa;
 }
 
-/* Image gallery styles */
-.img-thumbnail {
-  cursor: pointer;
-  transition: transform 0.2s;
+.image-container {
+  overflow: hidden;
 }
 
-.img-thumbnail:hover {
+.image-container img {
+  transition: transform 0.3s ease;
+  cursor: pointer;
+}
+
+.image-container img:hover {
   transform: scale(1.05);
 }
 
-/* Document styles */
-.bi-file-earmark-pdf {
-  font-size: 1.2rem;
+.object-fit-cover {
+  object-fit: cover;
 }
 
-a {
-  color: #d22c36;
-}
-
-a:hover {
-  color: #aa232b;
+.cursor-pointer {
+  cursor: pointer;
 }
 </style>

@@ -318,14 +318,18 @@ const moveServices = async (formData) => {
 
 const deleteServices = async () => {
   try {
+    if (!id.value) {
+      showToast('No service selected for deletion', 'error')
+      return
+    }
+
     const response = await axios.delete(`services/${id.value}`)
     showToast(response.data.message, 'success')
-    closeDeleteModal()
     refreshList()
+    closeDeleteModal()
   } catch (error) {
     console.error('Data failed to delete', error)
     showToast(error.response?.data?.message || 'Delete failed', 'error')
-    closeDeleteModal()
   }
 }
 
@@ -382,7 +386,10 @@ const closeEditModal = () => {
 }
 
 const closeDeleteModal = () => {
-  deleteModalRef.value.hideModal()
+  if (deleteModalRef.value) {
+    deleteModalRef.value.hideModal()
+  }
+  id.value = null
 }
 
 onMounted(() => {
