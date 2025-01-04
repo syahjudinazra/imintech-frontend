@@ -184,6 +184,35 @@ const userCan = (permission) => {
   return userPermissions.value.includes(permission)
 }
 
+// Generic function to fetch all data
+const fetchAllData = async (endpoint, currentPage = 1, allData = []) => {
+  try {
+    const response = await axios.get(`${endpoint}`, {
+      params: {
+        page: currentPage,
+        rowsPerPage: 300,
+        sortBy: 'id',
+        sortType: 'asc',
+      },
+    })
+
+    const { data, total } = response.data
+    const combinedData = [...allData, ...data]
+
+    // Calculate if need more pages
+    const totalPages = Math.ceil(total / 100)
+
+    if (currentPage < totalPages) {
+      return await fetchAllData(endpoint, currentPage + 1, combinedData)
+    }
+
+    return combinedData
+  } catch (error) {
+    console.error(`Error fetching data from ${endpoint}:`, error)
+    throw error
+  }
+}
+
 // Enhanced status badge styling with more visual distinction
 const getStatusBadgeClass = (status) => {
   const baseClasses = 'badge fw-normal text-white'
@@ -258,8 +287,7 @@ async function fetchUserRole() {
 
 const fetchStocksDevice = async () => {
   try {
-    const response = await axios.get('stocks-device')
-    stocksDevice.value = response.data.data
+    stocksDevice.value = await fetchAllData('stocks-device')
   } catch (error) {
     console.error('Data not found', error)
     showToast('Failed to fetch device types.', 'error')
@@ -268,8 +296,7 @@ const fetchStocksDevice = async () => {
 
 const fetchSkuDevice = async () => {
   try {
-    const response = await axios.get('stocks-sku-device')
-    skuDevice.value = response.data.data
+    skuDevice.value = await fetchAllData('stocks-sku-device')
   } catch (error) {
     console.error('Data not found', error)
     showToast('Failed to fetch device types.', 'error')
@@ -278,8 +305,7 @@ const fetchSkuDevice = async () => {
 
 const fetchCustomers = async () => {
   try {
-    const response = await axios.get('customers')
-    customers.value = response.data.data
+    customers.value = await fetchAllData('customers')
   } catch (error) {
     console.error('Data not found', error)
   }
@@ -287,8 +313,7 @@ const fetchCustomers = async () => {
 
 const fetchLocations = async () => {
   try {
-    const response = await axios.get('location')
-    locations.value = response.data.data
+    locations.value = await fetchAllData('location')
   } catch (error) {
     console.error('Data not found', error)
   }

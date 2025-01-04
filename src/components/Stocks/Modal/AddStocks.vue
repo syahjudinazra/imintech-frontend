@@ -51,6 +51,7 @@
                 </template>
               </v-select>
             </div>
+
             <!--SKU Device Type-->
             <div class="mb-3">
               <label for="stocks_sku_devices_id" class="form-label fw-bold">SKU Device type</label>
@@ -248,48 +249,77 @@ const locations = ref([])
 const customers = ref([])
 let addForm
 
+// Generic function to fetch all data
+const fetchAllData = async (endpoint, currentPage = 1, allData = []) => {
+  try {
+    const response = await axios.get(`${endpoint}`, {
+      params: {
+        page: currentPage,
+        rowsPerPage: 300,
+        sortBy: 'id',
+        sortType: 'asc',
+      },
+    })
+
+    const { data, total } = response.data
+    const combinedData = [...allData, ...data]
+
+    // Calculate if need more pages
+    const totalPages = Math.ceil(total / 100)
+
+    if (currentPage < totalPages) {
+      return await fetchAllData(endpoint, currentPage + 1, combinedData)
+    }
+
+    return combinedData
+  } catch (error) {
+    console.error(`Error fetching data from ${endpoint}:`, error)
+    throw error
+  }
+}
+
 const fetchStocksDevice = async () => {
   try {
-    const response = await axios.get('stocks-device')
-    stocksDevice.value = response.data.data
+    stocksDevice.value = await fetchAllData('stocks-device')
   } catch (error) {
-    console.error('Data not found', error)
+    console.error('Failed to fetch stocks device data:', error)
+    showToast('Failed to load device types', 'error')
   }
 }
 
 const fetchSkuDevice = async () => {
   try {
-    const response = await axios.get('stocks-sku-device')
-    stocksSkuDevice.value = response.data.data
+    stocksSkuDevice.value = await fetchAllData('stocks-sku-device')
   } catch (error) {
-    console.error('Data not found', error)
+    console.error('Failed to fetch SKU device data:', error)
+    showToast('Failed to load SKU device types', 'error')
   }
 }
 
 const fetchCustomers = async () => {
   try {
-    const response = await axios.get('customers')
-    customers.value = response.data.data
+    customers.value = await fetchAllData('customers')
   } catch (error) {
-    console.error('Data not found', error)
+    console.error('Failed to fetch customer data:', error)
+    showToast('Failed to load customers', 'error')
   }
 }
 
 const fetchLocations = async () => {
   try {
-    const response = await axios.get('location')
-    locations.value = response.data.data
+    locations.value = await fetchAllData('location')
   } catch (error) {
-    console.error('Data not found', error)
+    console.error('Failed to fetch location data:', error)
+    showToast('Failed to load locations', 'error')
   }
 }
 
+// Date formatting functions remain the same
 const customFormat = (date) => {
   if (!date) return ''
   return formatDateForDisplay(date)
 }
 
-// Format date for display in the datepicker
 const formatDateForDisplay = (date) => {
   if (!date) return null
   const d = new Date(date)
@@ -302,7 +332,6 @@ const formatDateForDisplay = (date) => {
     .replace(',', '')
 }
 
-// Format date for MySQL
 const formatDateForMySQL = (date) => {
   if (!date) return null
   const d = new Date(date)
@@ -323,10 +352,13 @@ const formatDateForMySQL = (date) => {
 
 onMounted(() => {
   addForm = new Modal(document.getElementById('addForm'), {})
-  fetchStocksDevice()
-  fetchSkuDevice()
-  fetchLocations()
-  fetchCustomers()
+  // Load all initial data in parallel
+  Promise.all([fetchStocksDevice(), fetchSkuDevice(), fetchLocations(), fetchCustomers()]).catch(
+    (error) => {
+      console.error('Error loading initial data:', error)
+      showToast('Some data failed to load. Please refresh the page.', 'error')
+    },
+  )
 })
 
 function openModal() {
@@ -339,13 +371,11 @@ function closeModal() {
 
 const addStocks = async () => {
   try {
-    // Prepare form data
     const formData = new FormData()
     formData.append('serial_number', stocks.value.serial_number)
     formData.append('stocks_devices_id', stocks.value.stocks_devices_id)
     formData.append('stocks_sku_devices_id', stocks.value.stocks_sku_devices_id)
     formData.append('no_invoice', stocks.value.no_invoice)
-    // Format the date properly for MySQL
     const mysqlDate = formatDateForMySQL(stocks.value.date_in)
     formData.append('date_in', mysqlDate)
     formData.append('customers_id', stocks.value.customers_id)
@@ -358,11 +388,10 @@ const addStocks = async () => {
         'Content-Type': 'multipart/form-data',
       },
     })
-    console.log('Data added successfully:', response.data.message)
     showToast(response.data.message, 'success')
     closeModal()
   } catch (error) {
-    console.error('Error add data:', error)
+    console.error('Error adding data:', error)
     showToast(error.response?.data?.message || 'Failed to add data', 'error')
   }
 }
