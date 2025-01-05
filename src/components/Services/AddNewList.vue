@@ -230,10 +230,38 @@ watch(
   },
 )
 
+// Generic function to fetch all data
+const fetchAllData = async (endpoint, currentPage = 1, allData = []) => {
+  try {
+    const response = await axios.get(`${endpoint}`, {
+      params: {
+        page: currentPage,
+        rowsPerPage: 300,
+        sortBy: 'id',
+        sortType: 'asc',
+      },
+    })
+
+    const { data, total } = response.data
+    const combinedData = [...allData, ...data]
+
+    // Calculate if need more pages
+    const totalPages = Math.ceil(total / 100)
+
+    if (currentPage < totalPages) {
+      return await fetchAllData(endpoint, currentPage + 1, combinedData)
+    }
+
+    return combinedData
+  } catch (error) {
+    console.error(`Error fetching data from ${endpoint}:`, error)
+    throw error
+  }
+}
+
 const fetchServicesDevice = async () => {
   try {
-    const response = await axios.get('services-device')
-    servicesDevice.value = response.data.data
+    servicesDevice.value = await fetchAllData('services-device')
   } catch (error) {
     console.error('Error fetching services device:', error)
   }
@@ -241,8 +269,7 @@ const fetchServicesDevice = async () => {
 
 const fetchUsages = async () => {
   try {
-    const response = await axios.get('usages')
-    usages.value = response.data.data
+    usages.value = await fetchAllData('usages')
   } catch (error) {
     console.error('Error fetching usages:', error)
   }

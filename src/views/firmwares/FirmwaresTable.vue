@@ -186,10 +186,38 @@ async function fetchUserRole() {
   }
 }
 
+// Generic function to fetch all data
+const fetchAllData = async (endpoint, currentPage = 1, allData = []) => {
+  try {
+    const response = await axios.get(`${endpoint}`, {
+      params: {
+        page: currentPage,
+        rowsPerPage: 300,
+        sortBy: 'id',
+        sortType: 'asc',
+      },
+    })
+
+    const { data, total } = response.data
+    const combinedData = [...allData, ...data]
+
+    // Calculate if need more pages
+    const totalPages = Math.ceil(total / 100)
+
+    if (currentPage < totalPages) {
+      return await fetchAllData(endpoint, currentPage + 1, combinedData)
+    }
+
+    return combinedData
+  } catch (error) {
+    console.error(`Error fetching data from ${endpoint}:`, error)
+    throw error
+  }
+}
+
 const fetchFirmwaresDevice = async () => {
   try {
-    const response = await axios.get('firmwares-device')
-    firmwaresDevice.value = response.data.data
+    firmwaresDevice.value = await fetchAllData('firmwares-device')
   } catch (error) {
     console.error('Data not found', error)
     showToast('Failed to fetch device types.', 'error')
@@ -198,8 +226,7 @@ const fetchFirmwaresDevice = async () => {
 
 const fetchAndroid = async () => {
   try {
-    const response = await axios.get('android')
-    androids.value = response.data.data
+    androids.value = await fetchAllData('android')
   } catch (error) {
     console.error('Data not found', error)
   }

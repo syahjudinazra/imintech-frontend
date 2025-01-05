@@ -83,7 +83,6 @@ const headers = ref([
   { text: 'Android', value: 'androids_id' },
   { text: 'Flash Link', value: 'flash' },
   { text: 'OTA Link', value: 'ota' },
-  { text: 'Action', value: 'action' },
 ])
 
 const serverItemsLength = ref(10)

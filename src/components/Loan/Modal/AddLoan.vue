@@ -47,7 +47,7 @@
               <label for="loan_devices_id" class="form-label fw-bold">Device type</label>
               <v-select
                 v-model="loans.loan_devices_id"
-                :options="loansDevice"
+                :options="loanDevice"
                 :reduce="(device) => device.id"
                 label="name"
                 :searchable="true"
@@ -208,7 +208,7 @@ import 'vue-select/dist/vue-select.css'
 
 const loans = ref({})
 
-const loansDevice = ref([])
+const loanDevice = ref([])
 const androids = ref([])
 const rams = ref([])
 const customers = ref([])
@@ -217,54 +217,83 @@ const sales = ref([])
 let addForm
 const emit = defineEmits(['customer-added'])
 
-const fetchLoansDevice = async () => {
+// Generic function to fetch all data
+const fetchAllData = async (endpoint, currentPage = 1, allData = []) => {
   try {
-    const response = await axios.get('loans-device')
-    loansDevice.value = response.data.data
+    const response = await axios.get(`${endpoint}`, {
+      params: {
+        page: currentPage,
+        rowsPerPage: 300,
+        sortBy: 'id',
+        sortType: 'asc',
+      },
+    })
+
+    const { data, total } = response.data
+    const combinedData = [...allData, ...data]
+
+    // Calculate if need more pages
+    const totalPages = Math.ceil(total / 100)
+
+    if (currentPage < totalPages) {
+      return await fetchAllData(endpoint, currentPage + 1, combinedData)
+    }
+
+    return combinedData
+  } catch (error) {
+    console.error(`Error fetching data from ${endpoint}:`, error)
+    throw error
+  }
+}
+
+const fetchLoanDevice = async () => {
+  try {
+    loanDevice.value = await fetchAllData('loans-device')
   } catch (error) {
     console.error('Data not found', error)
+    showToast('Failed to fetch device types.', 'error')
   }
 }
 
 const fetchAndroid = async () => {
   try {
-    const response = await axios.get('android')
-    androids.value = response.data.data
+    androids.value = await fetchAllData('android')
   } catch (error) {
     console.error('Data not found', error)
+    showToast('Failed to fetch androids.', 'error')
   }
 }
 
 const fetchRam = async () => {
   try {
-    const response = await axios.get('ram')
-    rams.value = response.data.data
+    rams.value = await fetchAllData('ram')
   } catch (error) {
     console.error('Data not found', error)
+    showToast('Failed to fetch ram.', 'error')
   }
 }
 
 const fetchCustomers = async () => {
   try {
-    const response = await axios.get('customers')
-    customers.value = response.data.data
+    customers.value = await fetchAllData('customers')
   } catch (error) {
     console.error('Data not found', error)
+    showToast('Failed to fetch customers.', 'error')
   }
 }
 
 const fetchSales = async () => {
   try {
-    const response = await axios.get('sales')
-    sales.value = response.data.data
+    sales.value = await fetchAllData('sales')
   } catch (error) {
     console.error('Data not found', error)
+    showToast('Failed to fetch sales', 'error')
   }
 }
 
 onMounted(() => {
   addForm = new Modal(document.getElementById('addForm'), {})
-  fetchLoansDevice()
+  fetchLoanDevice()
   fetchAndroid()
   fetchRam()
   fetchCustomers()

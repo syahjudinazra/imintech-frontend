@@ -117,10 +117,38 @@ const formattedPrice = computed({
   },
 })
 
+// Generic function to fetch all data
+const fetchAllData = async (endpoint, currentPage = 1, allData = []) => {
+  try {
+    const response = await axios.get(`${endpoint}`, {
+      params: {
+        page: currentPage,
+        rowsPerPage: 300,
+        sortBy: 'id',
+        sortType: 'asc',
+      },
+    })
+
+    const { data, total } = response.data
+    const combinedData = [...allData, ...data]
+
+    // Calculate if need more pages
+    const totalPages = Math.ceil(total / 100)
+
+    if (currentPage < totalPages) {
+      return await fetchAllData(endpoint, currentPage + 1, combinedData)
+    }
+
+    return combinedData
+  } catch (error) {
+    console.error(`Error fetching data from ${endpoint}:`, error)
+    throw error
+  }
+}
+
 const fetchSparepartsDevice = async () => {
   try {
-    const response = await axios.get('spareparts-device')
-    sparepartsDevice.value = response.data.data
+    sparepartsDevice.value = await fetchAllData('spareparts-device')
   } catch (error) {
     console.error('Data not found', error)
   }

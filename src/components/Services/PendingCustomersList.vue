@@ -227,10 +227,38 @@ watch(
   { deep: true },
 )
 
+// Generic function to fetch all data
+const fetchAllData = async (endpoint, currentPage = 1, allData = []) => {
+  try {
+    const response = await axios.get(`${endpoint}`, {
+      params: {
+        page: currentPage,
+        rowsPerPage: 300,
+        sortBy: 'id',
+        sortType: 'asc',
+      },
+    })
+
+    const { data, total } = response.data
+    const combinedData = [...allData, ...data]
+
+    // Calculate if need more pages
+    const totalPages = Math.ceil(total / 100)
+
+    if (currentPage < totalPages) {
+      return await fetchAllData(endpoint, currentPage + 1, combinedData)
+    }
+
+    return combinedData
+  } catch (error) {
+    console.error(`Error fetching data from ${endpoint}:`, error)
+    throw error
+  }
+}
+
 const fetchServicesDevice = async () => {
   try {
-    const response = await axios.get('services-device')
-    servicesDevice.value = response.data.data
+    servicesDevice.value = await fetchAllData('services-device')
   } catch (error) {
     console.error('Data not found', error)
     showToast('Failed to fetch device types.', 'error')
@@ -239,8 +267,7 @@ const fetchServicesDevice = async () => {
 
 const fetchUsages = async () => {
   try {
-    const response = await axios.get('usages')
-    usages.value = response.data.data
+    usages.value = await fetchAllData('usages')
   } catch (error) {
     console.error('Data not found', error)
     showToast('Failed to fetch usages.', 'error')
@@ -249,8 +276,7 @@ const fetchUsages = async () => {
 
 const fetchTechnicians = async () => {
   try {
-    const response = await axios.get('technician')
-    technicians.value = response.data.data
+    technicians.value = await fetchAllData('technician')
   } catch (error) {
     console.error('Data not found', error)
     showToast('Failed to fetch technician.', 'error')
@@ -259,8 +285,7 @@ const fetchTechnicians = async () => {
 
 const fetchSpareparts = async () => {
   try {
-    const response = await axios.get('spareparts')
-    spareparts.value = response.data.data
+    spareparts.value = await fetchAllData('spareparts')
   } catch (error) {
     console.error('Data not found', error)
     showToast('Failed to fetch spareparts.', 'error')
@@ -269,8 +294,7 @@ const fetchSpareparts = async () => {
 
 const fetchSparepartsDevice = async () => {
   try {
-    const response = await axios.get('spareparts-device')
-    sparepartsDevice.value = response.data.data
+    sparepartsDevice.value = await fetchAllData('spareparts-device')
   } catch (error) {
     console.error('Data not found', error)
     showToast('Failed to fetch device types.', 'error')
