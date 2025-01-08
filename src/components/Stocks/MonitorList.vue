@@ -1,103 +1,3 @@
-<template>
-  <div class="container-fluid">
-    <!-- Summary Statistics -->
-    <div class="row mb-4">
-      <div v-for="status in STATUS_VALUES" :key="status" class="col-md-2">
-        <div
-          class="card h-100 border-0 shadow-sm"
-          :class="`border-start border-4 border-${getStatusClass(status)}`"
-        >
-          <div class="card-body">
-            <h6 class="card-title text-muted mb-2">{{ status }}</h6>
-            <h3 class="mb-2">{{ getTotalByStatus(status) }}</h3>
-            <div class="mt-2 pt-2 border-top">
-              <small class="text-muted"> {{ getPercentageByStatus(status) }}% of total </small>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Header Controls with Improved Layout -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <div class="d-flex gap-2">
-        <AddStock @data-added="refreshList" />
-        <button class="btn btn-outline-secondary" @click="refreshList" :disabled="loading">
-          <i class="bi bi-arrow-clockwise" :class="{ rotate: loading }"></i>
-          Refresh
-        </button>
-      </div>
-      <div class="d-flex align-items-center gap-2">
-        <ExportStocks :data="groupedStocks" :loading="loading" />
-        <ImportStocks @import-complete="refreshList" />
-        <MoveSn
-          :customer="customers"
-          :stocks-devices="devices"
-          :location="locations"
-          @move-complete="refreshList"
-        />
-        <Search @search="updateSearch" :disabled="loading" placeholder="Search devices..." />
-      </div>
-    </div>
-
-    <!-- Enhanced Data Table -->
-    <div class="card border-0 shadow-sm">
-      <div class="card-body p-0">
-        <EasyDataTable
-          v-model:server-options="serverOptions"
-          :server-items-length="serverItemsLength"
-          :headers="headers"
-          :items="processedUniqueStocks"
-          :loading="loading"
-          :theme-color="BASE_COLOR"
-          :rows-per-page="10"
-          :rows-items="[10, 25, 50, 100]"
-          table-class-name="head-table"
-          alternating
-          border-cell
-          buttons-pagination
-          @update:options="handleOptionsUpdate"
-        >
-          <template #loading>
-            <div class="d-flex justify-content-center p-4">
-              <div class="loader"></div>
-            </div>
-          </template>
-
-          <template #empty-message>
-            <div class="text-center p-4">
-              <p class="mt-2">No data found</p>
-            </div>
-          </template>
-
-          <!-- Numeric columns with right alignment -->
-          <template #item-warehouse="{ warehouse }">
-            <div class="text-end">{{ warehouse || 0 }}</div>
-          </template>
-          <template #item-services="{ services }">
-            <div class="text-end">{{ services || 0 }}</div>
-          </template>
-          <template #item-loan="{ loan }">
-            <div class="text-end">{{ loan || 0 }}</div>
-          </template>
-          <template #item-sold="{ sold }">
-            <div class="text-end">{{ sold || 0 }}</div>
-          </template>
-          <template #item-damage="{ damage }">
-            <div class="text-end">{{ damage || 0 }}</div>
-          </template>
-          <template #item-entrust="{ entrust }">
-            <div class="text-end">{{ entrust || 0 }}</div>
-          </template>
-          <template #item-total="{ total }">
-            <div class="text-end fw-bold">{{ total || 0 }}</div>
-          </template>
-        </EasyDataTable>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup>
 import { ref, onMounted, watch, computed } from 'vue'
 import axios from 'axios'
@@ -111,7 +11,6 @@ import ImportStocks from '../Stocks/Excel/ImportStocks.vue'
 // State management
 const stocks = ref([])
 const devices = ref([])
-const customers = ref([])
 const locations = ref([])
 const loading = ref(true)
 const summary = ref({})
@@ -149,6 +48,34 @@ const serverOptions = ref({
   sortType: 'desc',
   searchTerm: '',
 })
+
+// Lifecycle hooks
+onMounted(() => {
+  loadFromServer()
+  fetchLocations()
+})
+
+// Add permission check utility
+const checkPermission = (permissionName) => {
+  try {
+    const userData = JSON.parse(localStorage.getItem('users'))
+    if (!userData?.permissions) return false
+
+    // Check if the permission exists
+    return userData.permissions.some(
+      (permission) => permission.name.toLowerCase() === permissionName.toLowerCase(),
+    )
+  } catch (error) {
+    console.error('Error checking permissions:', error)
+    return false
+  }
+}
+
+// Create computed property for stocks permission
+const canCreate = computed(() => checkPermission('Create Stocks'))
+const canExport = computed(() => checkPermission('Export Stocks'))
+const canImport = computed(() => checkPermission('Import Stocks'))
+const canMove = computed(() => checkPermission('Move Stocks'))
 
 // Device mapping helper
 const getDeviceName = computed(() => {
@@ -246,15 +173,6 @@ const loadFromServer = async () => {
   }
 }
 
-const fetchCustomers = async () => {
-  try {
-    const response = await axios.get('customers')
-    customers.value = response.data.data
-  } catch (error) {
-    console.error('Data not found', error)
-  }
-}
-
 const fetchLocations = async () => {
   try {
     const response = await axios.get('location')
@@ -289,14 +207,107 @@ watch(
   },
   { deep: true },
 )
-
-// Lifecycle hooks
-onMounted(() => {
-  loadFromServer()
-  fetchCustomers()
-  fetchLocations()
-})
 </script>
+
+<template>
+  <div class="container-fluid">
+    <!-- Summary Statistics -->
+    <div class="row mb-4">
+      <div v-for="status in STATUS_VALUES" :key="status" class="col-md-2">
+        <div
+          class="card h-100 border-0 shadow-sm"
+          :class="`border-start border-4 border-${getStatusClass(status)}`"
+        >
+          <div class="card-body">
+            <h6 class="card-title text-muted mb-2">{{ status }}</h6>
+            <h3 class="mb-2">{{ getTotalByStatus(status) }}</h3>
+            <div class="mt-2 pt-2 border-top">
+              <small class="text-muted"> {{ getPercentageByStatus(status) }}% of total </small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Header Controls with Improved Layout -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div class="d-flex gap-2">
+        <AddStock v-if="canCreate" @data-added="refreshList" />
+        <button class="btn btn-outline-secondary" @click="refreshList" :disabled="loading">
+          <i class="bi bi-arrow-clockwise" :class="{ rotate: loading }"></i>
+          Refresh
+        </button>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <ExportStocks v-if="canExport" :data="groupedStocks" :loading="loading" />
+        <ImportStocks v-if="canImport" @import-complete="refreshList" />
+        <MoveSn
+          v-if="canMove"
+          :stocks-devices="devices"
+          :location="locations"
+          @move-complete="refreshList"
+        />
+        <Search @search="updateSearch" :disabled="loading" placeholder="Search devices..." />
+      </div>
+    </div>
+
+    <!-- Enhanced Data Table -->
+    <div class="card border-0 shadow-sm">
+      <div class="card-body p-0">
+        <EasyDataTable
+          v-model:server-options="serverOptions"
+          :server-items-length="serverItemsLength"
+          :headers="headers"
+          :items="processedUniqueStocks"
+          :loading="loading"
+          :theme-color="BASE_COLOR"
+          :rows-per-page="10"
+          :rows-items="[10, 25, 50, 100]"
+          table-class-name="head-table"
+          alternating
+          border-cell
+          buttons-pagination
+          @update:options="handleOptionsUpdate"
+        >
+          <template #loading>
+            <div class="d-flex justify-content-center p-4">
+              <div class="loader"></div>
+            </div>
+          </template>
+
+          <template #empty-message>
+            <div class="text-center p-4">
+              <p class="mt-2">No data found</p>
+            </div>
+          </template>
+
+          <!-- Numeric columns with right alignment -->
+          <template #item-warehouse="{ warehouse }">
+            <div class="text-end">{{ warehouse || 0 }}</div>
+          </template>
+          <template #item-services="{ services }">
+            <div class="text-end">{{ services || 0 }}</div>
+          </template>
+          <template #item-loan="{ loan }">
+            <div class="text-end">{{ loan || 0 }}</div>
+          </template>
+          <template #item-sold="{ sold }">
+            <div class="text-end">{{ sold || 0 }}</div>
+          </template>
+          <template #item-damage="{ damage }">
+            <div class="text-end">{{ damage || 0 }}</div>
+          </template>
+          <template #item-entrust="{ entrust }">
+            <div class="text-end">{{ entrust || 0 }}</div>
+          </template>
+          <template #item-total="{ total }">
+            <div class="text-end fw-bold">{{ total || 0 }}</div>
+          </template>
+        </EasyDataTable>
+      </div>
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .head-table {

@@ -99,24 +99,13 @@
 
                 <!--Customers-->
                 <div class="mb-3">
-                  <label for="customers_id" class="form-label fw-bold">Customers</label>
-                  <v-select
-                    v-model="formData.customers_id"
-                    :options="props.customer"
-                    :reduce="(customer) => customer.id"
-                    label="name"
-                    :searchable="true"
-                    :clearable="false"
-                    placeholder="Select Customers"
-                    id="customers_id"
-                  >
-                    <template #no-options="{ search, searching }">
-                      <template v-if="searching">
-                        No results found for <em>{{ search }}</em>
-                      </template>
-                      <em v-else>Start typing to search...</em>
-                    </template>
-                  </v-select>
+                  <label class="form-label">Customers</label>
+                  <input
+                    v-model="formData.customers"
+                    class="form-control shadow-none"
+                    rows="3"
+                    placeholder="Input Customers"
+                  />
                 </div>
 
                 <!-- Date exit -->
@@ -223,10 +212,6 @@ import CheckSnSideBar from './CheckSnSideBar.vue'
 
 // Define props with default values
 const props = defineProps({
-  customer: {
-    type: Array,
-    default: () => [],
-  },
   location: {
     type: Array,
     default: () => [],
@@ -251,7 +236,7 @@ const selectedSerialNumbers = ref([])
 
 const formData = ref({
   status: '',
-  customers_id: '',
+  customers: '',
   date_out: '',
   locations_id: '',
   information: '',
@@ -261,7 +246,7 @@ const formData = ref({
 const baseColor = '#e55353'
 const headers = ref([
   { text: 'Serial Number', value: 'serial_number' },
-  { text: 'Customers', value: 'customers_id' },
+  { text: 'Customers', value: 'customers' },
   { text: 'Devices', value: 'stocks_devices_id' },
   { text: 'Status', value: 'status' },
   { text: 'Action', value: 'action' },
@@ -308,7 +293,7 @@ const closeModal = () => {
 const resetForm = () => {
   formData.value = {
     status: '',
-    customers_id: '',
+    customers: '',
     date_out: '',
     locations_id: '',
     information: '',

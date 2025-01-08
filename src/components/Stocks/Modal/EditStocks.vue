@@ -29,7 +29,7 @@
             <div class="mb-3">
               <label for="stocksDevice" class="form-label fw-bold">Device Type</label>
               <v-select
-                v-model="editedStock.stocks_devices_id"
+                v-model="editedStock.stocks_devices"
                 :options="stocksDevice"
                 :reduce="(device) => device.id"
                 label="name"
@@ -108,24 +108,13 @@
 
             <!--Customers-->
             <div class="mb-3">
-              <label for="customer" class="form-label fw-bold">Customers</label>
-              <v-select
-                v-model="editedStock.customers_id"
-                :options="customers"
-                :reduce="(customer) => customer.id"
-                label="name"
-                :searchable="true"
-                :clearable="false"
-                placeholder="Select Customers"
-                id="customer"
-              >
-                <template #no-options="{ search, searching }">
-                  <template v-if="searching">
-                    No results found for <em>{{ search }}</em>
-                  </template>
-                  <em v-else>Start typing to search...</em>
-                </template>
-              </v-select>
+              <label for="customers" class="form-label fw-bold">Customers</label>
+              <input
+                v-model="editedStock.customers"
+                type="text"
+                class="form-control shadow-none"
+                id="customers"
+              />
             </div>
 
             <!--Location-->
@@ -148,6 +137,17 @@
                   <em v-else>Start typing to search...</em>
                 </template>
               </v-select>
+            </div>
+
+            <!--Shipping Code-->
+            <div class="mb-3">
+              <label for="shipping_code" class="form-label fw-bold">Shipping Code</label>
+              <input
+                v-model="editedStock.shipping_code"
+                type="text"
+                class="form-control shadow-none"
+                id="shipping_code"
+              />
             </div>
 
             <!--Information-->
@@ -257,10 +257,6 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
-  customers: {
-    type: Array,
-    default: () => [],
-  },
   locations: {
     type: Array,
     default: () => [],
@@ -350,10 +346,6 @@ const editForm = () => {
       updatedStock[key] = editedStock[key]
     }
   })
-
-  if (updatedStock.customers_id) {
-    updatedStock.customer = updatedStock.customers_id
-  }
 
   emit('update', updatedStock)
   hideModal()

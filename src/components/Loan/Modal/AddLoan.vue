@@ -110,24 +110,14 @@
 
             <!--Customers section-->
             <div class="mb-3">
-              <label for="customers_id" class="form-label fw-bold">Customers</label>
-              <v-select
-                v-model="loans.customers_id"
-                :options="customers"
-                :reduce="(customer) => customer.id"
-                label="name"
-                :searchable="true"
-                :clearable="false"
-                placeholder="Select Customers"
-                id="customers_id"
-              >
-                <template #no-options="{ search, searching }">
-                  <template v-if="searching">
-                    No results found for <em>{{ search }}</em>
-                  </template>
-                  <em v-else>Start typing to search...</em>
-                </template>
-              </v-select>
+              <label for="customers" class="form-label fw-bold">Customers</label>
+              <input
+                v-model="loans.customers"
+                type="text"
+                class="form-control shadow-none"
+                id="customers"
+                placeholder="Input Customers"
+              />
             </div>
 
             <!--Sales section-->
@@ -211,7 +201,6 @@ const loans = ref({})
 const loanDevice = ref([])
 const androids = ref([])
 const rams = ref([])
-const customers = ref([])
 const sales = ref([])
 
 let addForm
@@ -273,15 +262,6 @@ const fetchRam = async () => {
   }
 }
 
-const fetchCustomers = async () => {
-  try {
-    customers.value = await fetchAllData('customers')
-  } catch (error) {
-    console.error('Data not found', error)
-    showToast('Failed to fetch customers.', 'error')
-  }
-}
-
 const fetchSales = async () => {
   try {
     sales.value = await fetchAllData('sales')
@@ -296,7 +276,6 @@ onMounted(() => {
   fetchLoanDevice()
   fetchAndroid()
   fetchRam()
-  fetchCustomers()
   fetchSales()
 })
 
@@ -318,7 +297,7 @@ const addLoans = async () => {
     formData.append('loan_devices_id', loans.value.loan_devices_id)
     formData.append('rams_id', loans.value.rams_id)
     formData.append('androids_id', loans.value.androids_id)
-    formData.append('customers_id', loans.value.customers_id)
+    formData.append('customers', loans.value.customers)
     formData.append('address', loans.value.address)
     formData.append('sales_id', loans.value.sales_id)
     formData.append('phone_number', loans.value.phone_number)

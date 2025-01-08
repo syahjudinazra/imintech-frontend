@@ -109,24 +109,12 @@
             <!--Customers Section-->
             <div class="mb-3">
               <label for="customers" class="form-label fw-bold">Customers</label>
-              <v-select
-                v-model="editedLoan.customers_id"
-                :options="customers"
-                :reduce="(customer) => customer.id"
-                label="name"
-                :searchable="true"
-                :clearable="false"
-                placeholder="Select Device Type"
+              <input
+                v-model="editedLoan.customers"
+                type="text"
+                class="form-control shadow-none"
                 id="customers"
-                required
-              >
-                <template #no-options="{ search, searching }">
-                  <template v-if="searching">
-                    No results found for <em>{{ search }}</em>
-                  </template>
-                  <em v-else>Start typing to search...</em>
-                </template>
-              </v-select>
+              />
             </div>
 
             <!--Sales Section-->
@@ -220,10 +208,6 @@ const props = defineProps({
     default: () => [],
   },
   androids: {
-    type: Array,
-    default: () => [],
-  },
-  customers: {
     type: Array,
     default: () => [],
   },

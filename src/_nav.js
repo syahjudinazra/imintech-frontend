@@ -340,19 +340,6 @@ export default [
     ],
   },
   {
-    component: 'CNavGroup',
-    name: 'Customers',
-    to: '/customers',
-    icon: 'cil-address-book',
-    items: [
-      {
-        component: 'CNavItem',
-        name: 'List Customers',
-        to: '/list/customers',
-      },
-    ],
-  },
-  {
     component: 'CNavItem',
     name: 'Users Management',
     to: '/users/management',

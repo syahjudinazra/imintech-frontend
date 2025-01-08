@@ -32,7 +32,7 @@ const exportExcel = async () => {
   loading.value = true
   error.value = ''
   try {
-    const response = await axios.get('spareparts-export', {
+    const response = await axios.get('stocks-export', {
       responseType: 'blob',
     })
 
@@ -55,7 +55,7 @@ const exportExcel = async () => {
     link.href = window.URL.createObjectURL(blob)
 
     const downloadDate = getFormattedDate()
-    link.download = `Spareparts-Data_${downloadDate}.xlsx`
+    link.download = `Stocks-Data_${downloadDate}.xlsx`
 
     link.click()
     window.URL.revokeObjectURL(link.href)

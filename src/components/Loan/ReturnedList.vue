@@ -73,7 +73,6 @@
       :loan-device="loanDevice"
       :rams="rams"
       :androids="androids"
-      :customers="customers"
       :sales="sales"
       @update="updateLoans"
       @close="closeEditModal"
@@ -100,7 +99,6 @@ const loanDevice = ref([])
 const sales = ref([])
 const rams = ref([])
 const androids = ref([])
-const customers = ref([])
 const viewModalRef = ref(null)
 const editModalRef = ref(null)
 const deleteModalRef = ref(null)
@@ -115,7 +113,7 @@ const headers = [
   { text: 'Date', value: 'date_loan', sortable: true },
   { text: 'Serial Number', value: 'serial_number', sortable: true },
   { text: 'Device Type', value: 'loan_devices_id', sortable: true },
-  { text: 'Customers', value: 'customers_id', sortable: true },
+  { text: 'Customers', value: 'customers', sortable: true },
   { text: 'Action', value: 'action', sortable: false },
 ]
 const dayNames = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu']
@@ -240,15 +238,6 @@ const fetchRam = async () => {
   }
 }
 
-const fetchCustomers = async () => {
-  try {
-    customers.value = await fetchAllData('customers')
-  } catch (error) {
-    console.error('Data not found', error)
-    showToast('Failed to fetch customers.', 'error')
-  }
-}
-
 const fetchSales = async () => {
   try {
     const response = await axios.get('sales')
@@ -318,7 +307,6 @@ onMounted(() => {
   fetchLoanDevice()
   fetchAndroid()
   fetchRam()
-  fetchCustomers()
   fetchSales()
 })
 </script>

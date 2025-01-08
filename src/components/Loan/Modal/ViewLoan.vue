@@ -80,11 +80,11 @@
           <div class="mb-3">
             <label class="fw-bold" for="customers">Customers</label>
             <input
-              :value="loan?.customers_id"
+              :value="loan?.customers"
               type="text"
               class="form-control shadow-none bg-light"
-              id="customers_id"
-              name="customers_id"
+              id="customers"
+              name="customers"
               readonly
             />
           </div>

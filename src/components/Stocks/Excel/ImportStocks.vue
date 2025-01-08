@@ -1,3 +1,68 @@
+<script setup>
+import { ref } from 'vue'
+import axios from 'axios'
+import { CIcon } from '@coreui/icons-vue'
+import { cilCloudUpload } from '@coreui/icons'
+import { showToast } from '@/utilities/toast'
+
+const fileInput = ref(null)
+const loading = ref(false)
+const error = ref('') // Track error message
+
+const importExcel = () => {
+  fileInput.value.click()
+}
+
+const handleFileUpload = async (event) => {
+  loading.value = true
+  error.value = ''
+  const file = event.target.files[0]
+
+  if (file) {
+    const formData = new FormData()
+    formData.append('file', file)
+
+    try {
+      const response = await axios.post('stocks-import', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'X-CSRF-TOKEN':
+            document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+        },
+        withCredentials: true,
+      })
+      console.log('Excel import successful:', response.data)
+      showToast('Excel file imported successfully!', 'success')
+    } catch (err) {
+      error.value = err.response?.data?.data || 'An error occurred during the import process.'
+      showToast('Failed to import Excel file. Please try again.', 'error')
+    } finally {
+      loading.value = false
+    }
+  }
+}
+
+const downloadTemplate = async () => {
+  try {
+    const response = await axios.get('stocks-template', {
+      responseType: 'blob',
+    })
+
+    const url = window.URL.createObjectURL(new Blob([response.data]))
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute('download', 'Template-Import-Stocks.xlsx')
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    showToast('Download template successfully!', 'success')
+  } catch (error) {
+    console.error('Error downloading template:', error)
+    showToast('Download template failed!', 'error')
+  }
+}
+</script>
+
 <template>
   <div class="btn-group">
     <button
@@ -31,70 +96,6 @@
     </ul>
   </div>
 </template>
-
-<script setup>
-import { ref } from 'vue'
-import axios from 'axios'
-import { CIcon } from '@coreui/icons-vue'
-import { cilCloudUpload } from '@coreui/icons'
-import { showToast } from '@/utilities/toast'
-
-const fileInput = ref(null)
-const loading = ref(false)
-const error = ref('') // Track error message
-
-const importExcel = () => {
-  fileInput.value.click()
-}
-
-const handleFileUpload = async (event) => {
-  loading.value = true
-  error.value = ''
-  const file = event.target.files[0]
-
-  if (file) {
-    const formData = new FormData()
-    formData.append('file', file)
-
-    try {
-      const response = await axios.post('spareparts-import', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          'X-CSRF-TOKEN':
-            document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-        },
-      })
-      console.log('Excel import successful:', response.data)
-      showToast('Excel file imported successfully!', 'success')
-    } catch (err) {
-      error.value = err.response?.data?.data || 'An error occurred during the import process.'
-      showToast('Failed to import Excel file. Please try again.', 'error')
-    } finally {
-      loading.value = false
-    }
-  }
-}
-
-const downloadTemplate = async () => {
-  try {
-    const response = await axios.get('spareparts-template', {
-      responseType: 'blob',
-    })
-
-    const url = window.URL.createObjectURL(new Blob([response.data]))
-    const link = document.createElement('a')
-    link.href = url
-    link.setAttribute('download', 'Template-Import-Spareparts.xlsx')
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    showToast('Download template successfully!', 'success')
-  } catch (error) {
-    console.error('Error downloading template:', error)
-    showToast('Download template failed!', 'error')
-  }
-}
-</script>
 
 <style scoped>
 .loader {

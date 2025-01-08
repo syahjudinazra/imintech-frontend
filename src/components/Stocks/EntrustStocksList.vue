@@ -1,112 +1,3 @@
-<template>
-  <div class="container-fluid">
-    <div class="d-flex justify-content-end">
-      <Search :onSearch="updateSearch" />
-    </div>
-    <div class="mt-2">
-      <EasyDataTable
-        v-model:server-options="serverOptions"
-        :server-items-length="serverItemsLength"
-        @update:options="serverOptions = $event"
-        :headers="headers"
-        :items="stocks"
-        :loading="loading"
-        :theme-color="baseColor"
-        :rows-per-page="10"
-        table-class-name="head-table"
-        alternating
-        show-index
-        border-cell
-        buttons-pagination
-      >
-        <template #loading>
-          <div class="loader"></div>
-        </template>
-        <template #empty-message>
-          <p>Data not found</p>
-        </template>
-        <template #item-status="{ status }">
-          <span :class="getStatusBadgeClass(status)" class="px-2 py-1 rounded-pill">
-            {{ status }}
-          </span>
-        </template>
-        <template #item-date_in="{ date_in }">
-          {{ formatDate(date_in) }}
-        </template>
-        <template #item-date_out="{ date_out }">
-          {{ formatDate(date_out) }}
-        </template>
-        <template #item-action="item">
-          <div class="d-flex gap-2">
-            <a
-              v-if="userCan('view Stocks')"
-              href="#"
-              class="head-text text-decoration-none"
-              @click="viewModal(item)"
-              >View</a
-            >
-            <div class="btn-group dropend">
-              <a
-                type="button"
-                class="text-decoration-none dropdown-toggle"
-                data-bs-toggle="dropdown"
-                aria-expanded="false"
-              >
-                More
-              </a>
-              <ul class="dropdown-menu">
-                <a
-                  v-if="userCan('edit Stocks')"
-                  href="#"
-                  class="dropdown-item head-text text-decoration-none"
-                  @click="editModal(item)"
-                  >Edit</a
-                >
-                <a
-                  v-if="userCan('delete Stocks')"
-                  href="#"
-                  class="dropdown-item head-text text-decoration-none"
-                  @click="deleteModal(item)"
-                  >Delete</a
-                >
-              </ul>
-            </div>
-          </div>
-        </template>
-      </EasyDataTable>
-    </div>
-  </div>
-
-  <ViewStocks
-    v-if="userCan('view Stocks')"
-    ref="viewModalRef"
-    :stocks-device="stocksDevice"
-    :stocks-sku-device="skuDevice"
-    :customers="customers"
-    :locations="locations"
-    @close="handleClose"
-  />
-
-  <EditStocks
-    v-if="userCan('edit Stocks')"
-    ref="editModalRef"
-    :stock="editStocks"
-    :stocks-device="stocksDevice"
-    :stocks-sku-device="skuDevice"
-    :customers="customers"
-    :locations="locations"
-    @update="updateStocks"
-    @close="closeEditModal"
-  />
-
-  <DeleteStocks
-    v-if="userCan('delete Stocks')"
-    ref="deleteModalRef"
-    @delete="deleteStocks"
-    @close="closeDeleteModal"
-  />
-</template>
-
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import axios from 'axios'
@@ -121,7 +12,6 @@ const id = ref(null)
 const stocks = ref([])
 const stocksDevice = ref([])
 const skuDevice = ref([])
-const customers = ref([])
 const locations = ref([])
 const editModalRef = ref(null)
 const viewModalRef = ref(null)
@@ -139,7 +29,7 @@ const headers = ref([
   { text: 'No Invoice', value: 'no_invoice' },
   { text: 'Date of Entry', value: 'date_in' },
   { text: 'Date Exit', value: 'date_out' },
-  { text: 'Customers', value: 'customers_id' },
+  { text: 'Customers', value: 'customers' },
   { text: 'Status', value: 'status' },
   { text: 'Action', value: 'action' },
 ])
@@ -258,7 +148,6 @@ onMounted(() => {
   loadFromServer()
   fetchStocksDevice()
   fetchSkuDevice()
-  fetchCustomers()
   fetchLocations()
   fetchUserPermissions()
   fetchUserRole()
@@ -303,14 +192,6 @@ const fetchSkuDevice = async () => {
   }
 }
 
-const fetchCustomers = async () => {
-  try {
-    customers.value = await fetchAllData('customers')
-  } catch (error) {
-    console.error('Data not found', error)
-  }
-}
-
 const fetchLocations = async () => {
   try {
     locations.value = await fetchAllData('location')
@@ -325,9 +206,8 @@ const updateStocks = async (updatedStock) => {
       ...updatedStock,
       stocks_devices_id: parseInt(updatedStock.stocks_devices_id),
       stocks_sku_devices_id: parseInt(updatedStock.stocks_sku_devices_id),
-      customers_id: parseInt(updatedStock.customers_id),
       locations_id: parseInt(updatedStock.locations_id),
-      locations: updatedStock.locations || updatedStock.customers_id,
+      locations: updatedStock.locations,
     }
 
     const changedFields = Object.keys(updatedStock).reduce((acc, key) => {
@@ -380,7 +260,6 @@ function editModal(stock) {
   editStocks.value = {
     ...stock,
     stocks_devices_id: stock.stocks_devices_id,
-    customers_id: stock.customers_id,
   }
   id.value = stock.id
 
@@ -404,6 +283,113 @@ function closeDeleteModal() {
   deleteModalRef.value.hideModal()
 }
 </script>
+
+<template>
+  <div class="container-fluid">
+    <div class="d-flex justify-content-end">
+      <Search :onSearch="updateSearch" />
+    </div>
+    <div class="mt-2">
+      <EasyDataTable
+        v-model:server-options="serverOptions"
+        :server-items-length="serverItemsLength"
+        @update:options="serverOptions = $event"
+        :headers="headers"
+        :items="stocks"
+        :loading="loading"
+        :theme-color="baseColor"
+        :rows-per-page="10"
+        table-class-name="head-table"
+        alternating
+        show-index
+        border-cell
+        buttons-pagination
+      >
+        <template #loading>
+          <div class="loader"></div>
+        </template>
+        <template #empty-message>
+          <p>Data not found</p>
+        </template>
+        <template #item-status="{ status }">
+          <span :class="getStatusBadgeClass(status)" class="px-2 py-1 rounded-pill">
+            {{ status }}
+          </span>
+        </template>
+        <template #item-date_in="{ date_in }">
+          {{ formatDate(date_in) }}
+        </template>
+        <template #item-date_out="{ date_out }">
+          {{ formatDate(date_out) }}
+        </template>
+        <template #item-action="item">
+          <div class="d-flex gap-2">
+            <a
+              v-if="userCan('view Stocks')"
+              href="#"
+              class="head-text text-decoration-none"
+              @click="viewModal(item)"
+              >View</a
+            >
+            <div class="btn-group dropend">
+              <a
+                type="button"
+                class="text-decoration-none dropdown-toggle"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
+                More
+              </a>
+              <ul class="dropdown-menu">
+                <a
+                  v-if="userCan('edit Stocks')"
+                  href="#"
+                  class="dropdown-item head-text text-decoration-none"
+                  @click="editModal(item)"
+                  >Edit</a
+                >
+                <a
+                  v-if="userCan('delete Stocks')"
+                  href="#"
+                  class="dropdown-item head-text text-decoration-none"
+                  @click="deleteModal(item)"
+                  >Delete</a
+                >
+              </ul>
+            </div>
+          </div>
+        </template>
+      </EasyDataTable>
+    </div>
+  </div>
+
+  <ViewStocks
+    v-if="userCan('view Stocks')"
+    ref="viewModalRef"
+    :stocks-device="stocksDevice"
+    :stocks-sku-device="skuDevice"
+    :locations="locations"
+    @close="handleClose"
+  />
+
+  <EditStocks
+    v-if="userCan('edit Stocks')"
+    ref="editModalRef"
+    :stock="editStocks"
+    :stocks-device="stocksDevice"
+    :stocks-sku-device="skuDevice"
+    :locations="locations"
+    @update="updateStocks"
+    @close="closeEditModal"
+  />
+
+  <DeleteStocks
+    v-if="userCan('delete Stocks')"
+    ref="deleteModalRef"
+    @delete="deleteStocks"
+    @close="closeDeleteModal"
+  />
+</template>
 
 <style scoped>
 .head-table {

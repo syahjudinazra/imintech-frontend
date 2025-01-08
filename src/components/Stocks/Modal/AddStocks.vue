@@ -1,3 +1,154 @@
+<script setup>
+import { ref, onMounted } from 'vue'
+import { Modal } from 'bootstrap'
+import axios from 'axios'
+import { showToast } from '@/utilities/toast'
+import vSelect from 'vue-select'
+import 'vue-select/dist/vue-select.css'
+
+const stocks = ref({})
+const stocksDevice = ref([])
+const stocksSkuDevice = ref([])
+const locations = ref([])
+let addForm
+
+// Generic function to fetch all data
+const fetchAllData = async (endpoint, currentPage = 1, allData = []) => {
+  try {
+    const response = await axios.get(`${endpoint}`, {
+      params: {
+        page: currentPage,
+        rowsPerPage: 5000,
+        sortBy: 'id',
+        sortType: 'asc',
+      },
+    })
+
+    const { data, total } = response.data
+    const combinedData = [...allData, ...data]
+
+    // Calculate if need more pages
+    const totalPages = Math.ceil(total / 100)
+
+    if (currentPage < totalPages) {
+      return await fetchAllData(endpoint, currentPage + 1, combinedData)
+    }
+
+    return combinedData
+  } catch (error) {
+    console.error(`Error fetching data from ${endpoint}:`, error)
+    throw error
+  }
+}
+
+const fetchStocksDevice = async () => {
+  try {
+    stocksDevice.value = await fetchAllData('stocks-device')
+  } catch (error) {
+    console.error('Failed to fetch stocks device data:', error)
+    showToast('Failed to load device types', 'error')
+  }
+}
+
+const fetchSkuDevice = async () => {
+  try {
+    stocksSkuDevice.value = await fetchAllData('stocks-sku-device')
+  } catch (error) {
+    console.error('Failed to fetch SKU device data:', error)
+    showToast('Failed to load SKU device types', 'error')
+  }
+}
+
+const fetchLocations = async () => {
+  try {
+    locations.value = await fetchAllData('location')
+  } catch (error) {
+    console.error('Failed to fetch location data:', error)
+    showToast('Failed to load locations', 'error')
+  }
+}
+
+// Date formatting functions remain the same
+const customFormat = (date) => {
+  if (!date) return ''
+  return formatDateForDisplay(date)
+}
+
+const formatDateForDisplay = (date) => {
+  if (!date) return null
+  const d = new Date(date)
+  return d
+    .toLocaleString('en-GB', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    })
+    .replace(',', '')
+}
+
+const formatDateForMySQL = (date) => {
+  if (!date) return null
+  const d = new Date(date)
+  return (
+    d.getFullYear() +
+    '-' +
+    String(d.getMonth() + 1).padStart(2, '0') +
+    '-' +
+    String(d.getDate()).padStart(2, '0') +
+    ' ' +
+    String(d.getHours()).padStart(2, '0') +
+    ':' +
+    String(d.getMinutes()).padStart(2, '0') +
+    ':' +
+    String(d.getSeconds()).padStart(2, '0')
+  )
+}
+
+onMounted(() => {
+  addForm = new Modal(document.getElementById('addForm'), {})
+  // Load all initial data in parallel
+  Promise.all([fetchStocksDevice(), fetchSkuDevice(), fetchLocations()]).catch((error) => {
+    console.error('Error loading initial data:', error)
+    showToast('Some data failed to load. Please refresh the page.', 'error')
+  })
+})
+
+function openModal() {
+  addForm.show()
+}
+
+function closeModal() {
+  addForm.hide()
+}
+
+const addStocks = async () => {
+  try {
+    const formData = new FormData()
+    formData.append('serial_number', stocks.value.serial_number)
+    formData.append('stocks_devices_id', stocks.value.stocks_devices_id)
+    formData.append('stocks_sku_devices_id', stocks.value.stocks_sku_devices_id)
+    formData.append('no_invoice', stocks.value.no_invoice)
+    const mysqlDate = formatDateForMySQL(stocks.value.date_in)
+    formData.append('date_in', mysqlDate)
+    formData.append('customers', stocks.value.customers)
+    formData.append('locations_id', stocks.value.locations_id)
+    formData.append('information', stocks.value.information)
+    formData.append('status', stocks.value.status)
+
+    const response = await axios.post('stocks', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+    showToast(response.data.message, 'success')
+    closeModal()
+  } catch (error) {
+    console.error('Error adding data:', error)
+    showToast(error.response?.data?.message || 'Failed to add data', 'error')
+  }
+}
+</script>
+
 <template>
   <!-- Button trigger modal -->
   <button type="button" class="btn btn-danger text-white" @click="openModal">Add Data</button>
@@ -99,24 +250,14 @@
 
             <!--Customers-->
             <div class="mb-3">
-              <label for="customers_id" class="form-label fw-bold">Customers</label>
-              <v-select
-                v-model="stocks.customers_id"
-                :options="customers"
-                :reduce="(customer) => customer.id"
-                label="name"
-                :searchable="true"
-                :clearable="false"
-                placeholder="Select Customers"
-                id="customers_id"
-              >
-                <template #no-options="{ search, searching }">
-                  <template v-if="searching">
-                    No results found for <em>{{ search }}</em>
-                  </template>
-                  <em v-else>Start typing to search...</em>
-                </template>
-              </v-select>
+              <label for="customers" class="form-label fw-bold">Customers</label>
+              <input
+                v-model="stocks.customers"
+                type="text"
+                class="form-control shadow-none"
+                id="customers"
+                placeholder="Input Customers"
+              />
             </div>
 
             <!--Location-->
@@ -139,6 +280,18 @@
                   <em v-else>Start typing to search...</em>
                 </template>
               </v-select>
+            </div>
+
+            <!--Shipping Code-->
+            <div class="mb-3">
+              <label for="shipping_code" class="form-label fw-bold">Shipping Code</label>
+              <input
+                v-model="stocks.shipping_code"
+                type="text"
+                class="form-control shadow-none"
+                id="shipping_code"
+                placeholder="Input Shipping Code (Optional)"
+              />
             </div>
 
             <!--Information-->
@@ -233,169 +386,6 @@
     </div>
   </div>
 </template>
-
-<script setup>
-import { ref, onMounted } from 'vue'
-import { Modal } from 'bootstrap'
-import axios from 'axios'
-import { showToast } from '@/utilities/toast'
-import vSelect from 'vue-select'
-import 'vue-select/dist/vue-select.css'
-
-const stocks = ref({})
-const stocksDevice = ref([])
-const stocksSkuDevice = ref([])
-const locations = ref([])
-const customers = ref([])
-let addForm
-
-// Generic function to fetch all data
-const fetchAllData = async (endpoint, currentPage = 1, allData = []) => {
-  try {
-    const response = await axios.get(`${endpoint}`, {
-      params: {
-        page: currentPage,
-        rowsPerPage: 300,
-        sortBy: 'id',
-        sortType: 'asc',
-      },
-    })
-
-    const { data, total } = response.data
-    const combinedData = [...allData, ...data]
-
-    // Calculate if need more pages
-    const totalPages = Math.ceil(total / 100)
-
-    if (currentPage < totalPages) {
-      return await fetchAllData(endpoint, currentPage + 1, combinedData)
-    }
-
-    return combinedData
-  } catch (error) {
-    console.error(`Error fetching data from ${endpoint}:`, error)
-    throw error
-  }
-}
-
-const fetchStocksDevice = async () => {
-  try {
-    stocksDevice.value = await fetchAllData('stocks-device')
-  } catch (error) {
-    console.error('Failed to fetch stocks device data:', error)
-    showToast('Failed to load device types', 'error')
-  }
-}
-
-const fetchSkuDevice = async () => {
-  try {
-    stocksSkuDevice.value = await fetchAllData('stocks-sku-device')
-  } catch (error) {
-    console.error('Failed to fetch SKU device data:', error)
-    showToast('Failed to load SKU device types', 'error')
-  }
-}
-
-const fetchCustomers = async () => {
-  try {
-    customers.value = await fetchAllData('customers')
-  } catch (error) {
-    console.error('Failed to fetch customer data:', error)
-    showToast('Failed to load customers', 'error')
-  }
-}
-
-const fetchLocations = async () => {
-  try {
-    locations.value = await fetchAllData('location')
-  } catch (error) {
-    console.error('Failed to fetch location data:', error)
-    showToast('Failed to load locations', 'error')
-  }
-}
-
-// Date formatting functions remain the same
-const customFormat = (date) => {
-  if (!date) return ''
-  return formatDateForDisplay(date)
-}
-
-const formatDateForDisplay = (date) => {
-  if (!date) return null
-  const d = new Date(date)
-  return d
-    .toLocaleString('en-GB', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-    })
-    .replace(',', '')
-}
-
-const formatDateForMySQL = (date) => {
-  if (!date) return null
-  const d = new Date(date)
-  return (
-    d.getFullYear() +
-    '-' +
-    String(d.getMonth() + 1).padStart(2, '0') +
-    '-' +
-    String(d.getDate()).padStart(2, '0') +
-    ' ' +
-    String(d.getHours()).padStart(2, '0') +
-    ':' +
-    String(d.getMinutes()).padStart(2, '0') +
-    ':' +
-    String(d.getSeconds()).padStart(2, '0')
-  )
-}
-
-onMounted(() => {
-  addForm = new Modal(document.getElementById('addForm'), {})
-  // Load all initial data in parallel
-  Promise.all([fetchStocksDevice(), fetchSkuDevice(), fetchLocations(), fetchCustomers()]).catch(
-    (error) => {
-      console.error('Error loading initial data:', error)
-      showToast('Some data failed to load. Please refresh the page.', 'error')
-    },
-  )
-})
-
-function openModal() {
-  addForm.show()
-}
-
-function closeModal() {
-  addForm.hide()
-}
-
-const addStocks = async () => {
-  try {
-    const formData = new FormData()
-    formData.append('serial_number', stocks.value.serial_number)
-    formData.append('stocks_devices_id', stocks.value.stocks_devices_id)
-    formData.append('stocks_sku_devices_id', stocks.value.stocks_sku_devices_id)
-    formData.append('no_invoice', stocks.value.no_invoice)
-    const mysqlDate = formatDateForMySQL(stocks.value.date_in)
-    formData.append('date_in', mysqlDate)
-    formData.append('customers_id', stocks.value.customers_id)
-    formData.append('locations_id', stocks.value.locations_id)
-    formData.append('information', stocks.value.information)
-    formData.append('status', stocks.value.status)
-
-    const response = await axios.post('stocks', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    })
-    showToast(response.data.message, 'success')
-    closeModal()
-  } catch (error) {
-    console.error('Error adding data:', error)
-    showToast(error.response?.data?.message || 'Failed to add data', 'error')
-  }
-}
-</script>
 
 <style scoped>
 input:focus,

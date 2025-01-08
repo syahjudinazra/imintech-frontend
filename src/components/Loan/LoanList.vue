@@ -1,100 +1,3 @@
-<template>
-  <div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center">
-      <div class="add-button">
-        <AddLoan @data-added="refreshList()" />
-      </div>
-      <div class="others d-flex align-items-center gap-2">
-        <ExportLoans />
-        <ImportLoans />
-        <Search :onSearch="updateSearch" />
-      </div>
-    </div>
-    <div class="mt-2">
-      <EasyDataTable
-        v-model:server-options="serverOptions"
-        :server-items-length="serverItemsLength"
-        @update:options="handleOptionsUpdate"
-        :headers="headers"
-        :items="loans"
-        :loading="loading"
-        :theme-color="baseColor"
-        :rows-per-page="10"
-        table-class-name="head-table"
-        alternating
-        show-index
-        border-cell
-        buttons-pagination
-      >
-        <template #loading>
-          <div class="loader"></div>
-        </template>
-        <template #empty-message>
-          <p>Data not found</p>
-        </template>
-        <template #item-date_loan="{ date_loan }">
-          {{ formatDate(date_loan) }}
-        </template>
-        <template #item-action="item">
-          <div class="d-flex gap-2">
-            <a href="#" class="head-text text-decoration-none" @click.prevent="viewModal(item)"
-              >View</a
-            >
-            <div class="btn-group dropend">
-              <a
-                type="button"
-                class="text-decoration-none dropdown-toggle"
-                data-bs-toggle="dropdown"
-                aria-expanded="false"
-              >
-                More
-              </a>
-              <ul class="dropdown-menu">
-                <a
-                  href="#"
-                  class="dropdown-item head-text text-decoration-none"
-                  @click.prevent="editModal(item)"
-                  >Edit</a
-                >
-                <a
-                  href="#"
-                  class="dropdown-item head-text text-decoration-none"
-                  @click.prevent="moveModal(item)"
-                  >Move</a
-                >
-                <a
-                  href="#"
-                  class="dropdown-item head-text text-decoration-none"
-                  @click.prevent="deleteModal(item)"
-                  >Delete</a
-                >
-              </ul>
-            </div>
-          </div>
-        </template>
-      </EasyDataTable>
-    </div>
-
-    <ViewLoan ref="viewModalRef" :loan="viewLoan" @close="closeViewModal" />
-
-    <EditLoan
-      ref="editModalRef"
-      :loan="editLoan"
-      :loan-device="loanDevice"
-      :rams="rams"
-      :androids="androids"
-      :customers="customers"
-      :sales="sales"
-      @update="updateLoans"
-      @close="closeEditModal"
-    />
-
-    <MoveLoan ref="moveModalRef" :loan="moveLoan" @update="moveLoans" @close="closeMoveModal" />
-
-    <DeleteLoan ref="deleteModalRef" @delete="deleteLoans" @close="closeDeleteModal" />
-  </div>
-</template>
-
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import axios from 'axios'
@@ -116,7 +19,6 @@ const loanDevice = ref([])
 const sales = ref([])
 const rams = ref([])
 const androids = ref([])
-const customers = ref([])
 const viewModalRef = ref(null)
 const editModalRef = ref(null)
 const moveModalRef = ref(null)
@@ -131,9 +33,10 @@ const token = localStorage.getItem('token')
 const baseColor = '#e55353'
 const headers = [
   { text: 'Date', value: 'date_loan', sortable: true },
+  { text: 'Days', value: 'calculated_days', sortable: true },
   { text: 'Serial Number', value: 'serial_number', sortable: true },
   { text: 'Device Type', value: 'loan_devices_id', sortable: true },
-  { text: 'Customers', value: 'customers_id', sortable: true },
+  { text: 'Customers', value: 'customers', sortable: true },
   { text: 'Action', value: 'action', sortable: false },
 ]
 const dayNames = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu']
@@ -178,7 +81,6 @@ const loadFromServer = async () => {
     serverItemsLength.value = serverTotalItemsLength
   } catch (error) {
     console.error('Error loading data', error)
-    showToast('Failed to load loans data.', 'error')
   } finally {
     loading.value = false
   }
@@ -201,6 +103,31 @@ watch(
   },
   { deep: true },
 )
+
+// Add the calculateDays function
+const calculateDays = (date) => {
+  if (!date) return { days: '-', isOverdue: false }
+
+  try {
+    const start = new Date(date)
+    const today = new Date()
+
+    // Reset time portion for accurate day calculation
+    start.setHours(0, 0, 0, 0)
+    today.setHours(0, 0, 0, 0)
+
+    const differenceInTime = today.getTime() - start.getTime()
+    const differenceInDays = Math.floor(differenceInTime / (1000 * 3600 * 24))
+
+    return {
+      days: differenceInDays,
+      isOverdue: differenceInDays > 14,
+    }
+  } catch (error) {
+    console.error('Error calculating days:', error)
+    return { days: '-', isOverdue: false }
+  }
+}
 
 // Generic function to fetch all data
 const fetchAllData = async (endpoint, currentPage = 1, allData = []) => {
@@ -255,15 +182,6 @@ const fetchRam = async () => {
   } catch (error) {
     console.error('Data not found', error)
     showToast('Failed to fetch ram.', 'error')
-  }
-}
-
-const fetchCustomers = async () => {
-  try {
-    customers.value = await fetchAllData('customers')
-  } catch (error) {
-    console.error('Data not found', error)
-    showToast('Failed to fetch customers.', 'error')
   }
 }
 
@@ -361,10 +279,134 @@ onMounted(() => {
   fetchLoanDevice()
   fetchAndroid()
   fetchRam()
-  fetchCustomers()
   fetchSales()
 })
 </script>
+
+<template>
+  <div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center">
+      <div class="add-button">
+        <AddLoan @data-added="refreshList()" />
+      </div>
+      <div class="others d-flex align-items-center gap-2">
+        <ExportLoans />
+        <ImportLoans />
+        <Search :onSearch="updateSearch" />
+      </div>
+    </div>
+    <div class="mt-2">
+      <EasyDataTable
+        v-model:server-options="serverOptions"
+        :server-items-length="serverItemsLength"
+        @update:options="handleOptionsUpdate"
+        :headers="headers"
+        :items="loans"
+        :loading="loading"
+        :theme-color="baseColor"
+        :rows-per-page="10"
+        table-class-name="head-table"
+        alternating
+        show-index
+        border-cell
+        buttons-pagination
+      >
+        <template #loading>
+          <div class="loader"></div>
+        </template>
+        <template #empty-message>
+          <p>Data not found</p>
+        </template>
+        <!-- Date column -->
+        <template #item-date_loan="{ date_loan }">
+          <span :class="{ 'text-danger fw-bold': calculateDays(date_loan).isOverdue }">
+            {{ formatDate(date_loan) }}
+          </span>
+        </template>
+        <!-- Calculated Days column -->
+        <template #item-calculated_days="{ date_loan }">
+          <span :class="{ 'text-danger fw-bold': calculateDays(date_loan).isOverdue }">
+            {{ calculateDays(date_loan).days }}
+          </span>
+        </template>
+        <!-- Serial Number column -->
+        <template #item-serial_number="{ serial_number, date_loan }">
+          <span :class="{ 'text-danger fw-bold': calculateDays(date_loan).isOverdue }">
+            {{ serial_number }}
+          </span>
+        </template>
+
+        <!-- Device Type column -->
+        <template #item-loan_devices_id="{ loan_devices_id, date_loan }">
+          <span :class="{ 'text-danger fw-bold': calculateDays(date_loan).isOverdue }">
+            {{ loan_devices_id }}
+          </span>
+        </template>
+
+        <!-- Customers column -->
+        <template #item-customers="{ customers, date_loan }">
+          <span :class="{ 'text-danger fw-bold': calculateDays(date_loan).isOverdue }">
+            {{ customers }}
+          </span>
+        </template>
+        <template #item-action="item">
+          <div class="d-flex gap-2">
+            <a href="#" class="head-text text-decoration-none" @click.prevent="viewModal(item)"
+              >View</a
+            >
+            <div class="btn-group dropend">
+              <a
+                type="button"
+                class="text-decoration-none dropdown-toggle"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
+                More
+              </a>
+              <ul class="dropdown-menu">
+                <a
+                  href="#"
+                  class="dropdown-item head-text text-decoration-none"
+                  @click.prevent="editModal(item)"
+                  >Edit</a
+                >
+                <a
+                  href="#"
+                  class="dropdown-item head-text text-decoration-none"
+                  @click.prevent="moveModal(item)"
+                  >Move</a
+                >
+                <a
+                  href="#"
+                  class="dropdown-item head-text text-decoration-none"
+                  @click.prevent="deleteModal(item)"
+                  >Delete</a
+                >
+              </ul>
+            </div>
+          </div>
+        </template>
+      </EasyDataTable>
+    </div>
+
+    <ViewLoan ref="viewModalRef" :loan="viewLoan" @close="closeViewModal" />
+
+    <EditLoan
+      ref="editModalRef"
+      :loan="editLoan"
+      :loan-device="loanDevice"
+      :rams="rams"
+      :androids="androids"
+      :sales="sales"
+      @update="updateLoans"
+      @close="closeEditModal"
+    />
+
+    <MoveLoan ref="moveModalRef" :loan="moveLoan" @update="moveLoans" @close="closeMoveModal" />
+
+    <DeleteLoan ref="deleteModalRef" @delete="deleteLoans" @close="closeDeleteModal" />
+  </div>
+</template>
 
 <style scoped>
 .head-table {

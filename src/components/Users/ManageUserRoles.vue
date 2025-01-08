@@ -145,7 +145,7 @@ const roleAssigned = ref(false)
 const currentPage = ref(1)
 const pageSize = 5
 const pages = ref(['Stocks', 'Delivery', 'Loan', 'Services', 'Spareparts', 'Firmwares'])
-const actions = ref(['create', 'edit', 'view', 'delete', 'import', 'export', 'template'])
+const actions = ref(['Create', 'Edit', 'View', 'Delete', 'Import', 'Export', 'Template'])
 
 // Updated permissions computed property to include "move SN" for Stocks
 const permissions = computed(() => {
@@ -154,7 +154,7 @@ const permissions = computed(() => {
   )
 
   // Add "move SN" permission only for Stocks
-  const specialPermissions = ['move SN Stocks']
+  const specialPermissions = ['Move SN Stocks']
 
   return [...standardPermissions, ...specialPermissions]
 })

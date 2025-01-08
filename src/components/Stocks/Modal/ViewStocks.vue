@@ -30,9 +30,9 @@
             <label class="form-label fw-bold">Device Type</label>
             <input
               class="form-control shadow-none bg-light"
-              v-model="stockDetails.stocks_devices"
-              id="stocks_devices"
-              name="stocks_devices"
+              v-model="stockDetails.stocks_devices_id"
+              id="stocks_devices_id"
+              name="stocks_devices_id"
               readonly
             />
           </div>
@@ -43,6 +43,8 @@
             <input
               class="form-control shadow-none bg-light"
               v-model="stockDetails.stocks_sku_devices_id"
+              id="stocks_sku_devices_id"
+              name="stocks_sku_devices_id"
               readonly
             />
           </div>
@@ -96,7 +98,7 @@
             <label class="form-label fw-bold">Customer</label>
             <input
               class="form-control shadow-none bg-light"
-              v-model="stockDetails.customers_id"
+              v-model="stockDetails.customers"
               readonly
             />
           </div>
@@ -121,6 +123,18 @@
               readonly
             >
             </textarea>
+          </div>
+
+          <!--Shipping Code-->
+          <div class="mb-3">
+            <label class="form-label fw-bold">Shipping Code</label>
+            <input
+              class="form-control shadow-none bg-light"
+              v-model="stockDetails.shipping_code"
+              id="shipping_code"
+              name="shipping_code"
+              readonly
+            />
           </div>
 
           <!--Status-->
