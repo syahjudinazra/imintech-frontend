@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import axios from 'axios'
 import { showToast } from '@/utilities/toast'
 import EditStocks from '../../components/Stocks/Modal/EditStocks.vue'
@@ -18,8 +18,6 @@ const viewModalRef = ref(null)
 const deleteModalRef = ref(null)
 const editStocks = ref({})
 const loading = ref(true)
-const userPermissions = ref([])
-const userRole = ref('')
 
 // Constants
 const baseColor = '#e55353'
@@ -70,9 +68,25 @@ const updateSearch = (term) => {
   loadFromServer()
 }
 
-const userCan = (permission) => {
-  return userPermissions.value.includes(permission)
+// Add permission check utility
+const checkPermission = (permissionName) => {
+  try {
+    const userData = JSON.parse(localStorage.getItem('users'))
+    if (!userData?.permissions) return false
+
+    // Check if the permission exists
+    return userData.permissions.some(
+      (permission) => permission.name.toLowerCase() === permissionName.toLowerCase(),
+    )
+  } catch (error) {
+    console.error('Error checking permissions:', error)
+    return false
+  }
 }
+
+// Create computed property for permission
+const canView = computed(() => checkPermission('View Stocks'))
+const canEdit = computed(() => checkPermission('Edit Stocks'))
 
 // Generic function to fetch all data
 const fetchAllData = async (endpoint, currentPage = 1, allData = []) => {
@@ -149,30 +163,7 @@ onMounted(() => {
   fetchStocksDevice()
   fetchSkuDevice()
   fetchLocations()
-  fetchUserPermissions()
-  fetchUserRole()
 })
-
-async function fetchUserPermissions() {
-  try {
-    const response = await axios.get('user')
-    const permissions = response.data.permissions || []
-    userPermissions.value = permissions.map((permission) => permission.name)
-  } catch (error) {
-    console.error('Error fetching user permissions:', error)
-    showToast('Failed to fetch user permissions.', 'error')
-  }
-}
-
-async function fetchUserRole() {
-  try {
-    const response = await axios.get('user')
-    const roles = response.data.roles || []
-    userRole.value = roles.some((role) => role.name === 'superadmin') ? 'superadmin' : 'user'
-  } catch (error) {
-    console.error('Error fetching user roles:', error)
-  }
-}
 
 const fetchStocksDevice = async () => {
   try {
@@ -325,13 +316,13 @@ function closeDeleteModal() {
         <template #item-action="item">
           <div class="d-flex gap-2">
             <a
-              v-if="userCan('view Stocks')"
+              v-if="canView"
               href="#"
               class="head-text text-decoration-none"
               @click="viewModal(item)"
               >View</a
             >
-            <div class="btn-group dropend">
+            <div v-if="canEdit" class="btn-group dropend">
               <a
                 type="button"
                 class="text-decoration-none dropdown-toggle"
@@ -342,14 +333,12 @@ function closeDeleteModal() {
               </a>
               <ul class="dropdown-menu">
                 <a
-                  v-if="userCan('edit Stocks')"
                   href="#"
                   class="dropdown-item head-text text-decoration-none"
                   @click="editModal(item)"
                   >Edit</a
                 >
                 <a
-                  v-if="userCan('delete Stocks')"
                   href="#"
                   class="dropdown-item head-text text-decoration-none"
                   @click="deleteModal(item)"

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import axios from 'axios'
 import { showToast } from '@/utilities/toast'
 import AddLoan from './Modal/AddLoan.vue'
@@ -103,6 +103,26 @@ watch(
   },
   { deep: true },
 )
+
+// Add permission check utility
+const checkPermission = (permissionName) => {
+  try {
+    const userData = JSON.parse(localStorage.getItem('users'))
+    if (!userData?.permissions) return false
+
+    // Check if the permission exists
+    return userData.permissions.some(
+      (permission) => permission.name.toLowerCase() === permissionName.toLowerCase(),
+    )
+  } catch (error) {
+    console.error('Error checking permissions:', error)
+    return false
+  }
+}
+
+// Create computed property for permission
+const canView = computed(() => checkPermission('View Loan'))
+const canEdit = computed(() => checkPermission('Edit Loan'))
 
 // Add the calculateDays function
 const calculateDays = (date) => {
@@ -351,10 +371,14 @@ onMounted(() => {
         </template>
         <template #item-action="item">
           <div class="d-flex gap-2">
-            <a href="#" class="head-text text-decoration-none" @click.prevent="viewModal(item)"
+            <a
+              v-if="canView"
+              href="#"
+              class="head-text text-decoration-none"
+              @click.prevent="viewModal(item)"
               >View</a
             >
-            <div class="btn-group dropend">
+            <div v-if="canEdit" class="btn-group dropend">
               <a
                 type="button"
                 class="text-decoration-none dropdown-toggle"

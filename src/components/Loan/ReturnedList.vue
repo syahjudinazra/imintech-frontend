@@ -1,89 +1,5 @@
-<template>
-  <div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center">
-      <div class="add-button"></div>
-      <div class="others d-flex align-items-center gap-2">
-        <Search :onSearch="updateSearch" />
-      </div>
-    </div>
-    <div class="mt-2">
-      <EasyDataTable
-        v-model:server-options="serverOptions"
-        :server-items-length="serverItemsLength"
-        @update:options="handleOptionsUpdate"
-        :headers="headers"
-        :items="loans"
-        :loading="loading"
-        :theme-color="baseColor"
-        :rows-per-page="10"
-        table-class-name="head-table"
-        alternating
-        show-index
-        border-cell
-        buttons-pagination
-      >
-        <template #loading>
-          <div class="loader"></div>
-        </template>
-        <template #empty-message>
-          <p>Data not found</p>
-        </template>
-        <template #item-date_loan="{ date_loan }">
-          {{ formatDate(date_loan) }}
-        </template>
-        <template #item-action="item">
-          <div class="d-flex gap-2">
-            <a href="#" class="head-text text-decoration-none" @click.prevent="viewModal(item)"
-              >View</a
-            >
-            <div class="btn-group dropend">
-              <a
-                type="button"
-                class="text-decoration-none dropdown-toggle"
-                data-bs-toggle="dropdown"
-                aria-expanded="false"
-              >
-                More
-              </a>
-              <ul class="dropdown-menu">
-                <a
-                  href="#"
-                  class="dropdown-item head-text text-decoration-none"
-                  @click.prevent="editModal(item)"
-                  >Edit</a
-                >
-                <a
-                  href="#"
-                  class="dropdown-item head-text text-decoration-none"
-                  @click.prevent="deleteModal(item)"
-                  >Delete</a
-                >
-              </ul>
-            </div>
-          </div>
-        </template>
-      </EasyDataTable>
-    </div>
-
-    <ViewLoan ref="viewModalRef" :loan="viewLoan" @close="closeViewModal" />
-
-    <EditLoan
-      ref="editModalRef"
-      :loan="editLoan"
-      :loan-device="loanDevice"
-      :rams="rams"
-      :androids="androids"
-      :sales="sales"
-      @update="updateLoans"
-      @close="closeEditModal"
-    />
-
-    <DeleteLoan ref="deleteModalRef" @delete="deleteLoans" @close="closeDeleteModal" />
-  </div>
-</template>
-
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import axios from 'axios'
 import { showToast } from '@/utilities/toast'
 import ViewLoan from './Modal/ViewLoan.vue'
@@ -181,6 +97,26 @@ watch(
   },
   { deep: true },
 )
+
+// Add permission check utility
+const checkPermission = (permissionName) => {
+  try {
+    const userData = JSON.parse(localStorage.getItem('users'))
+    if (!userData?.permissions) return false
+
+    // Check if the permission exists
+    return userData.permissions.some(
+      (permission) => permission.name.toLowerCase() === permissionName.toLowerCase(),
+    )
+  } catch (error) {
+    console.error('Error checking permissions:', error)
+    return false
+  }
+}
+
+// Create computed property for permission
+const canView = computed(() => checkPermission('View Loan'))
+const canEdit = computed(() => checkPermission('Edit Loan'))
 
 // Generic function to fetch all data
 const fetchAllData = async (endpoint, currentPage = 1, allData = []) => {
@@ -310,6 +246,94 @@ onMounted(() => {
   fetchSales()
 })
 </script>
+
+<template>
+  <div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center">
+      <div class="add-button"></div>
+      <div class="others d-flex align-items-center gap-2">
+        <Search :onSearch="updateSearch" />
+      </div>
+    </div>
+    <div class="mt-2">
+      <EasyDataTable
+        v-model:server-options="serverOptions"
+        :server-items-length="serverItemsLength"
+        @update:options="handleOptionsUpdate"
+        :headers="headers"
+        :items="loans"
+        :loading="loading"
+        :theme-color="baseColor"
+        :rows-per-page="10"
+        table-class-name="head-table"
+        alternating
+        show-index
+        border-cell
+        buttons-pagination
+      >
+        <template #loading>
+          <div class="loader"></div>
+        </template>
+        <template #empty-message>
+          <p>Data not found</p>
+        </template>
+        <template #item-date_loan="{ date_loan }">
+          {{ formatDate(date_loan) }}
+        </template>
+        <template #item-action="item">
+          <div class="d-flex gap-2">
+            <a
+              v-if="canView"
+              href="#"
+              class="head-text text-decoration-none"
+              @click.prevent="viewModal(item)"
+              >View</a
+            >
+            <div v-if="canEdit" class="btn-group dropend">
+              <a
+                type="button"
+                class="text-decoration-none dropdown-toggle"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
+                More
+              </a>
+              <ul class="dropdown-menu">
+                <a
+                  href="#"
+                  class="dropdown-item head-text text-decoration-none"
+                  @click.prevent="editModal(item)"
+                  >Edit</a
+                >
+                <a
+                  href="#"
+                  class="dropdown-item head-text text-decoration-none"
+                  @click.prevent="deleteModal(item)"
+                  >Delete</a
+                >
+              </ul>
+            </div>
+          </div>
+        </template>
+      </EasyDataTable>
+    </div>
+
+    <ViewLoan ref="viewModalRef" :loan="viewLoan" @close="closeViewModal" />
+
+    <EditLoan
+      ref="editModalRef"
+      :loan="editLoan"
+      :loan-device="loanDevice"
+      :rams="rams"
+      :androids="androids"
+      :sales="sales"
+      @update="updateLoans"
+      @close="closeEditModal"
+    />
+
+    <DeleteLoan ref="deleteModalRef" @delete="deleteLoans" @close="closeDeleteModal" />
+  </div>
+</template>
 
 <style scoped>
 .head-table {

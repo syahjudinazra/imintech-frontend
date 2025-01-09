@@ -2,11 +2,11 @@
   <div class="container-fluid" v-if="userRole === 'superadmin'">
     <div class="d-flex justify-content-between align-items-center">
       <div class="add-button">
-        <AddFirmwares v-if="userCan('create Firmwares')" @data-added="refreshList()" />
+        <AddFirmwares v-if="canCreate" @data-added="refreshList()" />
       </div>
       <div class="others d-flex align-items-center gap-2">
-        <ExportFirmwares v-if="userCan('export Firmwares')" />
-        <ImportFirmwares v-if="userCan('import Firmwares')" />
+        <ExportFirmwares v-if="canExport" />
+        <ImportFirmwares v-if="canImport" />
         <Search :onSearch="updateSearch" />
       </div>
     </div>
@@ -35,14 +35,14 @@
         <template #item-action="item">
           <div class="d-flex gap-2">
             <a
-              v-if="userCan('edit Firmwares')"
+              v-if="canEdit"
               href="#"
               class="head-text text-decoration-none"
               @click="editModal(item)"
               >Edit</a
             >
             <a
-              v-if="userCan('delete Firmwares')"
+              v-if="canDelete"
               href="#"
               class="head-text text-decoration-none"
               @click="deleteModal(item)"
@@ -75,7 +75,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import axios from 'axios'
 import { showToast } from '@/utilities/toast'
 import AddFirmwares from '../../components/Firmwares/Modal/AddFirmwares.vue'
@@ -185,6 +185,29 @@ async function fetchUserRole() {
     console.error('Error fetching user roles:', error)
   }
 }
+
+// Add permission check utility
+const checkPermission = (permissionName) => {
+  try {
+    const userData = JSON.parse(localStorage.getItem('users'))
+    if (!userData?.permissions) return false
+
+    // Check if the permission exists
+    return userData.permissions.some(
+      (permission) => permission.name.toLowerCase() === permissionName.toLowerCase(),
+    )
+  } catch (error) {
+    console.error('Error checking permissions:', error)
+    return false
+  }
+}
+
+// Create computed property for permission
+const canCreate = computed(() => checkPermission('Create Firmwares'))
+const canEdit = computed(() => checkPermission('Edit Firmwares'))
+const canDelete = computed(() => checkPermission('Delete Firmwares'))
+const canExport = computed(() => checkPermission('Export Firmwares'))
+const canImport = computed(() => checkPermission('Import Firmwares'))
 
 // Generic function to fetch all data
 const fetchAllData = async (endpoint, currentPage = 1, allData = []) => {

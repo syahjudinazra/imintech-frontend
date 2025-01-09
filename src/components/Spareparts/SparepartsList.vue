@@ -2,11 +2,11 @@
   <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center">
       <div class="add-button">
-        <AddSpareparts @data-added="refreshList()" />
+        <AddSpareparts v-if="canCreate" @data-added="refreshList()" />
       </div>
       <div class="others d-flex align-items-center gap-2">
-        <ExportSpareparts />
-        <ImportSpareparts />
+        <ExportSpareparts v-if="canExport" />
+        <ImportSpareparts v-if="canImport" />
         <Search :onSearch="updateSearch" />
       </div>
     </div>
@@ -43,10 +43,23 @@
         </template>
         <template #item-action="item">
           <div class="d-flex gap-2">
-            <a href="#" class="head-text text-decoration-none" @click="addQty(item)">Qty+</a>
-            <a href="#" class="head-text text-decoration-none" @click="reduceQty(item)">Qty-</a>
+            <a
+              v-if="canCreate"
+              href="#"
+              class="head-text text-decoration-none"
+              @click="addQty(item)"
+              >Qty+</a
+            >
+            <a
+              v-if="canCreate"
+              href="#"
+              class="head-text text-decoration-none"
+              @click="reduceQty(item)"
+              >Qty-</a
+            >
             <div class="btn-group dropend">
               <a
+                v-if="canEdit"
                 type="button"
                 class="text-decoration-none dropdown-toggle"
                 data-bs-toggle="dropdown"
@@ -95,7 +108,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import axios from 'axios'
 import { showToast } from '@/utilities/toast'
 import AddSpareparts from '../Spareparts/Modal/AddSpareparts.vue'
@@ -178,6 +191,28 @@ onMounted(() => {
   fetchSparepartsDevice()
   loadFromServer()
 })
+
+// Add permission check utility
+const checkPermission = (permissionName) => {
+  try {
+    const userData = JSON.parse(localStorage.getItem('users'))
+    if (!userData?.permissions) return false
+
+    // Check if the permission exists
+    return userData.permissions.some(
+      (permission) => permission.name.toLowerCase() === permissionName.toLowerCase(),
+    )
+  } catch (error) {
+    console.error('Error checking permissions:', error)
+    return false
+  }
+}
+
+// Create computed property for permission
+const canCreate = computed(() => checkPermission('Create Spareparts'))
+const canEdit = computed(() => checkPermission('Edit Spareparts'))
+const canExport = computed(() => checkPermission('Export Spareparts'))
+const canImport = computed(() => checkPermission('Import Spareparts'))
 
 // Generic function to fetch all data
 const fetchAllData = async (endpoint, currentPage = 1, allData = []) => {

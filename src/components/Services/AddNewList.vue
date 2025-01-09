@@ -1,3 +1,173 @@
+<script setup>
+import { ref, onMounted, computed, watch } from 'vue'
+import axios from 'axios'
+import { showToast } from '@/utilities/toast'
+import VueDatePicker from '@vuepic/vue-datepicker'
+import '@vuepic/vue-datepicker/dist/main.css'
+
+const services = ref({
+  serial_number: '',
+  ticket_services: '',
+  date_in_services: null,
+  owner: '',
+  customers: '',
+  services_devices_id: null,
+  usages_id: null,
+  damage: '',
+  note: 'Tanggal Pembelian:\nKelengkapan:',
+  status: '',
+})
+
+const servicesDevice = ref([])
+const usages = ref([])
+const isLoading = ref(false)
+
+const updateOwnerRelatedFields = () => {
+  if (services.value.owner === 'Stocks') {
+    services.value.customers = 'iMin ID'
+    services.value.status = 'Pending Stocks'
+  } else {
+    services.value.customers = ''
+    services.value.status = 'Pending Customers'
+  }
+}
+
+function generateTicketService() {
+  const date = new Date()
+  const day = String(date.getDate()).padStart(2, '0')
+  const month = String(date.getMonth() + 1).padStart(2, '0') // Months are zero-based
+  const year = date.getFullYear()
+  const randomNum = Math.floor(Math.random() * 1000) + 1 // Random number between 1 and 1000
+  services.value.ticket_services = `C-${day}/${month}/${year}/${randomNum}`
+}
+
+watch(
+  () => services.value.owner,
+  () => {
+    updateOwnerRelatedFields()
+  },
+)
+
+// Add permission check utility
+const checkPermission = (permissionName) => {
+  try {
+    const userData = JSON.parse(localStorage.getItem('users'))
+    if (!userData?.permissions) return false
+
+    // Check if the permission exists
+    return userData.permissions.some(
+      (permission) => permission.name.toLowerCase() === permissionName.toLowerCase(),
+    )
+  } catch (error) {
+    console.error('Error checking permissions:', error)
+    return false
+  }
+}
+
+// Create computed property for permission
+const canCreate = computed(() => checkPermission('Create Services'))
+
+// Generic function to fetch all data
+const fetchAllData = async (endpoint, currentPage = 1, allData = []) => {
+  try {
+    const response = await axios.get(`${endpoint}`, {
+      params: {
+        page: currentPage,
+        rowsPerPage: 300,
+        sortBy: 'id',
+        sortType: 'asc',
+      },
+    })
+
+    const { data, total } = response.data
+    const combinedData = [...allData, ...data]
+
+    // Calculate if need more pages
+    const totalPages = Math.ceil(total / 100)
+
+    if (currentPage < totalPages) {
+      return await fetchAllData(endpoint, currentPage + 1, combinedData)
+    }
+
+    return combinedData
+  } catch (error) {
+    console.error(`Error fetching data from ${endpoint}:`, error)
+    throw error
+  }
+}
+
+const fetchServicesDevice = async () => {
+  try {
+    servicesDevice.value = await fetchAllData('services-device')
+  } catch (error) {
+    console.error('Error fetching services device:', error)
+  }
+}
+
+const fetchUsages = async () => {
+  try {
+    usages.value = await fetchAllData('usages')
+  } catch (error) {
+    console.error('Error fetching usages:', error)
+  }
+}
+
+const addServices = async () => {
+  try {
+    isLoading.value = true
+    const formData = new FormData()
+    Object.entries(services.value).forEach(([key, value]) => {
+      if (key === 'date_in_services' && value) {
+        formData.append(key, new Date(value).toISOString().split('T')[0])
+      } else {
+        formData.append(key, value)
+      }
+    })
+
+    const response = await axios.post('services', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+    showToast(response.data.message, 'success')
+    clearInput()
+  } catch (error) {
+    console.error('Error adding service:', {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+      headers: error.response?.headers,
+    })
+
+    if (error.response && error.response.data && error.response.data.message) {
+      showToast(error.response.data.message, 'error')
+    } else {
+      showToast('Failed to add service. Please try again later.', 'error')
+    }
+  } finally {
+    isLoading.value = false
+  }
+}
+
+const clearInput = () => {
+  Object.keys(services.value).forEach((key) => {
+    if (key === 'note') {
+      services.value[key] = 'Tanggal Pembelian:\nKelengkapan:'
+    } else if (key === 'status') {
+      services.value[key] = ''
+    } else {
+      services.value[key] = ''
+    }
+  })
+  services.value.date_in_services = null
+}
+
+onMounted(() => {
+  fetchServicesDevice()
+  fetchUsages()
+})
+</script>
+
 <template>
   <div class="container w-50 p-3">
     <div class="row addDataForms">
@@ -174,162 +344,11 @@
             </div>
           </div>
         </div>
-        <button type="submit" class="btn btn-danger text-white">Submit</button>
+        <button v-if="canCreate" type="submit" class="btn btn-danger text-white">Submit</button>
       </form>
     </div>
   </div>
 </template>
-
-<script setup>
-import { ref, onMounted, watch } from 'vue'
-import axios from 'axios'
-import { showToast } from '@/utilities/toast'
-import VueDatePicker from '@vuepic/vue-datepicker'
-import '@vuepic/vue-datepicker/dist/main.css'
-
-const services = ref({
-  serial_number: '',
-  ticket_services: '',
-  date_in_services: null,
-  owner: '',
-  customers: '',
-  services_devices_id: null,
-  usages_id: null,
-  damage: '',
-  note: 'Tanggal Pembelian:\nKelengkapan:',
-  status: '',
-})
-
-const servicesDevice = ref([])
-const usages = ref([])
-const isLoading = ref(false)
-
-const updateOwnerRelatedFields = () => {
-  if (services.value.owner === 'Stocks') {
-    services.value.customers = 'iMin ID'
-    services.value.status = 'Pending Stocks'
-  } else {
-    services.value.customers = ''
-    services.value.status = 'Pending Customers'
-  }
-}
-
-function generateTicketService() {
-  const date = new Date()
-  const day = String(date.getDate()).padStart(2, '0')
-  const month = String(date.getMonth() + 1).padStart(2, '0') // Months are zero-based
-  const year = date.getFullYear()
-  const randomNum = Math.floor(Math.random() * 1000) + 1 // Random number between 1 and 1000
-  services.value.ticket_services = `C-${day}/${month}/${year}/${randomNum}`
-}
-
-watch(
-  () => services.value.owner,
-  () => {
-    updateOwnerRelatedFields()
-  },
-)
-
-// Generic function to fetch all data
-const fetchAllData = async (endpoint, currentPage = 1, allData = []) => {
-  try {
-    const response = await axios.get(`${endpoint}`, {
-      params: {
-        page: currentPage,
-        rowsPerPage: 300,
-        sortBy: 'id',
-        sortType: 'asc',
-      },
-    })
-
-    const { data, total } = response.data
-    const combinedData = [...allData, ...data]
-
-    // Calculate if need more pages
-    const totalPages = Math.ceil(total / 100)
-
-    if (currentPage < totalPages) {
-      return await fetchAllData(endpoint, currentPage + 1, combinedData)
-    }
-
-    return combinedData
-  } catch (error) {
-    console.error(`Error fetching data from ${endpoint}:`, error)
-    throw error
-  }
-}
-
-const fetchServicesDevice = async () => {
-  try {
-    servicesDevice.value = await fetchAllData('services-device')
-  } catch (error) {
-    console.error('Error fetching services device:', error)
-  }
-}
-
-const fetchUsages = async () => {
-  try {
-    usages.value = await fetchAllData('usages')
-  } catch (error) {
-    console.error('Error fetching usages:', error)
-  }
-}
-
-const addServices = async () => {
-  try {
-    isLoading.value = true
-    const formData = new FormData()
-    Object.entries(services.value).forEach(([key, value]) => {
-      if (key === 'date_in_services' && value) {
-        formData.append(key, new Date(value).toISOString().split('T')[0])
-      } else {
-        formData.append(key, value)
-      }
-    })
-
-    const response = await axios.post('services', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    })
-    showToast(response.data.message, 'success')
-    clearInput()
-  } catch (error) {
-    console.error('Error adding service:', {
-      message: error.message,
-      response: error.response?.data,
-      status: error.response?.status,
-      headers: error.response?.headers,
-    })
-
-    if (error.response && error.response.data && error.response.data.message) {
-      showToast(error.response.data.message, 'error')
-    } else {
-      showToast('Failed to add service. Please try again later.', 'error')
-    }
-  } finally {
-    isLoading.value = false
-  }
-}
-
-const clearInput = () => {
-  Object.keys(services.value).forEach((key) => {
-    if (key === 'note') {
-      services.value[key] = 'Tanggal Pembelian:\nKelengkapan:'
-    } else if (key === 'status') {
-      services.value[key] = ''
-    } else {
-      services.value[key] = ''
-    }
-  })
-  services.value.date_in_services = null
-}
-
-onMounted(() => {
-  fetchServicesDevice()
-  fetchUsages()
-})
-</script>
 
 <style scoped>
 input:focus,

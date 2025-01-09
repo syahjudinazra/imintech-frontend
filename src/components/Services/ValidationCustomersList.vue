@@ -1,104 +1,3 @@
-<template>
-  <div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center">
-      <div class="add-button"></div>
-      <div class="others d-flex align-items-center gap-2">
-        <Search :onSearch="updateSearch" />
-      </div>
-    </div>
-    <div class="mt-2">
-      <EasyDataTable
-        v-model:server-options="serverOptions"
-        :server-items-length="serverItemsLength"
-        @update:options="handleOptionsUpdate"
-        :headers="headers"
-        :items="services"
-        :loading="loading"
-        :theme-color="baseColor"
-        :rows-per-page="10"
-        table-class-name="head-table"
-        alternating
-        show-index
-        border-cell
-        buttons-pagination
-      >
-        <template #loading>
-          <div class="loader"></div>
-        </template>
-        <template #empty-message>
-          <p>Data not found</p>
-        </template>
-        <template #item-date_in_services="{ date_in_services }">
-          {{ formatDate(date_in_services) }}
-        </template>
-        <template #item-action="item">
-          <div class="d-flex gap-2">
-            <a href="#" class="head-text text-decoration-none" @click.prevent="viewModal(item)"
-              >View</a
-            >
-            <div class="btn-group dropend">
-              <a
-                type="button"
-                class="text-decoration-none dropdown-toggle"
-                data-bs-toggle="dropdown"
-                aria-expanded="false"
-              >
-                More
-              </a>
-              <ul class="dropdown-menu">
-                <a
-                  href="#"
-                  class="dropdown-item head-text text-decoration-none"
-                  @click.prevent="editModal(item)"
-                  >Edit</a
-                >
-                <a
-                  href="#"
-                  class="dropdown-item head-text text-decoration-none"
-                  @click.prevent="moveModal(item)"
-                  >Move</a
-                >
-                <a
-                  href="#"
-                  class="dropdown-item head-text text-decoration-none"
-                  @click.prevent="deleteModal(item)"
-                  >Delete</a
-                >
-              </ul>
-            </div>
-          </div>
-        </template>
-      </EasyDataTable>
-    </div>
-
-    <ViewValidationCustomers
-      ref="viewModalRef"
-      :service="viewService"
-      :sparepart-requests="sparepartRequests"
-      @close="closeViewModal"
-    />
-
-    <EditValidationCustomers
-      ref="editModalRef"
-      :service="editService"
-      :service-device="servicesDevice"
-      :usages="usages"
-      :technicians="technicians"
-      @update="updateServices"
-      @close="closeEditModal"
-    />
-
-    <MoveValidationCustomers
-      ref="moveModalRef"
-      :service="moveService"
-      @update="moveServices"
-      @close="closeMoveModal"
-    />
-
-    <DeleteServices ref="deleteModalRef" @delete="deleteServices" @close="closeDeleteModal" />
-  </div>
-</template>
-
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import axios from 'axios'
@@ -390,6 +289,113 @@ onMounted(() => {
   fetchSparepartsDevice()
 })
 </script>
+
+<template>
+  <div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center">
+      <div class="add-button"></div>
+      <div class="others d-flex align-items-center gap-2">
+        <Search :onSearch="updateSearch" />
+      </div>
+    </div>
+    <div class="mt-2">
+      <EasyDataTable
+        v-model:server-options="serverOptions"
+        :server-items-length="serverItemsLength"
+        @update:options="handleOptionsUpdate"
+        :headers="headers"
+        :items="services"
+        :loading="loading"
+        :theme-color="baseColor"
+        :rows-per-page="10"
+        table-class-name="head-table"
+        alternating
+        show-index
+        border-cell
+        buttons-pagination
+      >
+        <template #loading>
+          <div class="loader"></div>
+        </template>
+        <template #empty-message>
+          <p>Data not found</p>
+        </template>
+        <template #item-date_in_services="{ date_in_services }">
+          {{ formatDate(date_in_services) }}
+        </template>
+        <template #item-action="item">
+          <div class="d-flex gap-2">
+            <a
+              v-if="canView"
+              href="#"
+              class="head-text text-decoration-none"
+              @click.prevent="viewModal(item)"
+              >View</a
+            >
+            <div class="btn-group dropend">
+              <a
+                v-if="canEdit"
+                type="button"
+                class="text-decoration-none dropdown-toggle"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
+                More
+              </a>
+              <ul class="dropdown-menu">
+                <a
+                  href="#"
+                  class="dropdown-item head-text text-decoration-none"
+                  @click.prevent="editModal(item)"
+                  >Edit</a
+                >
+                <a
+                  v-if="canMove"
+                  href="#"
+                  class="dropdown-item head-text text-decoration-none"
+                  @click.prevent="moveModal(item)"
+                  >Move</a
+                >
+                <a
+                  href="#"
+                  class="dropdown-item head-text text-decoration-none"
+                  @click.prevent="deleteModal(item)"
+                  >Delete</a
+                >
+              </ul>
+            </div>
+          </div>
+        </template>
+      </EasyDataTable>
+    </div>
+
+    <ViewValidationCustomers
+      ref="viewModalRef"
+      :service="viewService"
+      :sparepart-requests="sparepartRequests"
+      @close="closeViewModal"
+    />
+
+    <EditValidationCustomers
+      ref="editModalRef"
+      :service="editService"
+      :service-device="servicesDevice"
+      :usages="usages"
+      :technicians="technicians"
+      @update="updateServices"
+      @close="closeEditModal"
+    />
+
+    <MoveValidationCustomers
+      ref="moveModalRef"
+      :service="moveService"
+      @update="moveServices"
+      @close="closeMoveModal"
+    />
+
+    <DeleteServices ref="deleteModalRef" @delete="deleteServices" @close="closeDeleteModal" />
+  </div>
+</template>
 
 <style scoped>
 .head-table {

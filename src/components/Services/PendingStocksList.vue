@@ -1,123 +1,5 @@
-<template>
-  <div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center">
-      <div class="add-button"></div>
-      <div class="others d-flex align-items-center gap-2">
-        <Search :onSearch="updateSearch" />
-      </div>
-    </div>
-    <div class="mt-2">
-      <EasyDataTable
-        v-model:server-options="serverOptions"
-        :server-items-length="serverItemsLength"
-        @update:options="handleOptionsUpdate"
-        :headers="headers"
-        :items="services"
-        :loading="loading"
-        :theme-color="baseColor"
-        :rows-per-page="10"
-        table-class-name="head-table"
-        alternating
-        show-index
-        border-cell
-        buttons-pagination
-      >
-        <template #loading>
-          <div class="loader"></div>
-        </template>
-        <template #empty-message>
-          <p>Data not found</p>
-        </template>
-        <template #item-date_in_services="{ date_in_services }">
-          {{ formatDate(date_in_services) }}
-        </template>
-        <template #item-action="item">
-          <div class="d-flex gap-2">
-            <a href="#" class="head-text text-decoration-none" @click.prevent="viewModal(item)"
-              >View</a
-            >
-            <div class="btn-group dropend">
-              <a
-                type="button"
-                class="text-decoration-none dropdown-toggle"
-                data-bs-toggle="dropdown"
-                aria-expanded="false"
-              >
-                More
-              </a>
-              <ul class="dropdown-menu">
-                <a
-                  href="#"
-                  class="dropdown-item head-text text-decoration-none"
-                  @click.prevent="editModal(item)"
-                  >Edit</a
-                >
-                <a
-                  href="#"
-                  class="dropdown-item head-text text-decoration-none"
-                  @click.prevent="moveModal(item)"
-                  >Move</a
-                >
-                <a
-                  href="#"
-                  class="dropdown-item head-text text-decoration-none"
-                  @click.prevent="reqModal(item)"
-                  >Request Spareparts</a
-                >
-                <a
-                  href="#"
-                  class="dropdown-item head-text text-decoration-none"
-                  @click.prevent="deleteModal(item)"
-                  >Delete</a
-                >
-              </ul>
-            </div>
-          </div>
-        </template>
-      </EasyDataTable>
-    </div>
-
-    <ViewPendingCustomers
-      ref="viewModalRef"
-      :service="viewService"
-      :sparepart-requests="sparepartRequests"
-      @close="closeViewModal"
-    />
-
-    <EditPendingCustomers
-      ref="editModalRef"
-      :service="editService"
-      :service-device="servicesDevice"
-      :usages="usages"
-      @update="updateServices"
-      @close="closeEditModal"
-    />
-
-    <MovePendingStocks
-      ref="moveModalRef"
-      :service="moveService"
-      :technicians="technicians"
-      :spareparts="spareparts"
-      @update="moveServices"
-      @close="closeMoveModal"
-    />
-
-    <RequestPendingCustomers
-      v-model="showRequestModal"
-      :service-id="selectedServiceId"
-      :spareparts="spareparts"
-      :spareparts-device="sparepartsDevice"
-      :customer-name="selectedCustomerName"
-      @update="reqSpareparts"
-      @close="closeReqModal"
-    />
-
-    <DeleteServices ref="deleteModalRef" @delete="deleteServices" @close="closeDeleteModal" />
-  </div>
-</template>
-
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import axios from 'axios'
 import { showToast } from '@/utilities/toast'
 import ViewPendingCustomers from '../Services/Modal/Customers/ViewPendingCustomers.vue'
@@ -226,6 +108,27 @@ watch(
   },
   { deep: true },
 )
+
+// Add permission check utility
+const checkPermission = (permissionName) => {
+  try {
+    const userData = JSON.parse(localStorage.getItem('users'))
+    if (!userData?.permissions) return false
+
+    // Check if the permission exists
+    return userData.permissions.some(
+      (permission) => permission.name.toLowerCase() === permissionName.toLowerCase(),
+    )
+  } catch (error) {
+    console.error('Error checking permissions:', error)
+    return false
+  }
+}
+
+// Create computed property for permission
+const canView = computed(() => checkPermission('View Services'))
+const canEdit = computed(() => checkPermission('Edit Services'))
+const canMove = computed(() => checkPermission('Move Services'))
 
 // Generic function to fetch all data
 const fetchAllData = async (endpoint, currentPage = 1, allData = []) => {
@@ -425,6 +328,130 @@ onMounted(() => {
   fetchSparepartsDevice()
 })
 </script>
+
+<template>
+  <div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center">
+      <div class="add-button"></div>
+      <div class="others d-flex align-items-center gap-2">
+        <Search :onSearch="updateSearch" />
+      </div>
+    </div>
+    <div class="mt-2">
+      <EasyDataTable
+        v-model:server-options="serverOptions"
+        :server-items-length="serverItemsLength"
+        @update:options="handleOptionsUpdate"
+        :headers="headers"
+        :items="services"
+        :loading="loading"
+        :theme-color="baseColor"
+        :rows-per-page="10"
+        table-class-name="head-table"
+        alternating
+        show-index
+        border-cell
+        buttons-pagination
+      >
+        <template #loading>
+          <div class="loader"></div>
+        </template>
+        <template #empty-message>
+          <p>Data not found</p>
+        </template>
+        <template #item-date_in_services="{ date_in_services }">
+          {{ formatDate(date_in_services) }}
+        </template>
+        <template #item-action="item">
+          <div class="d-flex gap-2">
+            <a
+              v-if="canView"
+              href="#"
+              class="head-text text-decoration-none"
+              @click.prevent="viewModal(item)"
+              >View</a
+            >
+            <div class="btn-group dropend">
+              <a
+                v-if="canEdit"
+                type="button"
+                class="text-decoration-none dropdown-toggle"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
+                More
+              </a>
+              <ul class="dropdown-menu">
+                <a
+                  href="#"
+                  class="dropdown-item head-text text-decoration-none"
+                  @click.prevent="editModal(item)"
+                  >Edit</a
+                >
+                <a
+                  v-if="canMove"
+                  href="#"
+                  class="dropdown-item head-text text-decoration-none"
+                  @click.prevent="moveModal(item)"
+                  >Move</a
+                >
+                <a
+                  href="#"
+                  class="dropdown-item head-text text-decoration-none"
+                  @click.prevent="reqModal(item)"
+                  >Request Spareparts</a
+                >
+                <a
+                  href="#"
+                  class="dropdown-item head-text text-decoration-none"
+                  @click.prevent="deleteModal(item)"
+                  >Delete</a
+                >
+              </ul>
+            </div>
+          </div>
+        </template>
+      </EasyDataTable>
+    </div>
+
+    <ViewPendingCustomers
+      ref="viewModalRef"
+      :service="viewService"
+      :sparepart-requests="sparepartRequests"
+      @close="closeViewModal"
+    />
+
+    <EditPendingCustomers
+      ref="editModalRef"
+      :service="editService"
+      :service-device="servicesDevice"
+      :usages="usages"
+      @update="updateServices"
+      @close="closeEditModal"
+    />
+
+    <MovePendingStocks
+      ref="moveModalRef"
+      :service="moveService"
+      :technicians="technicians"
+      :spareparts="spareparts"
+      @update="moveServices"
+      @close="closeMoveModal"
+    />
+
+    <RequestPendingCustomers
+      v-model="showRequestModal"
+      :service-id="selectedServiceId"
+      :spareparts="spareparts"
+      :spareparts-device="sparepartsDevice"
+      :customer-name="selectedCustomerName"
+      @update="reqSpareparts"
+      @close="closeReqModal"
+    />
+
+    <DeleteServices ref="deleteModalRef" @delete="deleteServices" @close="closeDeleteModal" />
+  </div>
+</template>
 
 <style scoped>
 .head-table {

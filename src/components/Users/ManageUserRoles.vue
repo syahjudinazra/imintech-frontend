@@ -66,13 +66,13 @@
                       class="form-check-input shadow-none"
                       type="checkbox"
                       :id="`${page}-moveSN`"
-                      :value="`move SN ${page}`"
+                      :value="`Move SN ${page}`"
                       v-model="selectedPermissions"
                       :disabled="!roleAssigned"
-                      :checked="userPermissions.includes(`move SN ${page}`)"
+                      :checked="userPermissions.includes(`Move SN ${page}`)"
                     />
                     <label class="form-check-label" :for="`${page}-moveSN`">
-                      {{ `move SN ${page}` }}
+                      {{ `Move SN ${page}` }}
                     </label>
                   </div>
                 </div>
@@ -94,35 +94,28 @@
       <div class="col-md-6">
         <div class="card shadow-sm p-4">
           <h2 class="text-center mb-4">Users</h2>
-          <table class="table table-striped">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Name</th>
-                <th>Roles</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="user in paginatedUsers" :key="user.id">
-                <td>{{ user.id }}</td>
-                <td>{{ user.name }}</td>
-                <td>{{ getRoleForUser(user.id) }}</td>
-              </tr>
-            </tbody>
-          </table>
-          <div class="d-flex justify-content-end align-items-center gap-2">
-            <span>Page {{ currentPage }} of {{ totalPages }}</span>
-            <button class="btn btn-secondary" @click="prevPage" :disabled="currentPage === 1">
-              Previous
-            </button>
-            <button
-              class="btn btn-secondary"
-              @click="nextPage"
-              :disabled="currentPage === totalPages"
-            >
-              Next
-            </button>
-          </div>
+          <EasyDataTable
+            v-model:server-options="serverOptions"
+            :server-items-length="serverItemsLength"
+            :headers="headers"
+            :items="tableItems"
+            :loading="loading"
+            :theme-color="baseColor"
+            :rows-per-page="10"
+            table-class-name="head-table"
+            alternating
+            show-index
+            border-cell
+            buttons-pagination
+            @update:options="handleTableOptions"
+          >
+            <template #loading>
+              <div class="loader"></div>
+            </template>
+            <template #empty-message>
+              <p>Data not found</p>
+            </template>
+          </EasyDataTable>
         </div>
       </div>
     </div>
@@ -134,67 +127,84 @@ import { ref, computed, onMounted, watch } from 'vue'
 import axios from 'axios'
 import { showToast } from '@/utilities/toast'
 
+// State Management
 const users = ref([])
 const roles = ref([])
 const selectedUser = ref(null)
 const selectedRole = ref('')
 const selectedPermissions = ref([])
 const userPermissions = ref([])
-const message = ref('')
+const loading = ref(false)
 const roleAssigned = ref(false)
-const currentPage = ref(1)
-const pageSize = 5
+const baseColor = ref('#dc3545')
+
 const pages = ref(['Stocks', 'Delivery', 'Loan', 'Services', 'Spareparts', 'Firmwares'])
 const actions = ref(['Create', 'Edit', 'View', 'Delete', 'Import', 'Export', 'Template'])
 
-// Updated permissions computed property to include "move SN" for Stocks
+// Table Configuration
+const headers = ref([
+  { text: 'Name', value: 'name', sortable: true },
+  { text: 'Roles', value: 'roles', sortable: true },
+])
+
+const serverOptions = ref({
+  page: 1,
+  rowsPerPage: 10,
+  sortBy: 'id',
+  sortType: 'asc',
+})
+
+const serverItemsLength = ref(0)
+
+// Computed Properties
+const tableItems = computed(() => {
+  return users.value.map((user) => ({
+    id: user.id,
+    name: user.name,
+    roles: getRoleForUser(user.id),
+  }))
+})
+
 const permissions = computed(() => {
   const standardPermissions = pages.value.flatMap((page) =>
     actions.value.map((action) => `${action} ${page}`),
   )
-
-  // Add "move SN" permission only for Stocks
   const specialPermissions = ['Move SN Stocks']
-
   return [...standardPermissions, ...specialPermissions]
 })
 
+// API Functions
 const fetchUsers = async () => {
+  loading.value = true
   try {
     const token = localStorage.getItem('token')
-    if (!token) {
-      throw new Error('Token not found')
-    }
+    if (!token) throw new Error('Token not found')
 
     const response = await axios.get('/users', {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      headers: { Authorization: `Bearer ${token}` },
     })
     users.value = response.data
+    serverItemsLength.value = response.data.length
   } catch (error) {
     console.error(error)
-    message.value = 'Failed to fetch users'
+    showToast('Failed to fetch users', 'error')
+  } finally {
+    loading.value = false
   }
 }
 
 const fetchRolesAndPermissions = async () => {
   try {
     const token = localStorage.getItem('token')
-    if (!token) {
-      throw new Error('Token not found')
-    }
+    if (!token) throw new Error('Token not found')
 
     const response = await axios.get('roles-permissions', {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      headers: { Authorization: `Bearer ${token}` },
     })
     roles.value = response.data.roles
-    permissions.value = response.data.permissions
   } catch (error) {
     console.error(error)
-    message.value = 'Failed to fetch roles and permissions'
+    showToast('Failed to fetch roles and permissions', 'error')
   }
 }
 
@@ -204,12 +214,9 @@ const loadUserPermissions = async () => {
   try {
     const token = localStorage.getItem('token')
     const response = await axios.get(`users/${selectedUser.value}/permissions`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      headers: { Authorization: `Bearer ${token}` },
     })
 
-    // Reset state when loading new user
     userPermissions.value = response.data.permissions
     selectedRole.value = response.data.role || ''
     roleAssigned.value = !!selectedRole.value
@@ -230,12 +237,8 @@ const assignRole = async () => {
     const token = localStorage.getItem('token')
     const response = await axios.post(
       `users/${selectedUser.value}/assign-role`,
-      {
-        role: selectedRole.value,
-      },
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      },
+      { role: selectedRole.value },
+      { headers: { Authorization: `Bearer ${token}` } },
     )
     roleAssigned.value = true
     showToast(response.data.message, 'success')
@@ -244,11 +247,6 @@ const assignRole = async () => {
     console.error(error)
     showToast(error.response.data.message, 'error')
   }
-}
-
-const handleRoleChange = () => {
-  clearPermissions()
-  assignRole()
 }
 
 const assignPermissions = async () => {
@@ -261,12 +259,8 @@ const assignPermissions = async () => {
     const token = localStorage.getItem('token')
     const response = await axios.post(
       `users/${selectedUser.value}/assign-permissions`,
-      {
-        permissions: selectedPermissions.value,
-      },
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      },
+      { permissions: selectedPermissions.value },
+      { headers: { Authorization: `Bearer ${token}` } },
     )
     showToast(response.data.message, 'success')
   } catch (error) {
@@ -275,41 +269,45 @@ const assignPermissions = async () => {
   }
 }
 
+// Helper Functions
 const getRoleForUser = (userId) => {
   const user = users.value.find((user) => user.id === userId)
   return user && user.roles.length > 0 ? user.roles.map((role) => role.name).join(', ') : 'N/A'
 }
 
-const clearPermissions = () => {
+const handleRoleChange = () => {
   selectedPermissions.value = []
   roleAssigned.value = false
+  assignRole()
 }
 
-const totalPages = computed(() => Math.ceil(users.value.length / pageSize))
+const handleTableOptions = async (options) => {
+  serverOptions.value = options
+  const { page, rowsPerPage, sortBy, sortType } = options
 
-const paginatedUsers = computed(() => {
-  const start = (currentPage.value - 1) * pageSize
-  const end = start + pageSize
-  return users.value.slice(start, end)
-})
+  // Here you would typically make an API call with pagination/sorting parameters
+  // For now, we'll handle it client-side
+  const start = (page - 1) * rowsPerPage
+  const end = start + rowsPerPage
 
-const nextPage = () => {
-  if (currentPage.value < totalPages.value) {
-    currentPage.value++
-  }
+  const sortedUsers = [...users.value].sort((a, b) => {
+    const modifier = sortType === 'desc' ? -1 : 1
+    if (typeof a[sortBy] === 'string') {
+      return modifier * a[sortBy].localeCompare(b[sortBy])
+    }
+    return modifier * (a[sortBy] - b[sortBy])
+  })
+
+  users.value = sortedUsers
 }
 
-const prevPage = () => {
-  if (currentPage.value > 1) {
-    currentPage.value--
-  }
-}
-
+// Lifecycle Hooks
 onMounted(() => {
   fetchUsers()
   fetchRolesAndPermissions()
 })
 
+// Watchers
 watch(selectedUser, () => {
   if (selectedUser.value) {
     loadUserPermissions()
