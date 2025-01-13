@@ -27,7 +27,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
-import avatar from '@/assets/images/avatars/iminavatars.png'
+import avatar from '../assets/images/avatars/iminavatars.png'
 
 const router = useRouter()
 const user = ref({})

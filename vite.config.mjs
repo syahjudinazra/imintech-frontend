@@ -10,12 +10,10 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [vue()],
-    base: './',
+    base: '/',
     css: {
       postcss: {
-        plugins: [
-          autoprefixer({}), // add options if needed
-        ],
+        plugins: [autoprefixer({})],
       },
     },
     resolve: {
@@ -38,27 +36,44 @@ export default defineConfig(({ mode }) => {
     server: {
       port: 3000,
       proxy: {
-        // https://vitejs.dev/config/server-options.html
+        // your proxy config
+      },
+      // Add headers for development
+      headers: {
+        'Content-Type': 'application/javascript',
       },
     },
     define: {
       'process.env': process.env,
     },
     optimizeDeps: {
-      include: ['vue', 'vue-router' /* add other frequently used dependencies */],
+      include: ['vue', 'vue-router'],
     },
     build: {
       commonjsOptions: {
         include: [/node_modules/],
       },
+      // Add these build configurations
+      outDir: 'dist',
+      assetsDir: 'assets',
+      manifest: true,
+      modulePreload: {
+        polyfill: true,
+      },
       rollupOptions: {
         output: {
           manualChunks: {
-            vue: ['vue', 'vue-router', 'vuex'], // adjust based on your usage
-            vendor: ['lodash', 'axios'], // add other large third-party libraries
+            vue: ['vue', 'vue-router', 'vuex'],
+            vendor: ['lodash', 'axios'],
           },
+          // Add proper file naming
+          entryFileNames: 'assets/[name].[hash].js',
+          chunkFileNames: 'assets/[name].[hash].js',
+          assetFileNames: 'assets/[name].[hash].[ext]',
         },
       },
+      // Add chunk size warning limit
+      chunkSizeWarningLimit: 1000,
     },
     esbuild: {
       drop: ['console', 'debugger'],

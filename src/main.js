@@ -17,14 +17,8 @@ import '@vuepic/vue-datepicker/dist/main.css'
 // Get token from localStorage
 const token = localStorage.getItem('token')
 
-// Configure axios defaults with environment-based base URL
-const baseURL =
-  import.meta.env.MODE === 'development'
-    ? 'http://127.0.0.1:8000/api/v1/'
-    : 'https://backend.imin.co.id/api/v1/'
-
 // Configure axios defaults
-axios.defaults.baseURL = baseURL
+axios.defaults.baseURL = 'https://backend.imin.co.id/api/v1/'
 axios.defaults.withCredentials = true // Enable credentials
 axios.defaults.headers.common = {
   Authorization: `Bearer ${token}`,
@@ -61,13 +55,10 @@ axios.interceptors.response.use(
   },
 )
 
-// Create and configure Vue application
-const app = createApp(App)
-
 // Make axios available globally
+const app = createApp(App)
 app.config.globalProperties.$axios = axios
 
-// Use plugins and components
 app.use(store)
 app.use(router)
 app.use(CoreuiVue)
@@ -77,6 +68,4 @@ app.component('DocsExample', DocsExample)
 app.component('EasyDataTable', Vue3EasyDataTable)
 app.component('v-select', vSelect)
 app.component('VueDatePicker', VueDatePicker)
-
-// Mount the application
 app.mount('#app')
