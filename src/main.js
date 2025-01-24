@@ -18,8 +18,8 @@ import '@vuepic/vue-datepicker/dist/main.css'
 const token = localStorage.getItem('token')
 
 // Configure axios defaults
-axios.defaults.baseURL = 'https://backend.imin.co.id/api/v1/'
-axios.defaults.withCredentials = true // Enable credentials
+axios.defaults.baseURL = 'http://127.0.0.1:8000/api/v1/'
+axios.defaults.withCredentials = true
 axios.defaults.headers.common = {
   Authorization: `Bearer ${token}`,
   Accept: 'application/json',

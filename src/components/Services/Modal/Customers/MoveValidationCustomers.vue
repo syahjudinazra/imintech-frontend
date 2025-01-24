@@ -61,6 +61,17 @@
                         class="form-check-input"
                         type="radio"
                         name="status"
+                        id="statusQueue"
+                        value="Queue Customers"
+                      />
+                      <label class="form-check-label" for="statusQueue"> Queue Customers </label>
+                    </div>
+                    <div class="form-check me-2">
+                      <input
+                        v-model="status"
+                        class="form-check-input"
+                        type="radio"
+                        name="status"
                         id="statusPending"
                         value="Pending Customers"
                       />

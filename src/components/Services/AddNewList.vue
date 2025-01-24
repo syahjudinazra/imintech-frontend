@@ -1,9 +1,12 @@
 <script setup>
 import { ref, onMounted, computed, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import axios from 'axios'
 import { showToast } from '@/utilities/toast'
 import VueDatePicker from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
+import ExportServices from '../Services/Excel/ExportServices.vue'
+import ImportServices from '../Services/Excel/ImportServices.vue'
 
 const services = ref({
   serial_number: '',
@@ -21,16 +24,7 @@ const services = ref({
 const servicesDevice = ref([])
 const usages = ref([])
 const isLoading = ref(false)
-
-const updateOwnerRelatedFields = () => {
-  if (services.value.owner === 'Stocks') {
-    services.value.customers = 'iMin ID'
-    services.value.status = 'Pending Stocks'
-  } else {
-    services.value.customers = ''
-    services.value.status = 'Pending Customers'
-  }
-}
+const router = useRouter()
 
 function generateTicketService() {
   const date = new Date()
@@ -66,6 +60,8 @@ const checkPermission = (permissionName) => {
 
 // Create computed property for permission
 const canCreate = computed(() => checkPermission('Create Services'))
+const canExport = computed(() => checkPermission('Export Services'))
+const canImport = computed(() => checkPermission('Import Services'))
 
 // Generic function to fetch all data
 const fetchAllData = async (endpoint, currentPage = 1, allData = []) => {
@@ -131,6 +127,7 @@ const addServices = async () => {
     })
     showToast(response.data.message, 'success')
     clearInput()
+    await router.push({ name: 'Queue Customers' })
   } catch (error) {
     console.error('Error adding service:', {
       message: error.message,
@@ -139,7 +136,7 @@ const addServices = async () => {
       headers: error.response?.headers,
     })
 
-    if (error.response && error.response.data && error.response.data.message) {
+    if (error.response?.data?.message) {
       showToast(error.response.data.message, 'error')
     } else {
       showToast('Failed to add service. Please try again later.', 'error')
@@ -162,6 +159,16 @@ const clearInput = () => {
   services.value.date_in_services = null
 }
 
+const updateOwnerRelatedFields = () => {
+  if (services.value.owner === 'Stocks') {
+    services.value.customers = 'iMin ID'
+    services.value.status = 'Queue Stocks'
+  } else {
+    services.value.customers = ''
+    services.value.status = 'Queue Customers'
+  }
+}
+
 onMounted(() => {
   fetchServicesDevice()
   fetchUsages()
@@ -174,6 +181,10 @@ onMounted(() => {
       <div class="d-flex justify-content-between mb-2">
         <div class="title">
           <h1 class="h3 mb-3 text-gray-800">Add New Service</h1>
+        </div>
+        <div class="others d-flex align-items-center gap-2">
+          <ExportServices v-if="canExport" />
+          <ImportServices v-if="canImport" />
         </div>
       </div>
       <hr class="w-100" />
@@ -324,23 +335,23 @@ onMounted(() => {
           <div class="d-flex gap-2">
             <div class="form-check">
               <input
-                :value="'Pending Customers'"
+                :value="'Queue Customers'"
                 v-model="services.status"
                 class="form-check-input"
                 type="radio"
-                id="statusPendingCustomers"
+                id="statusQueueCustomers"
               />
-              <label class="form-check-label" for="statusPendingCustomers">Pending Customers</label>
+              <label class="form-check-label" for="statusQueueCustomers">Queue Customers</label>
             </div>
             <div class="form-check">
               <input
-                :value="'Pending Stocks'"
+                :value="'Queue Stocks'"
                 v-model="services.status"
                 class="form-check-input"
                 type="radio"
-                id="statusPendingStocks"
+                id="statusQueueStocks"
               />
-              <label class="form-check-label" for="statusPendingStocks">Pending Stocks</label>
+              <label class="form-check-label" for="statusQueueStocks">Queue Stocks</label>
             </div>
           </div>
         </div>

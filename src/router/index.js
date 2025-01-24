@@ -132,6 +132,12 @@ const routes = [
             meta: { requiresAuth: true },
           },
           {
+            path: '/services/queue-customers',
+            name: 'Queue Customers',
+            component: () => import('@/views/services/QueueCustomers.vue'),
+            meta: { requiresAuth: true },
+          },
+          {
             path: '/services/pending-customers',
             name: 'Pending Customers',
             component: () => import('@/views/services/PendingCustomers.vue'),
@@ -147,6 +153,12 @@ const routes = [
             path: '/services/done-customers',
             name: 'Done Customers',
             component: () => import('@/views/services/DoneCustomers.vue'),
+            meta: { requiresAuth: true },
+          },
+          {
+            path: '/services/queue-stocks',
+            name: 'Queue Stocks',
+            component: () => import('@/views/services/QueueStocks.vue'),
             meta: { requiresAuth: true },
           },
           {

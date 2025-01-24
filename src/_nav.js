@@ -147,6 +147,11 @@ export default [
       },
       {
         component: 'CNavItem',
+        name: 'Queue Customers',
+        to: '/services/queue-customers',
+      },
+      {
+        component: 'CNavItem',
         name: 'Pending Customers',
         to: '/services/pending-customers',
       },
@@ -159,6 +164,11 @@ export default [
         component: 'CNavItem',
         name: 'Done Customers',
         to: '/services/done-customers',
+      },
+      {
+        component: 'CNavItem',
+        name: 'Queue Stocks',
+        to: '/services/queue-stocks',
       },
       {
         component: 'CNavItem',

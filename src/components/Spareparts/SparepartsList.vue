@@ -1,112 +1,3 @@
-<template>
-  <div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center">
-      <div class="add-button">
-        <AddSpareparts v-if="canCreate" @data-added="refreshList()" />
-      </div>
-      <div class="others d-flex align-items-center gap-2">
-        <ExportSpareparts v-if="canExport" />
-        <ImportSpareparts v-if="canImport" />
-        <Search :onSearch="updateSearch" />
-      </div>
-    </div>
-    <div class="mt-2">
-      <EasyDataTable
-        v-model:server-options="serverOptions"
-        :server-items-length="serverItemsLength"
-        @update:options="serverOptions = $event"
-        :headers="headers"
-        :items="spareparts"
-        :loading="loading"
-        :theme-color="baseColor"
-        :rows-per-page="10"
-        table-class-name="head-table"
-        alternating
-        show-index
-        border-cell
-        buttons-pagination
-      >
-        <template #loading>
-          <div class="loader"></div>
-        </template>
-        <template #empty-message>
-          <p>Data not found</p>
-        </template>
-        <template #items="{ item }">
-          <tr>
-            <td>{{ item.no_spareparts }}</td>
-            <td>{{ getDeviceName(item.spareparts_devices_id) }}</td>
-            <td>{{ item.name }}</td>
-            <td>{{ item.quantity }}</td>
-            <td>{{ item.price }}</td>
-          </tr>
-        </template>
-        <template #item-action="item">
-          <div class="d-flex gap-2">
-            <a
-              v-if="canCreate"
-              href="#"
-              class="head-text text-decoration-none"
-              @click="addQty(item)"
-              >Qty+</a
-            >
-            <a
-              v-if="canCreate"
-              href="#"
-              class="head-text text-decoration-none"
-              @click="reduceQty(item)"
-              >Qty-</a
-            >
-            <div class="btn-group dropend">
-              <a
-                v-if="canEdit"
-                type="button"
-                class="text-decoration-none dropdown-toggle"
-                data-bs-toggle="dropdown"
-                aria-expanded="false"
-              >
-                More
-              </a>
-              <ul class="dropdown-menu">
-                <a
-                  href="#"
-                  class="dropdown-item head-text text-decoration-none"
-                  @click="editModal(item)"
-                  >Edit</a
-                >
-                <a
-                  href="#"
-                  class="dropdown-item head-text text-decoration-none"
-                  @click="deleteModal(item)"
-                  >Delete</a
-                >
-              </ul>
-            </div>
-          </div>
-        </template>
-      </EasyDataTable>
-    </div>
-  </div>
-
-  <QuantityManagement
-    ref="quantityModalRef"
-    :sparepart="selectedSparepart"
-    :action="quantityAction"
-    @update="updateQuantity"
-    @close="closeQuantityModal"
-  />
-
-  <EditSpareparts
-    ref="editModalRef"
-    :sparepart="editSpareparts"
-    :spareparts-device="sparepartsDevice"
-    @update="updateSpareparts"
-    @close="closeEditModal"
-  />
-
-  <DeleteSpareparts ref="deleteModalRef" @delete="deleteSpareparts" @close="closeDeleteModal" />
-</template>
-
 <script setup>
 import { ref, onMounted, computed, watch } from 'vue'
 import axios from 'axios'
@@ -364,6 +255,115 @@ function closeDeleteModal() {
 }
 </script>
 
+<template>
+  <div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center">
+      <div class="add-button">
+        <AddSpareparts v-if="canCreate" @data-added="refreshList()" />
+      </div>
+      <div class="others d-flex align-items-center gap-2">
+        <ExportSpareparts v-if="canExport" />
+        <ImportSpareparts v-if="canImport" />
+        <Search :onSearch="updateSearch" />
+      </div>
+    </div>
+    <div class="mt-2">
+      <EasyDataTable
+        v-model:server-options="serverOptions"
+        :server-items-length="serverItemsLength"
+        @update:options="serverOptions = $event"
+        :headers="headers"
+        :items="spareparts"
+        :loading="loading"
+        :theme-color="baseColor"
+        :rows-per-page="10"
+        table-class-name="head-table"
+        alternating
+        show-index
+        border-cell
+        buttons-pagination
+      >
+        <template #loading>
+          <div class="loader"></div>
+        </template>
+        <template #empty-message>
+          <p>Data not found</p>
+        </template>
+        <template #items="{ item }">
+          <tr>
+            <td>{{ item.no_spareparts }}</td>
+            <td>{{ getDeviceName(item.spareparts_devices_id) }}</td>
+            <td>{{ item.name }}</td>
+            <td>{{ item.quantity }}</td>
+            <td>{{ item.price }}</td>
+          </tr>
+        </template>
+        <template #item-action="item">
+          <div class="d-flex gap-2 align-items-center">
+            <a
+              v-if="canCreate"
+              href="#"
+              class="qtyText head-text text-decoration-none"
+              @click="addQty(item)"
+              >+</a
+            >
+            <a
+              v-if="canCreate"
+              href="#"
+              class="qtyText head-text text-decoration-none"
+              @click="reduceQty(item)"
+              >-</a
+            >
+            <div class="moreButton btn-group dropend">
+              <a
+                v-if="canEdit"
+                type="button"
+                class="text-decoration-none dropdown-toggle"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
+                More
+              </a>
+              <ul class="dropdown-menu">
+                <a
+                  href="#"
+                  class="dropdown-item head-text text-decoration-none"
+                  @click="editModal(item)"
+                  >Edit</a
+                >
+                <a
+                  href="#"
+                  class="dropdown-item head-text text-decoration-none"
+                  @click="deleteModal(item)"
+                  >Delete</a
+                >
+              </ul>
+            </div>
+          </div>
+        </template>
+      </EasyDataTable>
+    </div>
+  </div>
+
+  <QuantityManagement
+    ref="quantityModalRef"
+    :sparepart="selectedSparepart"
+    :action="quantityAction"
+    @update="updateQuantity"
+    @close="closeQuantityModal"
+  />
+
+  <EditSpareparts
+    ref="editModalRef"
+    :sparepart="editSpareparts"
+    :spareparts-device="sparepartsDevice"
+    @update="updateSpareparts"
+    @close="closeEditModal"
+  />
+
+  <DeleteSpareparts ref="deleteModalRef" @delete="deleteSpareparts" @close="closeDeleteModal" />
+</template>
+
 <style scoped>
 .head-table {
   --easy-table-border: 1px solid #445269;
@@ -373,12 +373,19 @@ function closeDeleteModal() {
   --easy-table-header-height: 50px;
   --easy-table-header-font-color: #c1cad4;
 }
-input:focus {
+input:focus,
+textarea:focus {
   border-color: #d22c36;
 }
 
-textarea:focus {
-  border-color: #d22c36;
+.qtyText {
+  font-size: 30px;
+  color: #5856d6;
+  margin-bottom: 5px;
+}
+
+.moreButton {
+  margin-left: 10px;
 }
 .loader {
   width: 50px;

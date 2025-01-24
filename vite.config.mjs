@@ -38,10 +38,6 @@ export default defineConfig(({ mode }) => {
       proxy: {
         // your proxy config
       },
-      // Add headers for development
-      headers: {
-        'Content-Type': 'application/javascript',
-      },
     },
     define: {
       'process.env': process.env,
@@ -53,27 +49,14 @@ export default defineConfig(({ mode }) => {
       commonjsOptions: {
         include: [/node_modules/],
       },
-      // Add these build configurations
-      outDir: 'dist',
-      assetsDir: 'assets',
-      manifest: true,
-      modulePreload: {
-        polyfill: true,
-      },
       rollupOptions: {
         output: {
           manualChunks: {
             vue: ['vue', 'vue-router', 'vuex'],
             vendor: ['lodash', 'axios'],
           },
-          // Add proper file naming
-          entryFileNames: 'assets/[name].[hash].js',
-          chunkFileNames: 'assets/[name].[hash].js',
-          assetFileNames: 'assets/[name].[hash].[ext]',
         },
       },
-      // Add chunk size warning limit
-      chunkSizeWarningLimit: 1000,
     },
     esbuild: {
       drop: ['console', 'debugger'],

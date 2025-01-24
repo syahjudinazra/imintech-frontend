@@ -75,7 +75,7 @@ const checkPermission = (permissionName) => {
 const canCreate = computed(() => checkPermission('Create Stocks'))
 const canExport = computed(() => checkPermission('Export Stocks'))
 const canImport = computed(() => checkPermission('Import Stocks'))
-const canMove = computed(() => checkPermission('Move Stocks'))
+const canMove = computed(() => checkPermission('Move SN Stocks'))
 
 // Device mapping helper
 const getDeviceName = computed(() => {

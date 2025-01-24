@@ -2,42 +2,46 @@
 import { ref, onMounted, computed, watch } from 'vue'
 import axios from 'axios'
 import { showToast } from '@/utilities/toast'
-import AddLoan from './Modal/AddLoan.vue'
-import ViewLoan from './Modal/ViewLoan.vue'
-import MoveLoan from './Modal/MoveLoan.vue'
-import EditLoan from './Modal/EditLoan.vue'
-import DeleteLoan from './Modal/DeleteLoan.vue'
-import ExportLoans from './Excel/ExportLoan.vue'
-import ImportLoans from './Excel/ImportLoan.vue'
+import ViewPendingCustomers from '../Services/Modal/Customers/ViewPendingCustomers.vue'
+import MoveQueueCustomers from '../Services/Modal/Customers/MoveQueueCustomers.vue'
+import RequestPendingCustomers from '../Services/Modal/Customers/SparepartsPendingCustomers.vue'
+import EditPendingCustomers from '../Services/Modal/Customers/EditPendingCustomers.vue'
+import DeleteServices from '../Services/Modal/DeleteServices.vue'
 import Search from '../Layouts/SearchAll.vue'
-import { mockServerItems } from '../../mock/mockLoans'
+import { mockServerItems } from '../../mock/mockQueueCustomers'
 
 // Refs
 const id = ref(null)
-const loans = ref([])
-const loanDevice = ref([])
-const sales = ref([])
-const rams = ref([])
-const androids = ref([])
+const services = ref([])
+const servicesDevice = ref([])
+const sparepartsDevice = ref([])
+const sparepartRequests = ref([])
+const usages = ref([])
+const technicians = ref([])
+const spareparts = ref([])
+const moveModalRef = ref(null)
 const viewModalRef = ref(null)
 const editModalRef = ref(null)
-const moveModalRef = ref(null)
 const deleteModalRef = ref(null)
-const viewLoan = ref({})
-const moveLoan = ref({})
-const editLoan = ref({})
+const viewService = ref({})
+const moveService = ref({})
+const editService = ref({})
 const loading = ref(true)
+
+// New refs for Request Spareparts modal
+const showRequestModal = ref(false)
+const selectedServiceId = ref(null)
+const selectedCustomerName = ref('')
 
 const token = localStorage.getItem('token')
 // Constants
 const baseColor = '#e55353'
 const headers = [
-  { text: 'Date', value: 'date_loan', sortable: true },
-  { text: 'Days', value: 'calculated_days', sortable: true },
-  { text: 'Serial Number', value: 'serial_number', sortable: true },
-  { text: 'Device Type', value: 'loan_devices_id', sortable: true },
-  { text: 'Customers', value: 'customers', sortable: true },
-  { text: 'Action', value: 'action', sortable: false },
+  { text: 'Date of Entry', value: 'date_in_services' },
+  { text: 'Serial number', value: 'serial_number' },
+  { text: 'Customers', value: 'customers' },
+  { text: 'Device type', value: 'services_devices_id' },
+  { text: 'Action', value: 'action' },
 ]
 const dayNames = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu']
 
@@ -77,10 +81,11 @@ const loadFromServer = async () => {
       serverOptions.value,
       token,
     )
-    loans.value = serverCurrentPageItems
+    services.value = serverCurrentPageItems
     serverItemsLength.value = serverTotalItemsLength
   } catch (error) {
     console.error('Error loading data', error)
+    showToast('Failed to load stocks device data.', 'error')
   } finally {
     loading.value = false
   }
@@ -121,34 +126,9 @@ const checkPermission = (permissionName) => {
 }
 
 // Create computed property for permission
-const canView = computed(() => checkPermission('View Loan'))
-const canEdit = computed(() => checkPermission('Edit Loan'))
-const canMove = computed(() => checkPermission('Move Loan'))
-
-// Add the calculateDays function
-const calculateDays = (date) => {
-  if (!date) return { days: '-', isOverdue: false }
-
-  try {
-    const start = new Date(date)
-    const today = new Date()
-
-    // Reset time portion for accurate day calculation
-    start.setHours(0, 0, 0, 0)
-    today.setHours(0, 0, 0, 0)
-
-    const differenceInTime = today.getTime() - start.getTime()
-    const differenceInDays = Math.floor(differenceInTime / (1000 * 3600 * 24))
-
-    return {
-      days: differenceInDays,
-      isOverdue: differenceInDays > 14,
-    }
-  } catch (error) {
-    console.error('Error calculating days:', error)
-    return { days: '-', isOverdue: false }
-  }
-}
+const canView = computed(() => checkPermission('View Services'))
+const canEdit = computed(() => checkPermission('Edit Services'))
+const canMove = computed(() => checkPermission('Move Services'))
 
 // Generic function to fetch all data
 const fetchAllData = async (endpoint, currentPage = 1, allData = []) => {
@@ -179,45 +159,65 @@ const fetchAllData = async (endpoint, currentPage = 1, allData = []) => {
   }
 }
 
-const fetchLoanDevice = async () => {
+const fetchServicesDevice = async () => {
   try {
-    loanDevice.value = await fetchAllData('loans-device')
+    servicesDevice.value = await fetchAllData('services-device')
   } catch (error) {
     console.error('Data not found', error)
     showToast('Failed to fetch device types.', 'error')
   }
 }
 
-const fetchAndroid = async () => {
+const fetchUsages = async () => {
   try {
-    androids.value = await fetchAllData('android')
+    usages.value = await fetchAllData('usages')
   } catch (error) {
     console.error('Data not found', error)
-    showToast('Failed to fetch androids.', 'error')
+    showToast('Failed to fetch usages.', 'error')
   }
 }
 
-const fetchRam = async () => {
+const fetchTechnicians = async () => {
   try {
-    rams.value = await fetchAllData('ram')
+    technicians.value = await fetchAllData('technician')
   } catch (error) {
     console.error('Data not found', error)
-    showToast('Failed to fetch ram.', 'error')
+    showToast('Failed to fetch technician.', 'error')
   }
 }
 
-const fetchSales = async () => {
+const fetchSpareparts = async () => {
   try {
-    sales.value = await fetchAllData('sales')
+    spareparts.value = await fetchAllData('spareparts')
   } catch (error) {
     console.error('Data not found', error)
-    showToast('Failed to fetch sales', 'error')
+    showToast('Failed to fetch spareparts.', 'error')
   }
 }
 
-const updateLoans = async (updatedLoans) => {
+const fetchSparepartsDevice = async () => {
   try {
-    const response = await axios.put(`loans/${id.value}`, updatedLoans)
+    sparepartsDevice.value = await fetchAllData('spareparts-device')
+  } catch (error) {
+    console.error('Data not found', error)
+    showToast('Failed to fetch device types.', 'error')
+  }
+}
+
+const fetchSparepartRequests = async (serviceId) => {
+  try {
+    const response = await axios.get(`services/${serviceId}/sparepart-requests`)
+    return response.data.data
+  } catch (error) {
+    console.error('Failed to fetch sparepart requests:', error)
+    showToast('Failed to fetch sparepart requests', 'error')
+    return []
+  }
+}
+
+const updateServices = async (updatedServices) => {
+  try {
+    const response = await axios.put(`services/${id.value}`, updatedServices)
     showToast(response.data.message, 'success')
     closeEditModal()
     refreshList()
@@ -227,9 +227,9 @@ const updateLoans = async (updatedLoans) => {
   }
 }
 
-const moveLoans = async (formData) => {
+const moveServices = async (formData) => {
   try {
-    const response = await axios.post(`loans-move/${id.value}`, formData, {
+    const response = await axios.post(`services-move/${id.value}`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -243,39 +243,54 @@ const moveLoans = async (formData) => {
   }
 }
 
-const deleteLoans = async () => {
+const deleteServices = async () => {
   try {
-    const response = await axios.delete(`loans/${id.value}`)
+    if (!id.value) {
+      showToast('No service selected for deletion', 'error')
+      return
+    }
+
+    const response = await axios.delete(`services/${id.value}`)
     showToast(response.data.message, 'success')
-    closeDeleteModal()
     refreshList()
+    closeDeleteModal()
   } catch (error) {
     console.error('Data failed to delete', error)
     showToast(error.response?.data?.message || 'Delete failed', 'error')
-    closeDeleteModal()
   }
 }
 
-const viewModal = async (loan) => {
-  viewLoan.value = { ...loan }
-  id.value = loan.id
+const viewModal = async (service) => {
+  viewService.value = { ...service }
+  id.value = service.id
+
+  // Fetch sparepart requests for this service
+  const requests = await fetchSparepartRequests(service.id)
+  sparepartRequests.value = requests
+
   viewModalRef.value.showModal()
 }
 
-const moveModal = (loan) => {
-  moveLoan.value = { ...loan }
-  id.value = loan.id
+const moveModal = (service) => {
+  moveService.value = { ...service }
+  id.value = service.id
   moveModalRef.value.showModal()
 }
 
-const editModal = (loan) => {
-  editLoan.value = { ...loan }
-  id.value = loan.id
+const reqModal = (service) => {
+  selectedServiceId.value = service.id
+  selectedCustomerName.value = service.customers
+  showRequestModal.value = true
+}
+
+const editModal = (service) => {
+  editService.value = { ...service }
+  id.value = service.id
   editModalRef.value.showModal()
 }
 
-const deleteModal = (loan) => {
-  id.value = loan.id
+const deleteModal = (service) => {
+  id.value = service.id
   deleteModalRef.value.showModal()
 }
 
@@ -287,32 +302,38 @@ const closeMoveModal = () => {
   moveModalRef.value.hideModal()
 }
 
+const closeReqModal = () => {
+  showRequestModal.value = false
+  selectedServiceId.value = null
+  selectedCustomerName.value = ''
+}
+
 const closeEditModal = () => {
   editModalRef.value.hideModal()
 }
 
 const closeDeleteModal = () => {
-  deleteModalRef.value.hideModal()
+  if (deleteModalRef.value) {
+    deleteModalRef.value.hideModal()
+  }
+  id.value = null
 }
 
 onMounted(() => {
   loadFromServer()
-  fetchLoanDevice()
-  fetchAndroid()
-  fetchRam()
-  fetchSales()
+  fetchServicesDevice()
+  fetchUsages()
+  fetchTechnicians()
+  fetchSpareparts()
+  fetchSparepartsDevice()
 })
 </script>
 
 <template>
   <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center">
-      <div class="add-button">
-        <AddLoan @data-added="refreshList()" />
-      </div>
+      <div class="add-button"></div>
       <div class="others d-flex align-items-center gap-2">
-        <ExportLoans />
-        <ImportLoans />
         <Search :onSearch="updateSearch" />
       </div>
     </div>
@@ -322,7 +343,7 @@ onMounted(() => {
         :server-items-length="serverItemsLength"
         @update:options="handleOptionsUpdate"
         :headers="headers"
-        :items="loans"
+        :items="services"
         :loading="loading"
         :theme-color="baseColor"
         :rows-per-page="10"
@@ -338,37 +359,8 @@ onMounted(() => {
         <template #empty-message>
           <p>Data not found</p>
         </template>
-        <!-- Date column -->
-        <template #item-date_loan="{ date_loan }">
-          <span :class="{ 'text-danger fw-bold': calculateDays(date_loan).isOverdue }">
-            {{ formatDate(date_loan) }}
-          </span>
-        </template>
-        <!-- Calculated Days column -->
-        <template #item-calculated_days="{ date_loan }">
-          <span :class="{ 'text-danger fw-bold': calculateDays(date_loan).isOverdue }">
-            {{ calculateDays(date_loan).days }}
-          </span>
-        </template>
-        <!-- Serial Number column -->
-        <template #item-serial_number="{ serial_number, date_loan }">
-          <span :class="{ 'text-danger fw-bold': calculateDays(date_loan).isOverdue }">
-            {{ serial_number }}
-          </span>
-        </template>
-
-        <!-- Device Type column -->
-        <template #item-loan_devices_id="{ loan_devices_id, date_loan }">
-          <span :class="{ 'text-danger fw-bold': calculateDays(date_loan).isOverdue }">
-            {{ loan_devices_id }}
-          </span>
-        </template>
-
-        <!-- Customers column -->
-        <template #item-customers="{ customers, date_loan }">
-          <span :class="{ 'text-danger fw-bold': calculateDays(date_loan).isOverdue }">
-            {{ customers }}
-          </span>
+        <template #item-date_in_services="{ date_in_services }">
+          {{ formatDate(date_in_services) }}
         </template>
         <template #item-action="item">
           <div class="d-flex gap-2">
@@ -379,8 +371,9 @@ onMounted(() => {
               @click.prevent="viewModal(item)"
               >View</a
             >
-            <div v-if="canEdit" class="btn-group dropend">
+            <div class="btn-group dropend">
               <a
+                v-if="canEdit"
                 type="button"
                 class="text-decoration-none dropdown-toggle"
                 data-bs-toggle="dropdown"
@@ -405,6 +398,12 @@ onMounted(() => {
                 <a
                   href="#"
                   class="dropdown-item head-text text-decoration-none"
+                  @click.prevent="reqModal(item)"
+                  >Request Spareparts</a
+                >
+                <a
+                  href="#"
+                  class="dropdown-item head-text text-decoration-none"
                   @click.prevent="deleteModal(item)"
                   >Delete</a
                 >
@@ -415,22 +414,42 @@ onMounted(() => {
       </EasyDataTable>
     </div>
 
-    <ViewLoan ref="viewModalRef" :loan="viewLoan" @close="closeViewModal" />
+    <ViewPendingCustomers
+      ref="viewModalRef"
+      :service="viewService"
+      :sparepart-requests="sparepartRequests"
+      @close="closeViewModal"
+    />
 
-    <EditLoan
+    <EditPendingCustomers
       ref="editModalRef"
-      :loan="editLoan"
-      :loan-device="loanDevice"
-      :rams="rams"
-      :androids="androids"
-      :sales="sales"
-      @update="updateLoans"
+      :service="editService"
+      :service-device="servicesDevice"
+      :usages="usages"
+      @update="updateServices"
       @close="closeEditModal"
     />
 
-    <MoveLoan ref="moveModalRef" :loan="moveLoan" @update="moveLoans" @close="closeMoveModal" />
+    <MoveQueueCustomers
+      ref="moveModalRef"
+      :service="moveService"
+      :technicians="technicians"
+      :spareparts="spareparts"
+      @update="moveServices"
+      @close="closeMoveModal"
+    />
 
-    <DeleteLoan ref="deleteModalRef" @delete="deleteLoans" @close="closeDeleteModal" />
+    <RequestPendingCustomers
+      v-model="showRequestModal"
+      :service-id="selectedServiceId"
+      :spareparts="spareparts"
+      :spareparts-device="sparepartsDevice"
+      :customer-name="selectedCustomerName"
+      @update="reqSpareparts"
+      @close="closeReqModal"
+    />
+
+    <DeleteServices ref="deleteModalRef" @delete="deleteServices" @close="closeDeleteModal" />
   </div>
 </template>
 

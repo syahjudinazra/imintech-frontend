@@ -57,7 +57,7 @@ const handleFileUpload = async (event) => {
     formData.append('file', file)
 
     try {
-      const response = await axios.post('firmwares-import', formData, {
+      const response = await axios.post('loans-import', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           'X-CSRF-TOKEN':
@@ -77,14 +77,14 @@ const handleFileUpload = async (event) => {
 
 const downloadTemplate = async () => {
   try {
-    const response = await axios.get('firmwares-template', {
+    const response = await axios.get('loans-template', {
       responseType: 'blob',
     })
 
     const url = window.URL.createObjectURL(new Blob([response.data]))
     const link = document.createElement('a')
     link.href = url
-    link.setAttribute('download', 'Template-Import-Firmwares.xlsx')
+    link.setAttribute('download', 'Template-Import-Loan.xlsx')
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)

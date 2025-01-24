@@ -32,6 +32,20 @@
         <template #empty-message>
           <p>Data not found</p>
         </template>
+        <template #item-flash="item">
+          <div class="link-container">
+            <a :href="item.flash" target="_blank" class="truncated-link" :title="item.flash">
+              {{ formatLink(item.flash) }}
+            </a>
+          </div>
+        </template>
+        <template #item-ota="item">
+          <div class="link-container">
+            <a :href="item.ota" target="_blank" class="truncated-link" :title="item.ota">
+              {{ formatLink(item.ota) }}
+            </a>
+          </div>
+        </template>
         <template #item-action="item">
           <div class="d-flex gap-2">
             <a
@@ -57,7 +71,6 @@
   <StatusPage v-else />
 
   <EditFirmwares
-    v-if="userCan('edit Firmwares')"
     ref="editModalRef"
     :firmware="editFirmwares"
     :firmwares-device="firmwaresDevice"
@@ -66,12 +79,7 @@
     @close="closeEditModal"
   />
 
-  <DeleteFirmwares
-    v-if="userCan('delete Firmwares')"
-    ref="deleteModalRef"
-    @delete="deleteFirmwares"
-    @close="closeDeleteModal"
-  />
+  <DeleteFirmwares ref="deleteModalRef" @delete="deleteFirmwares" @close="closeDeleteModal" />
 </template>
 
 <script setup>
@@ -145,10 +153,6 @@ const updateSearch = (term) => {
   loadFromServer()
 }
 
-const userCan = (permission) => {
-  return userPermissions.value.includes(permission)
-}
-
 watch(
   serverOptions,
   () => {
@@ -164,6 +168,22 @@ onMounted(() => {
   fetchUserPermissions()
   fetchUserRole()
 })
+
+const formatLink = (url) => {
+  if (!url) return ''
+  if (url.length <= 30) return url
+
+  // Extract filename from URL
+  const filename = url.split('/').pop()
+  if (!filename) return url.substring(0, 27) + '...'
+
+  // If filename is too long, truncate it
+  if (filename.length > 20) {
+    return '.../' + filename.substring(0, 17) + '...'
+  }
+
+  return '.../' + filename
+}
 
 async function fetchUserPermissions() {
   try {
@@ -345,13 +365,11 @@ function closeDeleteModal() {
   --easy-table-header-height: 50px;
   --easy-table-header-font-color: #c1cad4;
 }
-input:focus {
-  border-color: #d22c36;
-}
-
+input:focus,
 textarea:focus {
   border-color: #d22c36;
 }
+
 .loader {
   width: 50px;
   aspect-ratio: 1;

@@ -1,127 +1,3 @@
-<template>
-  <div class="container mt-5">
-    <div class="row">
-      <!-- Left Column: Manage User Roles and Permissions -->
-      <div class="col-md-6">
-        <div class="card shadow-sm p-4">
-          <h2 class="text-center mb-4">Manage User Roles and Permissions</h2>
-
-          <!-- Select User -->
-          <div class="mb-3">
-            <label for="userSelect" class="form-label">Select User</label>
-            <v-select
-              v-model="selectedUser"
-              :options="users"
-              :reduce="(user) => user.id"
-              label="name"
-              :clearable="false"
-              placeholder="Select a user"
-              @update:modelValue="loadUserPermissions"
-            />
-          </div>
-
-          <!-- Assign Role -->
-          <div class="mb-3">
-            <label for="roleSelect" class="form-label">Assign Role</label>
-            <v-select
-              v-model="selectedRole"
-              :options="roles"
-              :reduce="(role) => role.name"
-              label="name"
-              :clearable="false"
-              placeholder="Select a role"
-              @update:modelValue="handleRoleChange"
-            />
-            <small class="text-secondary"
-              >The role will be generated automatically when you select the role</small
-            >
-          </div>
-
-          <!-- Assign Permissions -->
-          <div class="mb-3">
-            <label class="form-label">Assign Permissions</label>
-            <div class="d-flex flex-wrap">
-              <div v-for="page in pages" :key="page" class="mb-3">
-                <h5>{{ page }}</h5>
-                <div class="ms-3">
-                  <!-- Standard permissions -->
-                  <div class="form-check" v-for="action in actions" :key="action">
-                    <input
-                      class="form-check-input shadow-none"
-                      type="checkbox"
-                      :id="`${page}-${action}`"
-                      :value="`${action} ${page}`"
-                      v-model="selectedPermissions"
-                      :disabled="!roleAssigned"
-                      :checked="userPermissions.includes(`${action} ${page}`)"
-                    />
-                    <label class="form-check-label" :for="`${page}-${action}`">
-                      {{ `${action} ${page}` }}
-                    </label>
-                  </div>
-
-                  <!-- Special "move SN" permission only for Stocks page -->
-                  <div class="form-check" v-if="page === 'Stocks'">
-                    <input
-                      class="form-check-input shadow-none"
-                      type="checkbox"
-                      :id="`${page}-moveSN`"
-                      :value="`Move SN ${page}`"
-                      v-model="selectedPermissions"
-                      :disabled="!roleAssigned"
-                      :checked="userPermissions.includes(`Move SN ${page}`)"
-                    />
-                    <label class="form-check-label" :for="`${page}-moveSN`">
-                      {{ `Move SN ${page}` }}
-                    </label>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <button
-            class="btn btn-danger text-white"
-            @click="assignPermissions"
-            :disabled="!roleAssigned"
-          >
-            Assign Permissions
-          </button>
-        </div>
-      </div>
-
-      <!-- Right Column: Users Table -->
-      <div class="col-md-6">
-        <div class="card shadow-sm p-4">
-          <h2 class="text-center mb-4">Users</h2>
-          <EasyDataTable
-            v-model:server-options="serverOptions"
-            :server-items-length="serverItemsLength"
-            :headers="headers"
-            :items="tableItems"
-            :loading="loading"
-            :theme-color="baseColor"
-            :rows-per-page="10"
-            table-class-name="head-table"
-            alternating
-            show-index
-            border-cell
-            buttons-pagination
-            @update:options="handleTableOptions"
-          >
-            <template #loading>
-              <div class="loader"></div>
-            </template>
-            <template #empty-message>
-              <p>Data not found</p>
-            </template>
-          </EasyDataTable>
-        </div>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import axios from 'axios'
@@ -169,7 +45,7 @@ const permissions = computed(() => {
   const standardPermissions = pages.value.flatMap((page) =>
     actions.value.map((action) => `${action} ${page}`),
   )
-  const specialPermissions = ['Move SN Stocks']
+  const specialPermissions = ['Move SN Stocks', 'Move Services', 'Move Loan']
   return [...standardPermissions, ...specialPermissions]
 })
 
@@ -180,7 +56,7 @@ const fetchUsers = async () => {
     const token = localStorage.getItem('token')
     if (!token) throw new Error('Token not found')
 
-    const response = await axios.get('/users', {
+    const response = await axios.get('users', {
       headers: { Authorization: `Bearer ${token}` },
     })
     users.value = response.data
@@ -314,3 +190,157 @@ watch(selectedUser, () => {
   }
 })
 </script>
+
+<template>
+  <div class="container mt-5">
+    <div class="row">
+      <!-- Left Column: Manage User Roles and Permissions -->
+      <div class="col-md-6">
+        <div class="card shadow-sm p-4">
+          <h2 class="text-center mb-4">Manage User Roles and Permissions</h2>
+
+          <!-- Select User -->
+          <div class="mb-3">
+            <label for="userSelect" class="form-label">Select User</label>
+            <v-select
+              v-model="selectedUser"
+              :options="users"
+              :reduce="(user) => user.id"
+              label="name"
+              :clearable="false"
+              placeholder="Select a user"
+              @update:modelValue="loadUserPermissions"
+            />
+          </div>
+
+          <!-- Assign Role -->
+          <div class="mb-3">
+            <label for="roleSelect" class="form-label">Assign Role</label>
+            <v-select
+              v-model="selectedRole"
+              :options="roles"
+              :reduce="(role) => role.name"
+              label="name"
+              :clearable="false"
+              placeholder="Select a role"
+              @update:modelValue="handleRoleChange"
+            />
+            <small class="text-secondary"
+              >The role will be generated automatically when you select the role</small
+            >
+          </div>
+
+          <!-- Assign Permissions -->
+          <div class="mb-3">
+            <label class="form-label">Assign Permissions</label>
+            <div class="d-flex flex-wrap">
+              <div v-for="page in pages" :key="page" class="mb-3">
+                <h5>{{ page }}</h5>
+                <div class="ms-3">
+                  <!-- Standard permissions -->
+                  <div class="form-check" v-for="action in actions" :key="action">
+                    <input
+                      class="form-check-input shadow-none"
+                      type="checkbox"
+                      :id="`${page}-${action}`"
+                      :value="`${action} ${page}`"
+                      v-model="selectedPermissions"
+                      :disabled="!roleAssigned"
+                      :checked="userPermissions.includes(`${action} ${page}`)"
+                    />
+                    <label class="form-check-label" :for="`${page}-${action}`">
+                      {{ `${action} ${page}` }}
+                    </label>
+                  </div>
+
+                  <!-- Special "move SN" permission only for Stocks page -->
+                  <div class="form-check" v-if="page === 'Stocks'">
+                    <input
+                      class="form-check-input shadow-none"
+                      type="checkbox"
+                      :id="`${page}-moveSN`"
+                      :value="`Move SN ${page}`"
+                      v-model="selectedPermissions"
+                      :disabled="!roleAssigned"
+                      :checked="userPermissions.includes(`Move SN ${page}`)"
+                    />
+                    <label class="form-check-label" :for="`${page}-moveSN`">
+                      {{ `Move SN ${page}` }}
+                    </label>
+                  </div>
+
+                  <!-- Special "move" permissions for Services and Loan pages -->
+                  <div class="form-check" v-if="page === 'Services'">
+                    <input
+                      class="form-check-input shadow-none"
+                      type="checkbox"
+                      :id="`${page}-moveSN`"
+                      :value="`Move ${page}`"
+                      v-model="selectedPermissions"
+                      :disabled="!roleAssigned"
+                      :checked="userPermissions.includes(`Move ${page}`)"
+                    />
+                    <label class="form-check-label" :for="`${page}-moveSN`">
+                      {{ `Move ${page}` }}
+                    </label>
+                  </div>
+                  <div class="form-check" v-if="page === 'Loan'">
+                    <input
+                      class="form-check-input shadow-none"
+                      type="checkbox"
+                      :id="`${page}-moveSN`"
+                      :value="`Move ${page}`"
+                      v-model="selectedPermissions"
+                      :disabled="!roleAssigned"
+                      :checked="userPermissions.includes(`Move ${page}`)"
+                    />
+                    <label class="form-check-label" :for="`${page}-moveSN`">
+                      {{ `Move ${page}` }}
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <button
+            class="btn btn-danger text-white"
+            @click="assignPermissions"
+            :disabled="!roleAssigned"
+          >
+            Assign Permissions
+          </button>
+        </div>
+      </div>
+
+      <!-- Right Column: Users Table -->
+      <div class="col-md-6">
+        <div class="card shadow-sm p-4">
+          <h2 class="text-center mb-4">Users</h2>
+          <EasyDataTable
+            v-model:server-options="serverOptions"
+            :server-items-length="serverItemsLength"
+            :headers="headers"
+            :items="tableItems"
+            :loading="loading"
+            :theme-color="baseColor"
+            :rows-per-page="10"
+            table-class-name="head-table"
+            alternating
+            show-index
+            border-cell
+            buttons-pagination
+            @update:options="handleTableOptions"
+          >
+            <template #loading>
+              <div class="loader"></div>
+            </template>
+            <template #empty-message>
+              <p>Data not found</p>
+            </template>
+          </EasyDataTable>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
