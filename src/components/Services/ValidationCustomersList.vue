@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import axios from 'axios'
 import { showToast } from '@/utilities/toast'
 import ViewValidationCustomers from '../Services/Modal/Customers/ViewValidationCustomers.vue'
@@ -47,6 +47,27 @@ const serverOptions = ref({
   sortType: 'desc',
   searchTerm: '',
 })
+
+// Add permission check utility
+const checkPermission = (permissionName) => {
+  try {
+    const userData = JSON.parse(localStorage.getItem('users'))
+    if (!userData?.permissions) return false
+
+    // Check if the permission exists
+    return userData.permissions.some(
+      (permission) => permission.name.toLowerCase() === permissionName.toLowerCase(),
+    )
+  } catch (error) {
+    console.error('Error checking permissions:', error)
+    return false
+  }
+}
+
+// Create computed property for permission
+const canView = computed(() => checkPermission('View Services'))
+const canEdit = computed(() => checkPermission('Edit Services'))
+const canMove = computed(() => checkPermission('Move Services'))
 
 const formatDate = (date) => {
   if (!date) return '-'

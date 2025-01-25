@@ -31,7 +31,7 @@
             <!-- Serial Number Input View -->
             <div v-if="!showEditForm" class="modal-body">
               <div class="d-flex justify-content-between">
-                <div class="w-30">
+                <div class="serial-number-container">
                   <textarea
                     v-model="serialNumbers"
                     class="moveSn-area form-control shadow-none"
@@ -466,8 +466,9 @@ select:focus {
   padding: 2rem;
 }
 
-.w-30 {
-  width: 30%;
+.serial-number-container {
+  width: 250px;
+  flex-shrink: 0;
 }
 
 .form-check-input:checked {
