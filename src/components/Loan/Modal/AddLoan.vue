@@ -120,6 +120,18 @@
               />
             </div>
 
+            <!--Address section-->
+            <div class="mb-3">
+              <label class="form-label fw-bold" for="address">Address</label>
+              <textarea
+                v-model="loans.address"
+                class="form-control shadow-none"
+                id="address"
+                placeholder="Jl. Kapuk"
+                required
+              ></textarea>
+            </div>
+
             <!--Sales section-->
             <div class="mb-3">
               <label for="sales_id" class="form-label fw-bold">Sales</label>

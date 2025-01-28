@@ -89,6 +89,17 @@
             />
           </div>
 
+          <!--Address Section-->
+          <div class="mb-3">
+            <label class="fw-bold" for="address">Address</label>
+            <textarea
+              :value="loan?.address"
+              class="form-control shadow-none bg-light"
+              id="address"
+              readonly
+            ></textarea>
+          </div>
+
           <!--Sales Section-->
           <div class="mb-3">
             <label class="fw-bold" for="sales">Sales</label>

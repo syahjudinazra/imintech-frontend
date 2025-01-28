@@ -117,6 +117,16 @@
               />
             </div>
 
+            <!--Address-->
+            <div class="mb-3">
+              <label for="address" class="form-label fw-bold">Address</label>
+              <textarea
+                v-model="editedLoan.address"
+                class="form-control shadow-none"
+                id="address"
+              />
+            </div>
+
             <!--Sales Section-->
             <div class="mb-3">
               <label for="sales" class="form-label fw-bold">Sales</label>

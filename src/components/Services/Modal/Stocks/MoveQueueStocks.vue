@@ -216,8 +216,8 @@
                     class="form-check-input"
                     type="radio"
                     name="status"
-                    id="statusPending"
-                    value="Pending Stocks"
+                    id="statusValidation"
+                    value="Validation Stocks"
                   />
                   <label class="form-check-label" for="statusValidation"> Validation Stocks </label>
                 </div>
