@@ -353,7 +353,6 @@ function closeDeleteModal() {
   </div>
 
   <ViewStocks
-    v-if="userCan('view Stocks')"
     ref="viewModalRef"
     :stocks-device="stocksDevice"
     :stocks-sku-device="skuDevice"
@@ -362,7 +361,6 @@ function closeDeleteModal() {
   />
 
   <EditStocks
-    v-if="userCan('edit Stocks')"
     ref="editModalRef"
     :stock="editStocks"
     :stocks-device="stocksDevice"
@@ -372,12 +370,7 @@ function closeDeleteModal() {
     @close="closeEditModal"
   />
 
-  <DeleteStocks
-    v-if="userCan('delete Stocks')"
-    ref="deleteModalRef"
-    @delete="deleteStocks"
-    @close="closeDeleteModal"
-  />
+  <DeleteStocks ref="deleteModalRef" @delete="deleteStocks" @close="closeDeleteModal" />
 </template>
 
 <style scoped>

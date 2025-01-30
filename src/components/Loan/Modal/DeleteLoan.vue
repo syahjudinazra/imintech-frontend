@@ -1,17 +1,17 @@
 <template>
-  <div class="modal fade" id="deleteForm" tabindex="-1" aria-hidden="true">
+  <div class="modal fade" id="deleteModal">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Delete Loan Data</h5>
-          <button type="button" class="btn-close" aria-label="Close" @click="closeModal"></button>
+          <h5 class="modal-title">Delete data</h5>
+          <button type="button" class="btn-close" aria-label="Close" @click="handleClose"></button>
         </div>
         <div class="modal-body">
-          <p>Are you sure you want to delete this loan data?</p>
+          <p>Are you sure you want to delete this data?</p>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" @click="closeModal">Close</button>
-          <button type="button" class="btn btn-danger text-white" @click="deleteLoan">
+          <button type="button" class="btn btn-secondary" @click="handleClose">Close</button>
+          <button type="button" class="btn btn-danger text-white" @click="handleDelete">
             Delete
           </button>
         </div>
@@ -21,42 +21,45 @@
 </template>
 
 <script setup>
-import { defineEmits, defineProps } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { Modal } from 'bootstrap'
-import axios from 'axios'
-import { showToast } from '@/utilities/toast'
 
-const props = defineProps({
-  loanId: {
-    type: Number,
-    required: true,
-  },
-})
+const emit = defineEmits(['delete', 'close'])
+const modal = ref(null)
 
-const emit = defineEmits(['close', 'refresh'])
-
-let modal = null
-
-const deleteLoan = async () => {
-  try {
-    const response = await axios.delete(`loans/${props.loanId}`)
-    showToast(response.data.message || 'Loan deleted successfully', 'success')
-    closeModal()
-    emit('refresh')
-  } catch (error) {
-    console.error('Error deleting loan:', error)
-    showToast(error.response?.data?.message || 'Failed to delete loan', 'error')
-  }
+const handleDelete = () => {
+  emit('delete')
+  // Let the parent component handle the modal closing
 }
 
-const closeModal = () => {
-  modal?.hide()
+const handleClose = () => {
   emit('close')
 }
 
 const showModal = () => {
-  modal.show()
+  if (modal.value) {
+    modal.value.show()
+  }
 }
 
-defineExpose({ showModal })
+const hideModal = () => {
+  if (modal.value) {
+    modal.value.hide()
+  }
+}
+
+onMounted(() => {
+  modal.value = new Modal(document.getElementById('deleteModal'))
+})
+
+onUnmounted(() => {
+  if (modal.value) {
+    modal.value.dispose()
+  }
+})
+
+defineExpose({
+  showModal,
+  hideModal,
+})
 </script>

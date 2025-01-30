@@ -17,7 +17,8 @@ const services = ref({
   services_devices_id: null,
   usages_id: null,
   damage: '',
-  note: 'Tanggal Pembelian:\nKelengkapan:',
+  note: `Tanggal Pembelian:
+Kelengkapan:`,
   status: '',
 })
 

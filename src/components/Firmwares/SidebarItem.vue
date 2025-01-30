@@ -1,18 +1,5 @@
-<template>
-  <div class="sidebar">
-    <li v-for="item in navigationItems" :key="item.text">
-      <router-link
-        :to="item.path"
-        class="navigation-item text-dark text-decoration-none"
-        active-class="active-navigation-item"
-        >{{ item.text }}</router-link
-      >
-    </li>
-  </div>
-</template>
-
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 
 const navigationItems = ref([
   { text: 'M2-202', path: '/firmwares/list/m2-202' },
@@ -37,9 +24,55 @@ const navigationItems = ref([
   { text: 'K1', path: '/firmwares/list/k1' },
   { text: 'K2', path: '/firmwares/list/k2' },
 ])
+
+const searchQuery = ref('')
+
+const normalizeText = (text) => {
+  return text.toLowerCase().replace(/[\s-]+/g, '')
+}
+
+const filteredItems = computed(() => {
+  if (!searchQuery.value) return navigationItems.value
+
+  const normalizedQuery = normalizeText(searchQuery.value)
+
+  return navigationItems.value.filter((item) => {
+    const normalizedText = normalizeText(item.text)
+    return normalizedText.includes(normalizedQuery)
+  })
+})
 </script>
 
+<template>
+  <div class="sidebar">
+    <div class="search-container mb-3">
+      <input
+        v-model="searchQuery"
+        type="text"
+        placeholder="Search firmware..."
+        class="form-control shadow-none"
+      />
+    </div>
+
+    <ul class="list-unstyled">
+      <li v-for="item in filteredItems" :key="item.text" class="mb-2">
+        <router-link
+          :to="item.path"
+          class="navigation-item text-dark text-decoration-none"
+          active-class="active-navigation-item"
+        >
+          {{ item.text }}
+        </router-link>
+      </li>
+    </ul>
+  </div>
+</template>
+
 <style scoped>
+input:focus {
+  border-color: #d22c36;
+}
+
 li {
   list-style-type: none;
 }

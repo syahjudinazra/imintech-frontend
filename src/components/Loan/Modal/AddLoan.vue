@@ -216,7 +216,6 @@ const rams = ref([])
 const sales = ref([])
 
 let addForm
-const emit = defineEmits(['customer-added'])
 
 // Generic function to fetch all data
 const fetchAllData = async (endpoint, currentPage = 1, allData = []) => {
@@ -321,22 +320,12 @@ const addLoans = async () => {
         'Content-Type': 'multipart/form-data',
       },
     })
-
-    if (response.data.success) {
-      showToast(response.data.message, 'success')
-      closeModal()
-      // Clear the form
-      loans.value = {}
-      // Emit event to refresh parent
-      emit('customer-added')
-    } else {
-      showToast(response.data.message || 'Failed to add loan', 'error')
-    }
+    console.log('Data added successfully:', response.data.message)
+    showToast(response.data.message, 'success')
+    closeModal()
   } catch (error) {
-    console.error('Error adding data:', error)
-    const errorMessage =
-      error.response?.data?.message || error.message || 'An error occurred while adding the loan'
-    showToast(errorMessage, 'error')
+    console.error('Error add data:', error)
+    showToast(error.data.message, 'error')
   }
 }
 // Format date for MySQL
