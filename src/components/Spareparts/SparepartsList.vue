@@ -22,7 +22,6 @@ const quantityModalRef = ref(null)
 const selectedSparepart = ref({})
 const quantityAction = ref('')
 
-const token = localStorage.getItem('token')
 // Constants
 const baseColor = '#e55353'
 const headers = ref([
@@ -34,6 +33,14 @@ const headers = ref([
   { text: 'Action', value: 'action' },
 ])
 
+const filters = ref({
+  no_spareparts: '',
+  spareparts_devices_id: '',
+  name: '',
+  quantity: '',
+  price: '',
+})
+
 const serverItemsLength = ref(0)
 const serverOptions = ref({
   page: 1,
@@ -41,23 +48,58 @@ const serverOptions = ref({
   sortBy: 'name',
   sortType: 'desc',
   searchTerm: '',
+  filters: {},
 })
+
+const debounce = (fn, wait) => {
+  let timeout
+  return (...args) => {
+    clearTimeout(timeout)
+    timeout = setTimeout(() => fn.apply(this, args), wait)
+  }
+}
 
 const refreshList = () => {
   loadFromServer()
 }
 
+// Filter handling
+const updateFilters = debounce((column, value) => {
+  // Update the filter value
+  filters.value[column] = value
+
+  // Create a clean filters object
+  const activeFilters = {}
+  Object.entries(filters.value).forEach(([key, val]) => {
+    if (val !== '' && val !== null && val !== undefined) {
+      activeFilters[key] = val
+    }
+  })
+
+  // Update server options
+  serverOptions.value = {
+    ...serverOptions.value,
+    page: 1, // Reset to first page
+    filters: activeFilters,
+  }
+}, 300)
+
 const loadFromServer = async () => {
   loading.value = true
   try {
-    const { serverCurrentPageItems, serverTotalItemsLength } = await mockServerItems(
-      serverOptions.value,
-      token,
-    )
+    const { serverCurrentPageItems, serverTotalItemsLength } = await mockServerItems({
+      page: serverOptions.value.page,
+      rowsPerPage: serverOptions.value.rowsPerPage,
+      sortBy: serverOptions.value.sortBy,
+      sortType: serverOptions.value.sortType,
+      filters: serverOptions.value.filters,
+      searchTerm: serverOptions.value.searchTerm,
+    })
+
     spareparts.value = serverCurrentPageItems
     serverItemsLength.value = serverTotalItemsLength
   } catch (error) {
-    console.error('Error loading data', error)
+    console.error('Error loading data:', error)
     showToast('Failed to load spareparts data.', 'error')
   } finally {
     loading.value = false
@@ -65,9 +107,11 @@ const loadFromServer = async () => {
 }
 
 const updateSearch = (term) => {
-  serverOptions.value.searchTerm = term
-  serverOptions.value.page = 1
-  loadFromServer()
+  serverOptions.value = {
+    ...serverOptions.value,
+    searchTerm: term,
+    page: 1,
+  }
 }
 
 watch(
@@ -132,11 +176,6 @@ const fetchAllData = async (endpoint, currentPage = 1, allData = []) => {
     console.error(`Error fetching data from ${endpoint}:`, error)
     throw error
   }
-}
-
-const getDeviceName = (id) => {
-  const device = sparepartsDevice.value.find((d) => d.id === id)
-  return device ? device.name : 'Unknown'
 }
 
 const addQty = (item) => {
@@ -279,10 +318,22 @@ function closeDeleteModal() {
         :rows-per-page="10"
         table-class-name="head-table"
         alternating
-        show-index
         border-cell
         buttons-pagination
       >
+        <template #header="header">
+          <div class="column-filter">
+            <div>{{ header.text }}</div>
+            <input
+              v-if="header.value !== 'action'"
+              type="text"
+              class="form-control form-control-sm shadow-none mt-2"
+              :placeholder="`Search ${header.text}`"
+              :value="filters[header.value]"
+              @input="updateFilters(header.value, $event.target.value)"
+            />
+          </div>
+        </template>
         <template #loading>
           <div class="loader"></div>
         </template>
@@ -292,7 +343,7 @@ function closeDeleteModal() {
         <template #items="{ item }">
           <tr>
             <td>{{ item.no_spareparts }}</td>
-            <td>{{ getDeviceName(item.spareparts_devices_id) }}</td>
+            <td>{{ item.spareparts_devices_id }}</td>
             <td>{{ item.name }}</td>
             <td>{{ item.quantity }}</td>
             <td>{{ item.price }}</td>
@@ -371,11 +422,16 @@ function closeDeleteModal() {
 
   --easy-table-header-font-size: 14px;
   --easy-table-header-height: 50px;
-  --easy-table-header-font-color: #c1cad4;
 }
 input:focus,
 textarea:focus {
   border-color: #d22c36;
+}
+
+.column-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
 .qtyText {

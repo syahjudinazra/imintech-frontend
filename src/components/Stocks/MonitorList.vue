@@ -42,8 +42,6 @@ const headers = [
 
 const serverItemsLength = ref(0)
 const serverOptions = ref({
-  page: 1,
-  rowsPerPage: 10,
   sortBy: 'device',
   sortType: 'desc',
   searchTerm: '',
@@ -147,11 +145,9 @@ const loadFromServer = async () => {
   error.value = null
 
   try {
-    const { page, rowsPerPage, sortBy, sortType, searchTerm } = serverOptions.value
+    const { sortBy, sortType, searchTerm } = serverOptions.value
     const response = await axios.get('stocks', {
       params: {
-        page,
-        per_page: rowsPerPage,
         sort_by: sortBy === 'device' ? 'stocks_devices_id' : sortBy,
         sort_type: sortType,
         search: searchTerm,
@@ -180,10 +176,6 @@ const fetchLocations = async () => {
   } catch (error) {
     console.error('Data not found', error)
   }
-}
-
-const handleOptionsUpdate = (newOptions) => {
-  serverOptions.value = newOptions
 }
 
 const refreshList = () => {
@@ -255,19 +247,14 @@ watch(
     <div class="card border-0 shadow-sm">
       <div class="card-body p-0">
         <EasyDataTable
-          v-model:server-options="serverOptions"
-          :server-items-length="serverItemsLength"
           :headers="headers"
           :items="processedUniqueStocks"
           :loading="loading"
           :theme-color="BASE_COLOR"
-          :rows-per-page="10"
-          :rows-items="[10, 25, 50, 100]"
           table-class-name="head-table"
           alternating
           border-cell
           buttons-pagination
-          @update:options="handleOptionsUpdate"
         >
           <template #loading>
             <div class="d-flex justify-content-center p-4">
