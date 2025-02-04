@@ -26,7 +26,7 @@ const deleteModalRef = ref(null)
 const viewLoan = ref({})
 const moveLoan = ref({})
 const editLoan = ref({})
-const loading = ref(true)
+const loading = ref(false)
 
 const token = localStorage.getItem('token')
 // Constants
@@ -217,6 +217,7 @@ const fetchSales = async () => {
 
 const updateLoans = async (updatedLoans) => {
   try {
+    loading.value = true
     const response = await axios.put(`loans/${id.value}`, updatedLoans)
     showToast(response.data.message, 'success')
     closeEditModal()
@@ -229,6 +230,7 @@ const updateLoans = async (updatedLoans) => {
 
 const moveLoans = async (formData) => {
   try {
+    loading.value = true
     const response = await axios.post(`loans-move/${id.value}`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
@@ -326,7 +328,7 @@ onMounted(() => {
         :loading="loading"
         :theme-color="baseColor"
         :rows-per-page="10"
-        table-class-name="head-table"
+        table-class-name="customize-table"
         alternating
         show-index
         border-cell
@@ -424,18 +426,25 @@ onMounted(() => {
       :rams="rams"
       :androids="androids"
       :sales="sales"
+      :loading="loading"
       @update="updateLoans"
       @close="closeEditModal"
     />
 
-    <MoveLoan ref="moveModalRef" :loan="moveLoan" @update="moveLoans" @close="closeMoveModal" />
+    <MoveLoan
+      ref="moveModalRef"
+      :loan="moveLoan"
+      :loading="loading"
+      @update="moveLoans"
+      @close="closeMoveModal"
+    />
 
     <DeleteLoan ref="deleteModalRef" @delete="deleteLoans" @close="closeDeleteModal" />
   </div>
 </template>
 
 <style scoped>
-.head-table {
+.customize-table {
   --easy-table-border: 1px solid #445269;
   --easy-table-row-border: 1px solid #445269;
 

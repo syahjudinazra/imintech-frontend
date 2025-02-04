@@ -16,7 +16,7 @@
       :loading="loading"
       :theme-color="baseColor"
       :rows-per-page="10"
-      table-class-name="head-table"
+      table-class-name="customize-table"
       alternating
       show-index
       border-cell
@@ -181,7 +181,7 @@ watch(
 
 <style scoped>
 /* Styles remain the same as in previous version */
-.head-table {
+.customize-table {
   --easy-table-border: 1px solid #445269;
   --easy-table-row-border: 1px solid #445269;
   --easy-table-header-font-size: 14px;
@@ -198,7 +198,7 @@ pre {
 }
 </style>
 <style scoped>
-.head-table {
+.customize-table {
   --easy-table-border: 1px solid #445269;
   --easy-table-row-border: 1px solid #445269;
   --easy-table-header-font-size: 14px;

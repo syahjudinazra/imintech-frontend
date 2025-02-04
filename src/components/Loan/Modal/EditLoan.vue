@@ -184,8 +184,12 @@
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" @click="closeModal">Close</button>
-            <button type="submit" class="btn btn-danger text-white" :disabled="!isDataChanged">
-              Submit
+            <button
+              type="submit"
+              class="btn btn-danger text-white"
+              :disabled="!isDataChanged || loading"
+            >
+              {{ loading ? 'Submitting...' : 'Submit' }}
             </button>
           </div>
         </form>
@@ -223,6 +227,9 @@ const props = defineProps({
   },
   sales: {
     type: Array,
+    default: () => [],
+  },
+  loading: {
     default: () => [],
   },
 })

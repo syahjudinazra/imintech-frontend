@@ -20,7 +20,7 @@
         :loading="loading"
         :theme-color="baseColor"
         :rows-per-page="10"
-        table-class-name="head-table"
+        table-class-name="customize-table"
         alternating
         show-index
         border-cell
@@ -75,6 +75,7 @@
     :firmware="editFirmwares"
     :firmwares-device="firmwaresDevice"
     :androids="androids"
+    :loading="loading"
     @update="updateFirmwares"
     @close="closeEditModal"
   />
@@ -102,7 +103,7 @@ const androids = ref([])
 const editModalRef = ref(null)
 const deleteModalRef = ref(null)
 const editFirmwares = ref({})
-const loading = ref(true)
+const loading = ref(false)
 const userPermissions = ref([])
 const userRole = ref('')
 
@@ -277,6 +278,7 @@ const fetchAndroid = async () => {
 
 const updateFirmwares = async (updatedFirmware) => {
   try {
+    loading.value = true
     const firmwareToUpdate = {
       ...updatedFirmware,
       firmwares_devices_id: parseInt(updatedFirmware.firmwares_devices_id),
@@ -357,7 +359,7 @@ function closeDeleteModal() {
 </script>
 
 <style scoped>
-.head-table {
+.customize-table {
   --easy-table-border: 1px solid #445269;
   --easy-table-row-border: 1px solid #445269;
 

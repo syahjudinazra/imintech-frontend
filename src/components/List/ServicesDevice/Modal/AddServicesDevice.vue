@@ -37,8 +37,13 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" @click="closeModal">Close</button>
-          <button type="button" class="btn btn-danger text-white" @click="AddServicesDevice">
-            Submit
+          <button
+            type="submit"
+            class="btn btn-danger text-white"
+            @click="AddServicesDevice"
+            :disabled="isLoading"
+          >
+            {{ isLoading ? 'Submitting...' : 'Submit' }}
           </button>
         </div>
       </div>
@@ -55,6 +60,7 @@ import { showToast } from '@/utilities/toast'
 const servicesDevice = ref({
   name: '',
 })
+const isLoading = ref(false)
 let addForm
 
 onMounted(() => {
@@ -76,6 +82,7 @@ async function AddServicesDevice() {
   }
 
   try {
+    isLoading.value = true
     const response = await axios.post('services-device', servicesDevice.value)
     console.log('Data added successfully:', response.data.message)
     showToast(response.data.message, 'success')

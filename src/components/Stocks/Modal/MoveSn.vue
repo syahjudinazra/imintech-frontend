@@ -55,7 +55,7 @@
                     :items="selectedSerialNumbers"
                     :loading="loading"
                     :theme-color="baseColor"
-                    table-class-name="head-table"
+                    table-class-name="customize-table"
                     :rows-per-page="5"
                     alternating
                     border-cell

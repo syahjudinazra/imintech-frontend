@@ -12,7 +12,7 @@
           <h5 class="modal-title" id="editForm_label">Edit Data</h5>
           <button type="button" class="btn-close" aria-label="Close" @click="closeModal"></button>
         </div>
-        <form @submit.prevent="editForm">
+        <form @submit.prevent="handleSubmit">
           <div class="modal-body">
             <div class="mb-3">
               <label for="name" class="form-label fw-bold">Name</label>
@@ -26,7 +26,9 @@
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" @click="closeModal">Close</button>
-            <button type="submit" class="btn btn-primary">Submit</button>
+            <button type="submit" class="btn btn-danger text-white" :disabled="loading">
+              {{ loading ? 'Submitting...' : 'Submit' }}
+            </button>
           </div>
         </form>
       </div>
@@ -45,6 +47,7 @@ const props = defineProps({
 const emit = defineEmits(['update', 'close'])
 
 const editedFirmwaresDevice = ref({ ...props.firmwaresDevice })
+const loading = ref(false)
 
 watch(
   () => props.firmwaresDevice,
@@ -56,7 +59,18 @@ watch(
 
 let editModal
 
-const editForm = () => {
+const handleSubmit = async () => {
+  try {
+    loading.value = true
+    await editForm()
+  } catch (error) {
+    console.error('Error updating device:', error)
+  } finally {
+    loading.value = false
+  }
+}
+
+const editForm = async () => {
   emit('update', editedFirmwaresDevice.value)
 }
 

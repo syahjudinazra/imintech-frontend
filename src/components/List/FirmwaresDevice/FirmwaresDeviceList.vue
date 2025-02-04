@@ -18,7 +18,7 @@
         :loading="loading"
         :theme-color="baseColor"
         :rows-per-page="10"
-        table-class-name="head-table"
+        table-class-name="customize-table"
         alternating
         show-index
         border-cell
@@ -70,7 +70,7 @@ import { mockServerItems } from '../../../mock/mockFirmwaresDevice'
 const editModalRef = ref(null)
 const deleteModalRef = ref(null)
 const editFirmwaresDevice = ref({})
-const loading = ref(true)
+const loading = ref(false)
 const firmwaresdevice = ref([])
 const id = ref(null)
 const userRole = ref('')
@@ -144,6 +144,7 @@ onMounted(() => {
 
 const updateFirmwaresDevice = async (updatedFirmwaresDevice) => {
   try {
+    loading.value = true
     const response = await axios.put(`firmwares-device/${id.value}`, updatedFirmwaresDevice)
     showToast(response.data.message, 'success')
     closeEditModal()
@@ -188,7 +189,7 @@ function closeDeleteModal() {
 </script>
 
 <style scoped>
-.head-table {
+.customize-table {
   --easy-table-border: 1px solid #445269;
   --easy-table-row-border: 1px solid #445269;
 

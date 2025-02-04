@@ -250,8 +250,9 @@ watch(
           :headers="headers"
           :items="processedUniqueStocks"
           :loading="loading"
+          :rows-per-page="10"
           :theme-color="BASE_COLOR"
-          table-class-name="head-table"
+          table-class-name="customize-table"
           alternating
           border-cell
           buttons-pagination
@@ -297,7 +298,7 @@ watch(
 </template>
 
 <style scoped>
-.head-table {
+.customize-table {
   --easy-table-border: 1px solid #445269;
   --easy-table-row-border: 1px solid #445269;
   --easy-table-header-font-size: 14px;

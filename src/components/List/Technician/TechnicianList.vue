@@ -18,7 +18,7 @@
         :loading="loading"
         :theme-color="baseColor"
         :rows-per-page="10"
-        table-class-name="head-table"
+        table-class-name="customize-table"
         alternating
         show-index
         border-cell
@@ -70,7 +70,9 @@
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" @click="closeModal">Close</button>
-            <button type="submit" class="btn btn-primary">Submit</button>
+            <button type="submit" class="btn btn-danger text-white" :disabled="loading">
+              {{ loading ? 'Submitting...' : 'Submit' }}
+            </button>
           </div>
         </form>
       </div>
@@ -112,7 +114,7 @@ import { mockServerItems } from '../../../mock/mockTechnician'
 let editForm
 let deleteForm
 const editTechnician = ref({})
-const loading = ref(true)
+const loading = ref(false)
 const technician = ref([])
 const id = ref(null)
 const userRole = ref('')
@@ -188,6 +190,7 @@ onMounted(() => {
 
 const updateTechnician = async () => {
   try {
+    loading.value = true
     const response = await axios.put(`technician/${id.value}`, editTechnician.value)
     showToast(response.data.message, 'success')
     closeModal()
@@ -230,7 +233,7 @@ function closeModal() {
 </script>
 
 <style scoped>
-.head-table {
+.customize-table {
   --easy-table-border: 1px solid #445269;
   --easy-table-row-border: 1px solid #445269;
 

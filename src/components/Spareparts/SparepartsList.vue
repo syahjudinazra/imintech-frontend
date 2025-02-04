@@ -17,7 +17,7 @@ const sparepartsDevice = ref([])
 const editModalRef = ref(null)
 const deleteModalRef = ref(null)
 const editSpareparts = ref({})
-const loading = ref(true)
+const loading = ref(false)
 const quantityModalRef = ref(null)
 const selectedSparepart = ref({})
 const quantityAction = ref('')
@@ -214,13 +214,12 @@ const fetchSparepartsDevice = async () => {
 
 const updateSpareparts = async (updatedSpareparts) => {
   try {
-    // Ensure we're sending IDs, not names
+    loading.value = true
     const sparepartToUpdate = {
       ...updatedSpareparts,
       spareparts_devices_id: parseInt(updatedSpareparts.spareparts_devices_id),
     }
 
-    // Only send changed fields
     const changedFields = Object.keys(updatedSpareparts).reduce((acc, key) => {
       if (updatedSpareparts[key] !== undefined) {
         acc[key] = sparepartToUpdate[key]
@@ -316,7 +315,7 @@ function closeDeleteModal() {
         :loading="loading"
         :theme-color="baseColor"
         :rows-per-page="10"
-        table-class-name="head-table"
+        table-class-name="customize-table"
         alternating
         border-cell
         buttons-pagination
@@ -408,6 +407,7 @@ function closeDeleteModal() {
     ref="editModalRef"
     :sparepart="editSpareparts"
     :spareparts-device="sparepartsDevice"
+    :loading="loading"
     @update="updateSpareparts"
     @close="closeEditModal"
   />
@@ -416,7 +416,7 @@ function closeDeleteModal() {
 </template>
 
 <style scoped>
-.head-table {
+.customize-table {
   --easy-table-border: 1px solid #445269;
   --easy-table-row-border: 1px solid #445269;
 

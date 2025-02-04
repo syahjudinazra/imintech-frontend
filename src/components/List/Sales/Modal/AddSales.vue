@@ -55,9 +55,9 @@
             type="button"
             class="btn btn-danger text-white"
             @click="AddSales"
-            :disabled="!isFormValid"
+            :disabled="!isFormValid || isLoading"
           >
-            Submit
+            {{ isLoading ? 'Submitting...' : 'Submit' }}
           </button>
         </div>
       </div>
@@ -73,6 +73,7 @@ import { showToast } from '@/utilities/toast'
 
 const sales = ref({})
 const phoneError = ref(false)
+const isLoading = ref(false)
 
 let addForm
 
@@ -102,6 +103,7 @@ async function AddSales() {
   }
 
   try {
+    isLoading.value = true
     const response = await axios.post('sales', sales.value)
     console.log('Data added successfully:', response.data)
     showToast(response.data.message, 'success')

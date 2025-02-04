@@ -37,7 +37,14 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" @click="closeModal">Close</button>
-          <button type="button" class="btn btn-danger text-white" @click="AddRam">Submit</button>
+          <button
+            type="submit"
+            class="btn btn-danger text-white"
+            @click="AddRam"
+            :disabled="isLoading"
+          >
+            {{ isLoading ? 'Submitting...' : 'Submit' }}
+          </button>
         </div>
       </div>
     </div>
@@ -53,6 +60,8 @@ import { showToast } from '@/utilities/toast'
 const ram = ref({
   name: '',
 })
+const isLoading = ref(false)
+
 let addForm
 
 onMounted(() => {
@@ -74,6 +83,7 @@ async function AddRam() {
   }
 
   try {
+    isLoading.value = true
     const response = await axios.post('ram', ram.value)
     console.log('Data added successfully:', response.data.message)
     showToast(response.data.message, 'success')

@@ -20,7 +20,7 @@ const editModalRef = ref(null)
 const deleteModalRef = ref(null)
 const viewLoan = ref({})
 const editLoan = ref({})
-const loading = ref(true)
+const loading = ref(false)
 
 const token = localStorage.getItem('token')
 // Constants
@@ -186,6 +186,7 @@ const fetchSales = async () => {
 
 const updateLoans = async (updatedLoans) => {
   try {
+    loading.value = true
     const response = await axios.put(`loans/${id.value}`, updatedLoans)
     showToast(response.data.message, 'success')
     closeEditModal()
@@ -265,7 +266,7 @@ onMounted(() => {
         :loading="loading"
         :theme-color="baseColor"
         :rows-per-page="10"
-        table-class-name="head-table"
+        table-class-name="customize-table"
         alternating
         show-index
         border-cell
@@ -327,6 +328,7 @@ onMounted(() => {
       :rams="rams"
       :androids="androids"
       :sales="sales"
+      :loading="loading"
       @update="updateLoans"
       @close="closeEditModal"
     />
@@ -336,7 +338,7 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.head-table {
+.customize-table {
   --easy-table-border: 1px solid #445269;
   --easy-table-row-border: 1px solid #445269;
 

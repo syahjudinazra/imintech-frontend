@@ -325,7 +325,7 @@ watch(selectedUser, () => {
             :loading="loading"
             :theme-color="baseColor"
             :rows-per-page="10"
-            table-class-name="head-table"
+            table-class-name="customize-table"
             alternating
             show-index
             border-cell

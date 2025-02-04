@@ -356,7 +356,14 @@ onMounted(() => {
             </div>
           </div>
         </div>
-        <button v-if="canCreate" type="submit" class="btn btn-danger text-white">Submit</button>
+        <button
+          v-if="canCreate"
+          type="submit"
+          class="btn btn-danger text-white"
+          :disabled="isLoading"
+        >
+          {{ isLoading ? 'Submitting...' : 'Submit' }}
+        </button>
       </form>
     </div>
   </div>

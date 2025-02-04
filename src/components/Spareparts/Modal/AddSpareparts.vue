@@ -81,7 +81,9 @@
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" @click="closeModal">Close</button>
-            <button type="submit" class="btn btn-danger text-white">Submit</button>
+            <button type="submit" class="btn btn-danger text-white" :disabled="isLoading">
+              {{ isLoading ? 'Submitting...' : 'Submit' }}
+            </button>
           </div>
         </form>
       </div>

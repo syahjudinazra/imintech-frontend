@@ -17,7 +17,7 @@ const editModalRef = ref(null)
 const viewModalRef = ref(null)
 const deleteModalRef = ref(null)
 const editStocks = ref({})
-const loading = ref(true)
+const loading = ref(false)
 
 // Constants
 const baseColor = '#e55353'
@@ -193,6 +193,7 @@ const fetchLocations = async () => {
 
 const updateStocks = async (updatedStock) => {
   try {
+    loading.value = true
     const stockToUpdate = {
       ...updatedStock,
       stocks_devices_id: parseInt(updatedStock.stocks_devices_id),
@@ -290,7 +291,7 @@ function closeDeleteModal() {
         :loading="loading"
         :theme-color="baseColor"
         :rows-per-page="10"
-        table-class-name="head-table"
+        table-class-name="customize-table"
         alternating
         show-index
         border-cell
@@ -366,6 +367,7 @@ function closeDeleteModal() {
     :stocks-device="stocksDevice"
     :stocks-sku-device="skuDevice"
     :locations="locations"
+    :loading="loading"
     @update="updateStocks"
     @close="closeEditModal"
   />
@@ -374,7 +376,7 @@ function closeDeleteModal() {
 </template>
 
 <style scoped>
-.head-table {
+.customize-table {
   --easy-table-border: 1px solid #445269;
   --easy-table-row-border: 1px solid #445269;
 

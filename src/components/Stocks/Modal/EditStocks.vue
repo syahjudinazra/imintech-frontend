@@ -228,7 +228,9 @@
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" @click="closeModal">Close</button>
-            <button type="submit" class="btn btn-danger text-white">Submit</button>
+            <button type="submit" class="btn btn-danger text-white" :disabled="loading">
+              {{ loading ? 'Submitting...' : 'Submit' }}
+            </button>
           </div>
         </form>
       </div>
@@ -259,6 +261,9 @@ const props = defineProps({
   },
   locations: {
     type: Array,
+    default: () => [],
+  },
+  loading: {
     default: () => [],
   },
 })
