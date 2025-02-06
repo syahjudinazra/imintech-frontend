@@ -11,26 +11,23 @@ export const mockServerItems = async (options) => {
   } = options
 
   // Create filter parameters
-  const filterParams = {}
+  const params = {
+    page,
+    rowsPerPage,
+    sortBy,
+    sortType,
+    search: searchTerm,
+  }
 
-  // Handle individual column filters
+  // Add individual column filters
   Object.entries(filters).forEach(([key, value]) => {
     if (value && value.toString().trim() !== '') {
-      filterParams[`filter[${key}]`] = value.toString().trim()
+      params[`filter[${key}]`] = value.toString().trim()
     }
   })
 
   try {
-    const response = await axios.get('spareparts', {
-      params: {
-        page,
-        rowsPerPage,
-        sortBy,
-        sortType,
-        ...filterParams,
-        search: searchTerm, // Add global search parameter if needed
-      },
-    })
+    const response = await axios.get('spareparts', { params })
 
     return {
       serverCurrentPageItems: response.data.data,

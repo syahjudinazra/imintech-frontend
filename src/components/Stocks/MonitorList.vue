@@ -15,7 +15,12 @@ const locations = ref([])
 const loading = ref(true)
 const summary = ref({})
 const error = ref(null)
-
+const pagination = ref({
+  total: 0,
+  current_page: 1,
+  per_page: 10,
+  last_page: 1,
+})
 // Constants
 const STATUS_VALUES = ['Warehouse', 'Services', 'Loan', 'Sold', 'Damage', 'Entrust']
 const BASE_COLOR = '#e55353'
@@ -40,8 +45,8 @@ const headers = [
   { text: 'Total', value: 'total', sortable: true },
 ]
 
-const serverItemsLength = ref(0)
 const serverOptions = ref({
+  page: 1,
   sortBy: 'device',
   sortType: 'desc',
   searchTerm: '',
@@ -145,21 +150,27 @@ const loadFromServer = async () => {
   error.value = null
 
   try {
-    const { sortBy, sortType, searchTerm } = serverOptions.value
+    const { page, sortBy, sortType, searchTerm } = serverOptions.value
     const response = await axios.get('stocks', {
       params: {
+        page,
         sort_by: sortBy === 'device' ? 'stocks_devices_id' : sortBy,
         sort_type: sortType,
         search: searchTerm,
       },
     })
 
-    const { data, devices: deviceData, summary: summaryData, total } = response.data
+    const {
+      data,
+      devices: deviceData,
+      summary: summaryData,
+      pagination: paginationData,
+    } = response.data
 
     stocks.value = data
     devices.value = deviceData
     summary.value = summaryData
-    serverItemsLength.value = total
+    pagination.value = paginationData
   } catch (error) {
     console.error('Error loading data:', error)
     error.value = 'Failed to load stocks data'
@@ -250,12 +261,15 @@ watch(
           :headers="headers"
           :items="processedUniqueStocks"
           :loading="loading"
-          :rows-per-page="10"
           :theme-color="BASE_COLOR"
+          :server-options="serverOptions"
+          :server-items-length="pagination.total"
+          :rows-items="10"
           table-class-name="customize-table"
           alternating
           border-cell
           buttons-pagination
+          @server-page-change="(page) => (serverOptions.page = page)"
         >
           <template #loading>
             <div class="d-flex justify-content-center p-4">
@@ -298,14 +312,6 @@ watch(
 </template>
 
 <style scoped>
-.customize-table {
-  --easy-table-border: 1px solid #445269;
-  --easy-table-row-border: 1px solid #445269;
-  --easy-table-header-font-size: 14px;
-  --easy-table-header-height: 50px;
-  --easy-table-header-font-color: #c1cad4;
-}
-
 .card {
   transition: all 0.2s ease-in-out;
 }

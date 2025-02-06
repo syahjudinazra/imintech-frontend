@@ -33,14 +33,6 @@ const headers = ref([
   { text: 'Action', value: 'action' },
 ])
 
-const filters = ref({
-  no_spareparts: '',
-  spareparts_devices_id: '',
-  name: '',
-  quantity: '',
-  price: '',
-})
-
 const serverItemsLength = ref(0)
 const serverOptions = ref({
   page: 1,
@@ -49,6 +41,14 @@ const serverOptions = ref({
   sortType: 'desc',
   searchTerm: '',
   filters: {},
+})
+
+const filters = ref({
+  no_spareparts: '',
+  spareparts_devices_id: '',
+  name: '',
+  quantity: '',
+  price: '',
 })
 
 const debounce = (fn, wait) => {
@@ -68,19 +68,14 @@ const updateFilters = debounce((column, value) => {
   // Update the filter value
   filters.value[column] = value
 
-  // Create a clean filters object
-  const activeFilters = {}
-  Object.entries(filters.value).forEach(([key, val]) => {
-    if (val !== '' && val !== null && val !== undefined) {
-      activeFilters[key] = val
-    }
-  })
-
-  // Update server options
+  // Update server options with new filters
   serverOptions.value = {
     ...serverOptions.value,
     page: 1, // Reset to first page
-    filters: activeFilters,
+    filters: {
+      ...serverOptions.value.filters,
+      [column]: value,
+    },
   }
 }, 300)
 
@@ -113,6 +108,19 @@ const updateSearch = (term) => {
     page: 1,
   }
 }
+
+watch(
+  filters,
+  (newFilters) => {
+    // Update server options with all current filters
+    serverOptions.value = {
+      ...serverOptions.value,
+      filters: { ...newFilters },
+      page: 1, // Reset to first page when filters change
+    }
+  },
+  { deep: true },
+)
 
 watch(
   serverOptions,
