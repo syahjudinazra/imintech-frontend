@@ -21,6 +21,7 @@ const pagination = ref({
   per_page: 10,
   last_page: 1,
 })
+
 // Constants
 const STATUS_VALUES = ['Warehouse', 'Services', 'Loan', 'Sold', 'Damage', 'Entrust']
 const BASE_COLOR = '#e55353'
@@ -47,24 +48,16 @@ const headers = [
 
 const serverOptions = ref({
   page: 1,
-  sortBy: 'device',
+  sortBy: 'stocks_devices_id',
   sortType: 'desc',
   searchTerm: '',
 })
 
-// Lifecycle hooks
-onMounted(() => {
-  loadFromServer()
-  fetchLocations()
-})
-
-// Add permission check utility
+// Permission checks
 const checkPermission = (permissionName) => {
   try {
     const userData = JSON.parse(localStorage.getItem('users'))
     if (!userData?.permissions) return false
-
-    // Check if the permission exists
     return userData.permissions.some(
       (permission) => permission.name.toLowerCase() === permissionName.toLowerCase(),
     )
@@ -74,77 +67,60 @@ const checkPermission = (permissionName) => {
   }
 }
 
-// Create computed property for stocks permission
+// Computed permissions
 const canCreate = computed(() => checkPermission('Create Stocks'))
 const canExport = computed(() => checkPermission('Export Stocks'))
 const canImport = computed(() => checkPermission('Import Stocks'))
 const canMove = computed(() => checkPermission('Move SN Stocks'))
 
-// Device mapping helper
-const getDeviceName = computed(() => {
-  const deviceMap = new Map(devices.value.map((device) => [device.id, device.name]))
-  return (deviceId) => deviceMap.get(deviceId) || deviceId
-})
+// Transform data for table display
+const processedStocks = computed(() => {
+  const groupedData = new Map()
 
-// New computed property to group stocks by device ID
-const groupedStocks = computed(() => {
-  const grouped = new Map()
-
-  stocks.value.forEach((stock) => {
-    if (!grouped.has(stock.stocks_devices_id)) {
-      grouped.set(stock.stocks_devices_id, {
-        stocks_devices_id: stock.stocks_devices_id,
-        device: getDeviceName.value(stock.stocks_devices_id),
-        warehouse: 0,
-        services: 0,
-        loan: 0,
-        sold: 0,
-        damage: 0,
-        entrust: 0,
-        total: 0,
-      })
-    }
+  // Initialize counters for each device
+  devices.value.forEach((device) => {
+    groupedData.set(device.id, {
+      stocks_devices_id: device.id,
+      device: device.name,
+      warehouse: 0,
+      services: 0,
+      loan: 0,
+      sold: 0,
+      damage: 0,
+      entrust: 0,
+      total: 0,
+    })
   })
 
   // Update counts from summary data
-  Object.entries(summary.value).forEach(([status, counts]) => {
-    Object.entries(counts).forEach(([deviceId, count]) => {
-      const device = grouped.get(parseInt(deviceId))
-      if (device) {
-        device[status.toLowerCase()] = count
-        device.total += count
+  Object.entries(summary.value).forEach(([status, deviceCounts]) => {
+    Object.entries(deviceCounts).forEach(([deviceId, count]) => {
+      const deviceData = groupedData.get(parseInt(deviceId))
+      if (deviceData) {
+        deviceData[status.toLowerCase()] = count
+        deviceData.total += count
       }
     })
   })
 
-  return Array.from(grouped.values())
+  return Array.from(groupedData.values())
 })
 
-// Use the grouped data for the table
-const processedUniqueStocks = computed(() => {
-  return groupedStocks.value
+// Status helpers
+const getStatusClass = computed(() => (status) => STATUS_CLASSES[status])
+
+const getTotalByStatus = computed(() => (status) => {
+  if (!summary.value[status]) return 0
+  return Object.values(summary.value[status]).reduce((sum, count) => sum + count, 0)
 })
 
-// Rest of the computed properties
-const getStatusClass = computed(() => {
-  return (status) => STATUS_CLASSES[status]
+const getPercentageByStatus = computed(() => (status) => {
+  const statusTotal = getTotalByStatus.value(status)
+  const overallTotal = STATUS_VALUES.reduce((sum, s) => sum + getTotalByStatus.value(s), 0)
+  return overallTotal ? Math.round((statusTotal / overallTotal) * 100) : 0
 })
 
-const getTotalByStatus = computed(() => {
-  return (status) => {
-    if (!summary.value[status]) return 0
-    return Object.values(summary.value[status]).reduce((sum, count) => sum + count, 0)
-  }
-})
-
-const getPercentageByStatus = computed(() => {
-  return (status) => {
-    const statusTotal = getTotalByStatus.value(status)
-    const overallTotal = STATUS_VALUES.reduce((sum, s) => sum + getTotalByStatus.value(s), 0)
-    return overallTotal ? Math.round((statusTotal / overallTotal) * 100) : 0
-  }
-})
-
+// Server communication
 const loadFromServer = async () => {
   loading.value = true
   error.value = null
@@ -154,7 +130,7 @@ const loadFromServer = async () => {
     const response = await axios.get('stocks', {
       params: {
         page,
-        sort_by: sortBy === 'device' ? 'stocks_devices_id' : sortBy,
+        sort_by: sortBy,
         sort_type: sortType,
         search: searchTerm,
       },
@@ -189,6 +165,7 @@ const fetchLocations = async () => {
   }
 }
 
+// Event handlers
 const refreshList = () => {
   serverOptions.value.page = 1
   loadFromServer()
@@ -201,6 +178,20 @@ const updateSearch = (term) => {
     page: 1,
   }
 }
+
+const handleSort = (options) => {
+  serverOptions.value = {
+    ...serverOptions.value,
+    sortBy: options.sortBy,
+    sortType: options.sortType,
+  }
+}
+
+// Lifecycle
+onMounted(() => {
+  loadFromServer()
+  fetchLocations()
+})
 
 // Watchers
 watch(
@@ -232,7 +223,7 @@ watch(
       </div>
     </div>
 
-    <!-- Header Controls with Improved Layout -->
+    <!-- Header Controls -->
     <div class="d-flex justify-content-between align-items-center mb-4">
       <div class="d-flex gap-2">
         <AddStock v-if="canCreate" @data-added="refreshList" />
@@ -242,7 +233,7 @@ watch(
         </button>
       </div>
       <div class="d-flex align-items-center gap-2">
-        <ExportStocks v-if="canExport" :data="groupedStocks" :loading="loading" />
+        <ExportStocks v-if="canExport" :data="processedStocks" :loading="loading" />
         <ImportStocks v-if="canImport" @import-complete="refreshList" />
         <MoveSn
           v-if="canMove"
@@ -254,22 +245,22 @@ watch(
       </div>
     </div>
 
-    <!-- Enhanced Data Table -->
+    <!-- Data Table -->
     <div class="card border-0 shadow-sm">
       <div class="card-body p-0">
         <EasyDataTable
           :headers="headers"
-          :items="processedUniqueStocks"
+          :items="processedStocks"
           :loading="loading"
           :theme-color="BASE_COLOR"
           :server-options="serverOptions"
           :server-items-length="pagination.total"
-          :rows-items="10"
           table-class-name="customize-table"
           alternating
           border-cell
-          buttons-pagination
+          hide-footer
           @server-page-change="(page) => (serverOptions.page = page)"
+          @server-sort-change="handleSort"
         >
           <template #loading>
             <div class="d-flex justify-content-center p-4">

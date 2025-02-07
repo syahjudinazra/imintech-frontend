@@ -4,10 +4,6 @@ export default [
     name: 'Dashboard',
     to: '/dashboard',
     icon: 'cil-speedometer',
-    badge: {
-      color: 'primary',
-      text: 'NEW',
-    },
   },
   {
     component: 'CNavTitle',
@@ -146,6 +142,10 @@ export default [
         to: '/services/add-new',
       },
       {
+        component: 'CBadge',
+        name: 'Customers',
+      },
+      {
         component: 'CNavItem',
         name: 'Queue Customers',
         to: '/services/queue-customers',
@@ -164,6 +164,10 @@ export default [
         component: 'CNavItem',
         name: 'Done Customers',
         to: '/services/done-customers',
+      },
+      {
+        component: 'CBadge',
+        name: 'Stocks',
       },
       {
         component: 'CNavItem',
