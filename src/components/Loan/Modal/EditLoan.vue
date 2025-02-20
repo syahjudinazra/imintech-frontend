@@ -32,9 +32,8 @@
               <input
                 v-model="editedLoan.serial_number"
                 type="text"
-                class="form-control shadow-none bg-light"
+                class="form-control shadow-none"
                 id="serial_number"
-                readonly
               />
             </div>
 

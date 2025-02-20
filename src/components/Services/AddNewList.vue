@@ -181,17 +181,17 @@ onMounted(() => {
     <div class="row addDataForms">
       <div class="d-flex justify-content-between mb-2">
         <div class="title">
-          <h1 class="h3 mb-3 text-gray-800">Add New Service</h1>
+          <h1 class="dark-text mb-3 text-gray-800">Add New Service</h1>
         </div>
         <div class="others d-flex align-items-center gap-2">
           <ExportServices v-if="canExport" />
           <ImportServices v-if="canImport" />
         </div>
       </div>
-      <hr class="w-100" />
+      <hr class="dark-text w-100" />
       <form @submit.prevent="addServices" class="mb-4" enctype="multipart/form-data">
         <div class="form-group mb-3">
-          <label class="fw-bold" for="serial_number">Serial Number</label>
+          <label class="dark-text fw-bold" for="serial_number">Serial Number</label>
           <input
             v-model="services.serial_number"
             type="text"
@@ -205,7 +205,7 @@ onMounted(() => {
 
         <!--Ticket Service Section-->
         <div class="form-group mb-3">
-          <label class="fw-bold" for="ticket_services">Ticket Service</label>
+          <label class="dark-text fw-bold" for="ticket_services">Ticket Service</label>
           <div class="d-flex">
             <input
               v-model="services.ticket_services"
@@ -223,7 +223,7 @@ onMounted(() => {
 
         <!--Date of Entry Section-->
         <div class="form-group mb-3">
-          <label class="fw-bold" for="date_in_services">Date of Entry</label>
+          <label class="dark-text fw-bold" for="date_in_services">Date of Entry</label>
           <VueDatePicker
             v-model="services.date_in_services"
             :enable-time-picker="false"
@@ -233,7 +233,7 @@ onMounted(() => {
 
         <!--Owner Section-->
         <div class="form-group mb-3">
-          <label class="fw-bold">Owner</label><br />
+          <label class="dark-text fw-bold">Owner</label><br />
           <div class="form-check form-check-inline">
             <input
               v-model="services.owner"
@@ -243,7 +243,7 @@ onMounted(() => {
               value="Stocks"
               @change="updateOwnerRelatedFields"
             />
-            <label class="form-check-label" for="stocks">Stocks</label>
+            <label class="dark-text form-check-label" for="stocks">Stocks</label>
           </div>
           <div class="form-check form-check-inline mb-3">
             <input
@@ -254,12 +254,12 @@ onMounted(() => {
               value="Customers"
               @change="updateOwnerRelatedFields"
             />
-            <label class="form-check-label" for="customers">Customers</label>
+            <label class="dark-text form-check-label" for="customers">Customers</label>
           </div>
         </div>
 
         <div class="form-group mb-3">
-          <label class="fw-bold" for="customers">Customers</label>
+          <label class="dark-text fw-bold" for="customers">Customers</label>
           <input
             v-model="services.customers"
             type="text"
@@ -272,7 +272,7 @@ onMounted(() => {
 
         <!--Device Type Section-->
         <div class="form-group mb-3">
-          <label for="services_devices_id" class="form-label fw-bold">Device type</label>
+          <label for="services_devices_id" class="form-label dark-text fw-bold">Device type</label>
           <v-select
             v-model="services.services_devices_id"
             :options="servicesDevice"
@@ -290,7 +290,7 @@ onMounted(() => {
 
         <!--Usages Section-->
         <div class="form-group mb-3">
-          <label for="usages_id" class="form-label fw-bold">Choose Usage</label>
+          <label for="usages_id" class="form-label dark-text fw-bold">Choose Usage</label>
           <v-select
             v-model="services.usages_id"
             :options="usages"
@@ -308,7 +308,7 @@ onMounted(() => {
 
         <!--Damage Section-->
         <div class="form-group mb-3">
-          <label class="fw-bold" for="damage">Damage</label>
+          <label class="dark-text fw-bold" for="damage">Damage</label>
           <textarea
             v-model="services.damage"
             class="form-control shadow-none"
@@ -320,7 +320,7 @@ onMounted(() => {
 
         <!--Notes Section-->
         <div class="form-group mb-3">
-          <label class="fw-bold" for="note">Notes</label>
+          <label class="dark-text fw-bold" for="note">Notes</label>
           <textarea
             v-model="services.note"
             class="form-control shadow-none"
@@ -332,7 +332,7 @@ onMounted(() => {
 
         <!--Status Section-->
         <div class="form-group mb-3" hidden>
-          <label for="status" class="form-label fw-bold">Status</label>
+          <label for="status" class="form-label dark-text fw-bold">Status</label>
           <div class="d-flex gap-2">
             <div class="form-check">
               <input
@@ -371,7 +371,13 @@ onMounted(() => {
 
 <style scoped>
 input:focus,
-textarea:focus {
+textarea:focus,
+select:focus {
+  border-color: #d22c36;
+}
+
+.form-check-input:checked {
+  background-color: #d22c36;
   border-color: #d22c36;
 }
 
@@ -384,5 +390,37 @@ textarea:focus {
 .disabled {
   pointer-events: none;
   opacity: 0.65;
+}
+
+[data-coreui-theme='dark'] .dark-text {
+  color: #000000;
+}
+
+/* Light mode placeholder */
+.v-select .vs__search::placeholder,
+.v-select .vs__dropdown-toggle .vs__selected-options .vs__selected {
+  color: #db1111 !important;
+}
+
+/* Dark mode placeholder */
+[data-coreui-theme='dark'] .v-select .vs__search::placeholder,
+[data-coreui-theme='dark'] .v-select .vs__dropdown-toggle .vs__selected-options .vs__selected {
+  color: #ffffff !important;
+}
+
+/* Selected text color for dark mode */
+[data-coreui-theme='dark'] .v-select .vs__selected {
+  color: #ffffff !important;
+}
+
+/* Dropdown text color for dark mode */
+[data-coreui-theme='dark'] .v-select .vs__dropdown-menu {
+  color: #ffffff !important;
+  background: #2c2c34;
+}
+
+/* Search input text color for dark mode */
+[data-coreui-theme='dark'] .v-select .vs__search {
+  color: #ffffff !important;
 }
 </style>
