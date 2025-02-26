@@ -132,6 +132,18 @@ const routes = [
             meta: { requiresAuth: true },
           },
           {
+            path: '/services/incoming-customers',
+            name: 'Customers',
+            component: () => import('@/views/services/IncomingCustomers.vue'),
+            meta: { requiresAuth: true },
+          },
+          {
+            path: '/services/incoming-stocks',
+            name: 'Stock',
+            component: () => import('@/views/services/IncomingStocks.vue'),
+            meta: { requiresAuth: true },
+          },
+          {
             path: '/services/queue-customers',
             name: 'Queue Customers',
             component: () => import('@/views/services/QueueCustomers.vue'),

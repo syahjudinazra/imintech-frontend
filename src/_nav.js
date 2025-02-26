@@ -142,52 +142,14 @@ export default [
         to: '/services/add-new',
       },
       {
-        component: 'CBadge',
+        component: 'CNavItem',
         name: 'Customers',
+        to: '/services/incoming-customers',
       },
       {
         component: 'CNavItem',
-        name: 'Queue Customers',
-        to: '/services/queue-customers',
-      },
-      {
-        component: 'CNavItem',
-        name: 'Pending Customers',
-        to: '/services/pending-customers',
-      },
-      {
-        component: 'CNavItem',
-        name: 'Validation Customers',
-        to: '/services/validation-customers',
-      },
-      {
-        component: 'CNavItem',
-        name: 'Done Customers',
-        to: '/services/done-customers',
-      },
-      {
-        component: 'CBadge',
-        name: 'Stocks',
-      },
-      {
-        component: 'CNavItem',
-        name: 'Queue Stocks',
-        to: '/services/queue-stocks',
-      },
-      {
-        component: 'CNavItem',
-        name: 'Pending Stocks',
-        to: '/services/pending-stocks',
-      },
-      {
-        component: 'CNavItem',
-        name: 'Validation Stocks',
-        to: '/services/validation-stocks',
-      },
-      {
-        component: 'CNavItem',
-        name: 'Done Stocks',
-        to: '/services/done-stocks',
+        name: 'Stock',
+        to: '/services/incoming-stocks',
       },
       {
         component: 'CBadge',

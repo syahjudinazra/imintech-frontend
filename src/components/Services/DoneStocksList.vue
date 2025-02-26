@@ -7,6 +7,7 @@ import MoveDoneStocks from '../Services/Modal/Stocks/MoveDoneStocks.vue'
 import EditDoneCustomers from '../Services/Modal/Customers/EditDoneCustomers.vue'
 import DeleteServices from '../Services/Modal/DeleteServices.vue'
 import Search from '../Layouts/SearchAll.vue'
+import ProcessNavigationStocks from './etc/ProcessNavigationStocks.vue'
 import { mockServerItems } from '../../mock/mockDoneStocks'
 
 // Refs
@@ -312,6 +313,7 @@ onMounted(() => {
 
 <template>
   <div class="container-fluid">
+    <ProcessNavigationStocks />
     <div class="d-flex justify-content-between align-items-center">
       <div class="add-button"></div>
       <div class="others d-flex align-items-center gap-2">

@@ -7,6 +7,7 @@ import MoveValidationCustomers from '../Services/Modal/Customers/MoveValidationC
 import EditValidationCustomers from '../Services/Modal/Customers/EditValidationCustomers.vue'
 import DeleteServices from '../Services/Modal/DeleteServices.vue'
 import Search from '../Layouts/SearchAll.vue'
+import ProcessNavigation from './etc/ProcessNavigation.vue'
 import { mockServerItems } from '../../mock/mockValidationCustomers'
 
 // Refs
@@ -313,6 +314,7 @@ onMounted(() => {
 
 <template>
   <div class="container-fluid">
+    <ProcessNavigation />
     <div class="d-flex justify-content-between align-items-center">
       <div class="add-button"></div>
       <div class="others d-flex align-items-center gap-2">

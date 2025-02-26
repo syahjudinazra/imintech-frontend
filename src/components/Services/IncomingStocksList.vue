@@ -2,13 +2,14 @@
 import { ref, onMounted, computed, watch } from 'vue'
 import axios from 'axios'
 import { showToast } from '@/utilities/toast'
-import ViewValidationCustomers from '../Services/Modal/Customers/ViewValidationCustomers.vue'
-import MoveValidationStocks from '../Services/Modal/Stocks/MoveValidationStocks.vue'
-import EditValidationCustomers from '../Services/Modal/Customers/EditValidationCustomers.vue'
+import ViewIncoming from '../Services/Modal/ViewIncoming.vue'
+import MoveIncomingStocks from '../Services/Modal/Stocks/MoveIncomingStocks.vue'
+import RequestPendingCustomers from '../Services/Modal/Customers/SparepartsPendingCustomers.vue'
+import EditIncoming from '../Services/Modal/EditIncoming.vue'
 import DeleteServices from '../Services/Modal/DeleteServices.vue'
 import Search from '../Layouts/SearchAll.vue'
 import ProcessNavigationStocks from './etc/ProcessNavigationStocks.vue'
-import { mockServerItems } from '../../mock/mockValidationStocks'
+import { mockServerItems } from '../../mock/mockIncomingStocks'
 
 // Refs
 const id = ref(null)
@@ -27,6 +28,11 @@ const viewService = ref({})
 const moveService = ref({})
 const editService = ref({})
 const loading = ref(true)
+
+// New refs for Request Spareparts modal
+const showRequestModal = ref(false)
+const selectedServiceId = ref(null)
+const selectedCustomerName = ref('')
 
 const token = localStorage.getItem('token')
 // Constants
@@ -80,7 +86,7 @@ const loadFromServer = async () => {
     serverItemsLength.value = serverTotalItemsLength
   } catch (error) {
     console.error('Error loading data', error)
-    showToast('Failed to load stocks device data.', 'error')
+    showToast('Failed to load service data.', 'error')
   } finally {
     loading.value = false
   }
@@ -272,6 +278,12 @@ const moveModal = (service) => {
   moveModalRef.value.showModal()
 }
 
+const reqModal = (service) => {
+  selectedServiceId.value = service.id
+  selectedCustomerName.value = service.customers
+  showRequestModal.value = true
+}
+
 const editModal = (service) => {
   editService.value = { ...service }
   id.value = service.id
@@ -289,6 +301,12 @@ const closeViewModal = () => {
 
 const closeMoveModal = () => {
   moveModalRef.value.hideModal()
+}
+
+const closeReqModal = () => {
+  showRequestModal.value = false
+  selectedServiceId.value = null
+  selectedCustomerName.value = ''
 }
 
 const closeEditModal = () => {
@@ -382,6 +400,12 @@ onMounted(() => {
                 <a
                   href="#"
                   class="dropdown-item head-text text-decoration-none"
+                  @click.prevent="reqModal(item)"
+                  >Request Spareparts</a
+                >
+                <a
+                  href="#"
+                  class="dropdown-item head-text text-decoration-none"
                   @click.prevent="deleteModal(item)"
                   >Delete</a
                 >
@@ -392,28 +416,38 @@ onMounted(() => {
       </EasyDataTable>
     </div>
 
-    <ViewValidationCustomers
+    <ViewIncoming
       ref="viewModalRef"
       :service="viewService"
       :sparepart-requests="sparepartRequests"
       @close="closeViewModal"
     />
 
-    <EditValidationCustomers
+    <EditIncoming
       ref="editModalRef"
       :service="editService"
       :service-device="servicesDevice"
-      :usages="usages"
-      :technicians="technicians"
       @update="updateServices"
       @close="closeEditModal"
     />
 
-    <MoveValidationStocks
+    <MoveIncomingStocks
       ref="moveModalRef"
       :service="moveService"
+      :usages="usages"
+      :spareparts="spareparts"
       @update="moveServices"
       @close="closeMoveModal"
+    />
+
+    <RequestPendingCustomers
+      v-model="showRequestModal"
+      :service-id="selectedServiceId"
+      :spareparts="spareparts"
+      :spareparts-device="sparepartsDevice"
+      :customer-name="selectedCustomerName"
+      @update="reqSpareparts"
+      @close="closeReqModal"
     />
 
     <DeleteServices ref="deleteModalRef" @delete="deleteServices" @close="closeDeleteModal" />

@@ -8,6 +8,7 @@ import RequestPendingCustomers from '../Services/Modal/Customers/SparepartsPendi
 import EditPendingCustomers from '../Services/Modal/Customers/EditPendingCustomers.vue'
 import DeleteServices from '../Services/Modal/DeleteServices.vue'
 import Search from '../Layouts/SearchAll.vue'
+import ProcessNavigation from './etc/ProcessNavigation.vue'
 import { mockServerItems } from '../../mock/mockPendingCustomers'
 
 // Refs
@@ -331,6 +332,7 @@ onMounted(() => {
 
 <template>
   <div class="container-fluid">
+    <ProcessNavigation />
     <div class="d-flex justify-content-between align-items-center">
       <div class="add-button"></div>
       <div class="others d-flex align-items-center gap-2">

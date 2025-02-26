@@ -1,31 +1,24 @@
 <script setup>
 import { ref, onMounted, computed, watch } from 'vue'
-import { useRouter } from 'vue-router'
 import axios from 'axios'
 import { showToast } from '@/utilities/toast'
 import VueDatePicker from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
-import ExportServices from '../Services/Excel/ExportServices.vue'
-import ImportServices from '../Services/Excel/ImportServices.vue'
 
 const services = ref({
   serial_number: '',
   ticket_services: '',
-  date_in_services: null,
+  date_in_services: formatDate(new Date()),
   owner: '',
   customers: '',
+  pic: '',
+  contact: '',
   services_devices_id: null,
-  usages_id: null,
-  damage: '',
-  note: `Tanggal Pembelian:
-Kelengkapan:`,
   status: '',
 })
 
 const servicesDevice = ref([])
-const usages = ref([])
 const isLoading = ref(false)
-const router = useRouter()
 
 function generateTicketService() {
   const date = new Date()
@@ -34,6 +27,14 @@ function generateTicketService() {
   const year = date.getFullYear()
   const randomNum = Math.floor(Math.random() * 1000) + 1 // Random number between 1 and 1000
   services.value.ticket_services = `C-${day}/${month}/${year}/${randomNum}`
+}
+
+// Add this helper function to format the date
+function formatDate(date) {
+  const day = String(date.getDate()).padStart(2, '0')
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const year = date.getFullYear()
+  return `${year}-${month}-${day}`
 }
 
 watch(
@@ -61,8 +62,6 @@ const checkPermission = (permissionName) => {
 
 // Create computed property for permission
 const canCreate = computed(() => checkPermission('Create Services'))
-const canExport = computed(() => checkPermission('Export Services'))
-const canImport = computed(() => checkPermission('Import Services'))
 
 // Generic function to fetch all data
 const fetchAllData = async (endpoint, currentPage = 1, allData = []) => {
@@ -101,14 +100,6 @@ const fetchServicesDevice = async () => {
   }
 }
 
-const fetchUsages = async () => {
-  try {
-    usages.value = await fetchAllData('usages')
-  } catch (error) {
-    console.error('Error fetching usages:', error)
-  }
-}
-
 const addServices = async () => {
   try {
     isLoading.value = true
@@ -128,7 +119,6 @@ const addServices = async () => {
     })
     showToast(response.data.message, 'success')
     clearInput()
-    await router.push({ name: 'Queue Customers' })
   } catch (error) {
     console.error('Error adding service:', {
       message: error.message,
@@ -163,16 +153,15 @@ const clearInput = () => {
 const updateOwnerRelatedFields = () => {
   if (services.value.owner === 'Stocks') {
     services.value.customers = 'iMin ID'
-    services.value.status = 'Queue Stocks'
+    services.value.status = 'Incoming Stocks'
   } else {
     services.value.customers = ''
-    services.value.status = 'Queue Customers'
+    services.value.status = 'Incoming Customers'
   }
 }
 
 onMounted(() => {
   fetchServicesDevice()
-  fetchUsages()
 })
 </script>
 
@@ -181,17 +170,13 @@ onMounted(() => {
     <div class="row addDataForms">
       <div class="d-flex justify-content-between mb-2">
         <div class="title">
-          <h1 class="dark-text mb-3 text-gray-800">Add New Service</h1>
-        </div>
-        <div class="others d-flex align-items-center gap-2">
-          <ExportServices v-if="canExport" />
-          <ImportServices v-if="canImport" />
+          <h1 class="dark-text mb-3 text-gray-800">Incoming Service</h1>
         </div>
       </div>
       <hr class="dark-text w-100" />
       <form @submit.prevent="addServices" class="mb-4" enctype="multipart/form-data">
         <div class="form-group mb-3">
-          <label class="dark-text fw-bold" for="serial_number">Serial Number</label>
+          <label class="form-label dark-text fw-bold" for="serial_number">Serial Number</label>
           <input
             v-model="services.serial_number"
             type="text"
@@ -205,7 +190,7 @@ onMounted(() => {
 
         <!--Ticket Service Section-->
         <div class="form-group mb-3">
-          <label class="dark-text fw-bold" for="ticket_services">Ticket Service</label>
+          <label class="form-label dark-text fw-bold" for="ticket_services">Ticket Service</label>
           <div class="d-flex">
             <input
               v-model="services.ticket_services"
@@ -223,17 +208,20 @@ onMounted(() => {
 
         <!--Date of Entry Section-->
         <div class="form-group mb-3">
-          <label class="dark-text fw-bold" for="date_in_services">Date of Entry</label>
+          <label class="form-label dark-text fw-bold" for="date_in_services">Date of Entry</label>
           <VueDatePicker
             v-model="services.date_in_services"
             :enable-time-picker="false"
             placeholder="Select Date"
+            format="dd-MM-yyyy"
+            model-type="yyyy-MM-dd"
+            readonly
           />
         </div>
 
         <!--Owner Section-->
         <div class="form-group mb-3">
-          <label class="dark-text fw-bold">Owner</label><br />
+          <label class="form-label dark-text fw-bold">Owner</label><br />
           <div class="form-check form-check-inline">
             <input
               v-model="services.owner"
@@ -243,7 +231,7 @@ onMounted(() => {
               value="Stocks"
               @change="updateOwnerRelatedFields"
             />
-            <label class="dark-text form-check-label" for="stocks">Stocks</label>
+            <label class="form-label dark-text form-check-label" for="stocks">Stocks</label>
           </div>
           <div class="form-check form-check-inline mb-3">
             <input
@@ -258,14 +246,41 @@ onMounted(() => {
           </div>
         </div>
 
+        <!--Customers Section-->
         <div class="form-group mb-3">
-          <label class="dark-text fw-bold" for="customers">Customers</label>
+          <label class="form-label dark-text fw-bold" for="customers">Customers</label>
           <input
             v-model="services.customers"
             type="text"
             class="form-control shadow-none"
             id="customers"
             placeholder="Input Customers"
+            required
+          />
+        </div>
+
+        <!--PIC Section-->
+        <div class="form-group mb-3">
+          <label class="form-label dark-text fw-bold" for="pic">PIC</label>
+          <input
+            v-model="services.pic"
+            type="text"
+            class="form-control shadow-none"
+            id="pic"
+            placeholder="Input PIC"
+            required
+          />
+        </div>
+
+        <!--Contact Section-->
+        <div class="form-group mb-3">
+          <label class="form-label dark-text fw-bold" for="contact">Contact</label>
+          <input
+            v-model="services.contact"
+            type="number"
+            class="form-control shadow-none"
+            id="contact"
+            placeholder="Input Contact (0812xxxxxxx)"
             required
           />
         </div>
@@ -288,71 +303,31 @@ onMounted(() => {
           </v-select>
         </div>
 
-        <!--Usages Section-->
-        <div class="form-group mb-3">
-          <label for="usages_id" class="form-label dark-text fw-bold">Choose Usage</label>
-          <v-select
-            v-model="services.usages_id"
-            :options="usages"
-            label="name"
-            :reduce="(usage) => usage.id"
-            :searchable="true"
-            :clearable="false"
-            placeholder="Choose Usage"
-          >
-            <template #no-options="{ search, searching }">
-              {{ searching ? `No results found for "${search}"` : 'Start typing to search...' }}
-            </template>
-          </v-select>
-        </div>
-
-        <!--Damage Section-->
-        <div class="form-group mb-3">
-          <label class="dark-text fw-bold" for="damage">Damage</label>
-          <textarea
-            v-model="services.damage"
-            class="form-control shadow-none"
-            id="damage"
-            placeholder="Input Damage"
-            required
-          ></textarea>
-        </div>
-
-        <!--Notes Section-->
-        <div class="form-group mb-3">
-          <label class="dark-text fw-bold" for="note">Notes</label>
-          <textarea
-            v-model="services.note"
-            class="form-control shadow-none"
-            id="note"
-            placeholder="Input Notes"
-            required
-          ></textarea>
-        </div>
-
         <!--Status Section-->
         <div class="form-group mb-3" hidden>
           <label for="status" class="form-label dark-text fw-bold">Status</label>
           <div class="d-flex gap-2">
             <div class="form-check">
               <input
-                :value="'Queue Customers'"
+                :value="'Incoming Customers'"
                 v-model="services.status"
                 class="form-check-input"
                 type="radio"
-                id="statusQueueCustomers"
+                id="statusIncomingCustomers"
               />
-              <label class="form-check-label" for="statusQueueCustomers">Queue Customers</label>
+              <label class="form-check-label" for="statusIncomingCustomers"
+                >Incoming Customers</label
+              >
             </div>
             <div class="form-check">
               <input
-                :value="'Queue Stocks'"
+                :value="'Incoming Stocks'"
                 v-model="services.status"
                 class="form-check-input"
                 type="radio"
-                id="statusQueueStocks"
+                id="statusIncomingStocks"
               />
-              <label class="form-check-label" for="statusQueueStocks">Queue Stocks</label>
+              <label class="form-check-label" for="statusIncomingStocks">Incoming Stocks</label>
             </div>
           </div>
         </div>
@@ -390,6 +365,13 @@ select:focus {
 .disabled {
   pointer-events: none;
   opacity: 0.65;
+}
+
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 [data-coreui-theme='dark'] .dark-text {
