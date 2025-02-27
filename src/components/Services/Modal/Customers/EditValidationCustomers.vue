@@ -65,6 +65,28 @@
               />
             </div>
 
+            <!--PIC-->
+            <div class="mb-3">
+              <label for="pic" class="form-label fw-bold">PIC</label>
+              <input
+                v-model="editedService.pic"
+                type="text"
+                class="form-control shadow-none"
+                id="pic"
+              />
+            </div>
+
+            <!--Contact-->
+            <div class="mb-3">
+              <label for="contact" class="form-label fw-bold">Contact</label>
+              <input
+                v-model="editedService.contact"
+                type="text"
+                class="form-control shadow-none"
+                id="contact"
+              />
+            </div>
+
             <!--Device Type-->
             <div class="mb-3">
               <label for="serviceDevice" class="form-label fw-bold">Device Type</label>

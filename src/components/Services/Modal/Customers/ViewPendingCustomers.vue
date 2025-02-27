@@ -49,6 +49,30 @@
             />
           </div>
 
+          <!--PIC-->
+          <div class="mb-3">
+            <label class="form-label fw-bold" for="pic">PIC</label>
+            <input
+              :value="service?.pic"
+              type="text"
+              class="form-control shadow-none bg-light"
+              id="pic"
+              readonly
+            />
+          </div>
+
+          <!--Contact-->
+          <div class="mb-3">
+            <label class="form-label fw-bold" for="contact">Contact</label>
+            <input
+              :value="service?.contact"
+              type="text"
+              class="form-control shadow-none bg-light"
+              id="contact"
+              readonly
+            />
+          </div>
+
           <!--Device Type-->
           <div class="mb-3">
             <label class="form-label fw-bold">Device Type</label>

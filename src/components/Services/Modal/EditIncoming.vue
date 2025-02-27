@@ -61,7 +61,6 @@
                 type="text"
                 class="form-control shadow-none"
                 id="customers"
-                required
               />
             </div>
 
@@ -73,7 +72,6 @@
                 type="text"
                 class="form-control shadow-none"
                 id="pic"
-                required
               />
             </div>
 
@@ -85,7 +83,6 @@
                 type="text"
                 class="form-control shadow-none"
                 id="contact"
-                required
               />
             </div>
 

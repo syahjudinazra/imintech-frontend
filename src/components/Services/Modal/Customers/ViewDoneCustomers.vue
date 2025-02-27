@@ -1,3 +1,112 @@
+<script setup>
+import { ref, defineProps, defineEmits, onMounted, computed } from 'vue'
+import { Modal } from 'bootstrap'
+import VueDatePicker from '@vuepic/vue-datepicker'
+import '@vuepic/vue-datepicker/dist/main.css'
+
+const props = defineProps({
+  service: {
+    type: Object,
+    default: () => ({}),
+  },
+  serviceDevice: {
+    type: Array,
+    default: () => [],
+  },
+  sparepartRequests: {
+    type: Array,
+    default: () => [],
+  },
+  sparepartsDetails: {
+    type: Array,
+    default: () => [],
+  },
+})
+
+const emit = defineEmits(['close'])
+const viewModal = ref(null)
+const selectedImage = ref(null)
+const showImagePreview = ref(false)
+
+// Compute parsed images array from JSON string
+const parsedImages = computed(() => {
+  if (!props.service?.images) return []
+  try {
+    return typeof props.service.images === 'string'
+      ? JSON.parse(props.service.images)
+      : props.service.images
+  } catch (e) {
+    console.error('Error parsing images:', e)
+    return []
+  }
+})
+
+// Compute parsed documents array from JSON string
+const parsedDocuments = computed(() => {
+  if (!props.service?.documents) return []
+  try {
+    return typeof props.service.documents === 'string'
+      ? JSON.parse(props.service.documents)
+      : props.service.documents
+  } catch (e) {
+    console.error('Error parsing documents:', e)
+    return []
+  }
+})
+
+// Helper functions for image preview
+const openImagePreview = (imagePath) => {
+  selectedImage.value = imagePath
+  showImagePreview.value = true
+}
+
+const closeImagePreview = () => {
+  showImagePreview.value = false
+  selectedImage.value = null
+}
+
+const showModal = () => {
+  viewModal.value.show()
+}
+
+const closeModal = () => {
+  viewModal.value.hide()
+  emit('close')
+}
+
+const hideModal = () => {
+  viewModal.value.hide()
+}
+
+const customDateFormat = 'dd/MM/yyyy'
+
+const formatDateForPicker = (date) => {
+  if (!date) return null
+  return new Date(date)
+}
+
+const formatSparepartNumbers = (requests) => {
+  if (requests && requests.length > 0) {
+    return requests.map((req) => req.no_spareparts).join(', ')
+  }
+
+  if (props.sparepartsDetails && props.sparepartsDetails.length > 0) {
+    return props.sparepartsDetails.map((item) => `${item.no_spareparts}`).join(', ')
+  }
+
+  return 'No spareparts requested'
+}
+
+defineExpose({
+  showModal,
+  hideModal,
+})
+
+onMounted(() => {
+  viewModal.value = new Modal(document.getElementById('viewForm'))
+})
+</script>
+
 <template>
   <div
     class="modal fade"
@@ -45,6 +154,30 @@
               type="text"
               class="form-control shadow-none bg-light"
               id="customers"
+              readonly
+            />
+          </div>
+
+          <!--PIC-->
+          <div class="mb-3">
+            <label class="form-label fw-bold" for="pic">PIC</label>
+            <input
+              :value="service?.pic"
+              type="text"
+              class="form-control shadow-none bg-light"
+              id="pic"
+              readonly
+            />
+          </div>
+
+          <!--Contact-->
+          <div class="mb-3">
+            <label class="form-label fw-bold" for="contact">Contact</label>
+            <input
+              :value="service?.contact"
+              type="text"
+              class="form-control shadow-none bg-light"
+              id="contact"
               readonly
             />
           </div>
@@ -286,115 +419,6 @@
     </div>
   </div>
 </template>
-
-<script setup>
-import { ref, defineProps, defineEmits, onMounted, computed } from 'vue'
-import { Modal } from 'bootstrap'
-import VueDatePicker from '@vuepic/vue-datepicker'
-import '@vuepic/vue-datepicker/dist/main.css'
-
-const props = defineProps({
-  service: {
-    type: Object,
-    default: () => ({}),
-  },
-  serviceDevice: {
-    type: Array,
-    default: () => [],
-  },
-  sparepartRequests: {
-    type: Array,
-    default: () => [],
-  },
-  sparepartsDetails: {
-    type: Array,
-    default: () => [],
-  },
-})
-
-const emit = defineEmits(['close'])
-const viewModal = ref(null)
-const selectedImage = ref(null)
-const showImagePreview = ref(false)
-
-// Compute parsed images array from JSON string
-const parsedImages = computed(() => {
-  if (!props.service?.images) return []
-  try {
-    return typeof props.service.images === 'string'
-      ? JSON.parse(props.service.images)
-      : props.service.images
-  } catch (e) {
-    console.error('Error parsing images:', e)
-    return []
-  }
-})
-
-// Compute parsed documents array from JSON string
-const parsedDocuments = computed(() => {
-  if (!props.service?.documents) return []
-  try {
-    return typeof props.service.documents === 'string'
-      ? JSON.parse(props.service.documents)
-      : props.service.documents
-  } catch (e) {
-    console.error('Error parsing documents:', e)
-    return []
-  }
-})
-
-// Helper functions for image preview
-const openImagePreview = (imagePath) => {
-  selectedImage.value = imagePath
-  showImagePreview.value = true
-}
-
-const closeImagePreview = () => {
-  showImagePreview.value = false
-  selectedImage.value = null
-}
-
-const showModal = () => {
-  viewModal.value.show()
-}
-
-const closeModal = () => {
-  viewModal.value.hide()
-  emit('close')
-}
-
-const hideModal = () => {
-  viewModal.value.hide()
-}
-
-const customDateFormat = 'dd/MM/yyyy'
-
-const formatDateForPicker = (date) => {
-  if (!date) return null
-  return new Date(date)
-}
-
-const formatSparepartNumbers = (requests) => {
-  if (requests && requests.length > 0) {
-    return requests.map((req) => req.no_spareparts).join(', ')
-  }
-
-  if (props.sparepartsDetails && props.sparepartsDetails.length > 0) {
-    return props.sparepartsDetails.map((item) => `${item.no_spareparts}`).join(', ')
-  }
-
-  return 'No spareparts requested'
-}
-
-defineExpose({
-  showModal,
-  hideModal,
-})
-
-onMounted(() => {
-  viewModal.value = new Modal(document.getElementById('viewForm'))
-})
-</script>
 
 <style scoped>
 input:focus {

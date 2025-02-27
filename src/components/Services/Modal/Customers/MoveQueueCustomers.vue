@@ -1,244 +1,3 @@
-<template>
-  <div
-    class="modal fade"
-    id="moveForm"
-    tabindex="-1"
-    aria-labelledby="moveForm_label"
-    aria-hidden="true"
-  >
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="moveForm_label">Move Data</h5>
-          <button type="button" class="btn-close" aria-label="Close" @click="closeModal" />
-        </div>
-        <form @submit.prevent="moveForm">
-          <div class="modal-body">
-            <!-- Serial Number -->
-            <div class="mb-3">
-              <label for="serial_number" class="form-label fw-bold"> Serial number </label>
-              <input
-                v-model="movedService.serial_number"
-                type="text"
-                class="form-control bg-light shadow-none"
-                id="serial_number"
-                readonly
-              />
-            </div>
-
-            <!-- Customers -->
-            <div class="mb-3">
-              <label for="customers" class="form-label fw-bold">Customers</label>
-              <input
-                v-model="movedService.customers"
-                type="text"
-                class="form-control bg-light shadow-none"
-                id="customers"
-                readonly
-              />
-            </div>
-
-            <!-- Damage -->
-            <div class="mb-3">
-              <label for="damage" class="form-label fw-bold"> Damage </label>
-              <textarea
-                v-model="movedService.damage"
-                class="form-control bg-light shadow-none"
-                id="damage"
-                readonly
-              />
-            </div>
-
-            <!-- Repair -->
-            <div class="mb-3">
-              <label for="repair" class="form-label fw-bold"> Repair </label>
-              <textarea
-                v-model="movedService.repair"
-                class="form-control shadow-none"
-                id="repair"
-                placeholder="Input Repair"
-              />
-            </div>
-
-            <!-- Technician -->
-            <div class="mb-3">
-              <label for="technician" class="form-label fw-bold"> Technician </label>
-              <v-select
-                v-model="movedService.technicians_id"
-                :options="props.technicians"
-                :reduce="(technician) => technician.id"
-                label="name"
-                :searchable="true"
-                :clearable="false"
-                placeholder="Select Technician"
-                id="technician"
-                required
-              >
-                <template #no-options="{ search, searching }">
-                  <template v-if="searching">
-                    No results found for <em>{{ search }}</em>
-                  </template>
-                  <em v-else>Start typing to search...</em>
-                </template>
-              </v-select>
-            </div>
-
-            <!-- No Spareparts -->
-            <div class="mb-3">
-              <label for="no_spareparts" class="form-label fw-bold">No Spareparts</label>
-              <input
-                v-model="movedService.no_spareparts"
-                type="text"
-                class="form-control shadow-none"
-                id="no_spareparts"
-                placeholder="Input No Spareparts"
-              />
-            </div>
-
-            <!-- SN Cannibal -->
-            <div class="mb-3">
-              <label for="sn_kanibal" class="form-label fw-bold">SN Cannibal</label>
-              <input
-                v-model="movedService.sn_kanibal"
-                type="text"
-                class="form-control shadow-none"
-                id="sn_kanibal"
-                placeholder="Input SN Cannibal"
-              />
-            </div>
-
-            <!-- Date Exit -->
-            <div class="mb-3">
-              <label for="date_out_services" class="form-label fw-bold">Date exit</label>
-              <VueDatePicker
-                v-model="movedService.date_out_services"
-                :enable-time-picker="false"
-                :format="customDateFormat"
-                :model-value="formatDateForPicker(movedService.date_out_services)"
-                @update:model-value="handleDateChange"
-                placeholder="Select Date"
-              />
-            </div>
-
-            <!-- Note -->
-            <div class="mb-3">
-              <label for="note" class="form-label fw-bold"> Note </label>
-              <textarea v-model="movedService.note" class="form-control shadow-none" id="note" />
-            </div>
-
-            <!-- File Upload - Images -->
-            <div class="mb-3">
-              <label for="images" class="form-label fw-bold">Upload Payment</label>
-              <input
-                type="file"
-                class="form-control shadow-none"
-                id="images"
-                multiple
-                @change="handleImageUpload"
-                accept="image/jpeg,image/png,image/jpg"
-                ref="imageInput"
-              />
-              <small class="text-secondary">Support file: PNG,JPG,JPEG. Max 2MB</small>
-              <!-- Image Preview -->
-              <div v-if="imagePreviewUrls.length" class="mt-2 d-flex flex-wrap gap-2">
-                <div
-                  v-for="(url, index) in imagePreviewUrls"
-                  :key="index"
-                  class="position-relative"
-                >
-                  <img
-                    :src="url"
-                    class="img-thumbnail"
-                    style="height: 100px; width: 100px; object-fit: cover"
-                  />
-                  <button
-                    type="button"
-                    class="btn btn-danger btn-sm position-absolute top-0 end-0"
-                    @click="removeImage(index)"
-                  >
-                    x
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <!-- File Upload - Documents -->
-            <div class="mb-3">
-              <label for="documents" class="form-label fw-bold">Upload Invoice</label>
-              <input
-                type="file"
-                class="form-control shadow-none"
-                id="documents"
-                multiple
-                @change="handleDocumentUpload"
-                accept="application/pdf"
-                ref="documentInput"
-              />
-              <small class="text-secondary">Support file: .Pdf Max 5MB</small>
-              <!-- Document Preview -->
-              <div v-if="documentFiles.length" class="mt-2">
-                <div
-                  v-for="(file, index) in documentFiles"
-                  :key="index"
-                  class="d-flex align-items-center gap-2 mb-2"
-                >
-                  <i class="bi bi-file-earmark-text"></i>
-                  <span>{{ file.name }}</span>
-                  <button
-                    type="button"
-                    class="btn btn-danger btn-sm"
-                    @click="removeDocument(index)"
-                  >
-                    x
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <!-- Status -->
-            <div class="form-group mb-3">
-              <label for="status" class="form-label fw-bold">Status</label>
-              <div class="d-flex gap-2">
-                <div class="form-check">
-                  <input
-                    v-model="movedService.status"
-                    class="form-check-input"
-                    type="radio"
-                    name="status"
-                    id="statusPending"
-                    value="Pending Customers"
-                  />
-                  <label class="form-check-label" for="statusPending"> Pending Customers </label>
-                </div>
-                <div class="form-check">
-                  <input
-                    v-model="movedService.status"
-                    class="form-check-input"
-                    type="radio"
-                    name="status"
-                    id="statusValidation"
-                    value="Validation Customers"
-                  />
-                  <label class="form-check-label" for="statusValidation">
-                    Validation Customers
-                  </label>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" @click="closeModal">Close</button>
-            <button type="submit" class="btn btn-danger text-white" :disabled="!isDataChanged">
-              Submit
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup>
 import { ref, watch, onMounted, reactive } from 'vue'
 import { Modal } from 'bootstrap'
@@ -441,6 +200,13 @@ const resetForm = () => {
 
 // Modal handlers
 const showModal = () => {
+  // Set today's date when modal is opened
+  movedService.date_out_services = new Date()
+
+  // Mark date_out_services as changed
+  changedFields.date_out_services = true
+  isDataChanged.value = true
+
   moveModal?.show()
 }
 
@@ -466,7 +232,10 @@ watch(
       const serviceClone = cloneDeep(newService)
       Object.assign(movedService, serviceClone)
 
-      if (movedService.date_out_services) {
+      // Set today's date as the default date_out_services if none exists
+      if (!movedService.date_out_services) {
+        movedService.date_out_services = new Date()
+      } else {
         movedService.date_out_services = formatDateForPicker(movedService.date_out_services)
       }
     }
@@ -502,6 +271,246 @@ defineExpose({
   hideModal,
 })
 </script>
+
+<template>
+  <div
+    class="modal fade"
+    id="moveForm"
+    tabindex="-1"
+    aria-labelledby="moveForm_label"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="moveForm_label">Move Data</h5>
+          <button type="button" class="btn-close" aria-label="Close" @click="closeModal" />
+        </div>
+        <form @submit.prevent="moveForm">
+          <div class="modal-body">
+            <!-- Serial Number -->
+            <div class="mb-3">
+              <label for="serial_number" class="form-label fw-bold"> Serial number </label>
+              <input
+                v-model="movedService.serial_number"
+                type="text"
+                class="form-control bg-light shadow-none"
+                id="serial_number"
+                readonly
+              />
+            </div>
+
+            <!-- Customers -->
+            <div class="mb-3">
+              <label for="customers" class="form-label fw-bold">Customers</label>
+              <input
+                v-model="movedService.customers"
+                type="text"
+                class="form-control bg-light shadow-none"
+                id="customers"
+                readonly
+              />
+            </div>
+
+            <!-- Damage -->
+            <div class="mb-3">
+              <label for="damage" class="form-label fw-bold"> Damage </label>
+              <textarea
+                v-model="movedService.damage"
+                class="form-control bg-light shadow-none"
+                id="damage"
+                readonly
+              />
+            </div>
+
+            <!-- Repair -->
+            <div class="mb-3">
+              <label for="repair" class="form-label fw-bold"> Repair </label>
+              <textarea
+                v-model="movedService.repair"
+                class="form-control shadow-none"
+                id="repair"
+                placeholder="Input Repair"
+              />
+            </div>
+
+            <!-- Technician -->
+            <div class="mb-3">
+              <label for="technician" class="form-label fw-bold"> Technician </label>
+              <v-select
+                v-model="movedService.technicians_id"
+                :options="props.technicians"
+                :reduce="(technician) => technician.id"
+                label="name"
+                :searchable="true"
+                :clearable="false"
+                placeholder="Select Technician"
+                id="technician"
+                required
+              >
+                <template #no-options="{ search, searching }">
+                  <template v-if="searching">
+                    No results found for <em>{{ search }}</em>
+                  </template>
+                  <em v-else>Start typing to search...</em>
+                </template>
+              </v-select>
+            </div>
+
+            <!-- No Spareparts -->
+            <div class="mb-3">
+              <label for="no_spareparts" class="form-label fw-bold">No Spareparts</label>
+              <input
+                v-model="movedService.no_spareparts"
+                type="text"
+                class="form-control shadow-none"
+                id="no_spareparts"
+                placeholder="Input No Spareparts"
+              />
+            </div>
+
+            <!-- SN Cannibal -->
+            <div class="mb-3">
+              <label for="sn_kanibal" class="form-label fw-bold">SN Cannibal</label>
+              <input
+                v-model="movedService.sn_kanibal"
+                type="text"
+                class="form-control shadow-none"
+                id="sn_kanibal"
+                placeholder="Input SN Cannibal"
+              />
+            </div>
+
+            <!-- Date Exit -->
+            <div class="mb-3">
+              <label for="date_out_services" class="form-label fw-bold">Date exit</label>
+              <VueDatePicker
+                v-model="movedService.date_out_services"
+                :enable-time-picker="false"
+                :format="customDateFormat"
+                @update:model-value="handleDateChange"
+                readonly
+              />
+            </div>
+
+            <!-- Note -->
+            <div class="mb-3">
+              <label for="note" class="form-label fw-bold"> Note </label>
+              <textarea v-model="movedService.note" class="form-control shadow-none" id="note" />
+            </div>
+
+            <!-- File Upload - Images -->
+            <div class="mb-3">
+              <label for="images" class="form-label fw-bold">Upload Payment</label>
+              <input
+                type="file"
+                class="form-control shadow-none"
+                id="images"
+                multiple
+                @change="handleImageUpload"
+                accept="image/jpeg,image/png,image/jpg"
+                ref="imageInput"
+              />
+              <small class="text-secondary">Support file: PNG,JPG,JPEG. Max 2MB</small>
+              <!-- Image Preview -->
+              <div v-if="imagePreviewUrls.length" class="mt-2 d-flex flex-wrap gap-2">
+                <div
+                  v-for="(url, index) in imagePreviewUrls"
+                  :key="index"
+                  class="position-relative"
+                >
+                  <img
+                    :src="url"
+                    class="img-thumbnail"
+                    style="height: 100px; width: 100px; object-fit: cover"
+                  />
+                  <button
+                    type="button"
+                    class="btn btn-danger btn-sm position-absolute top-0 end-0"
+                    @click="removeImage(index)"
+                  >
+                    x
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- File Upload - Documents -->
+            <div class="mb-3">
+              <label for="documents" class="form-label fw-bold">Upload Invoice</label>
+              <input
+                type="file"
+                class="form-control shadow-none"
+                id="documents"
+                multiple
+                @change="handleDocumentUpload"
+                accept="application/pdf"
+                ref="documentInput"
+              />
+              <small class="text-secondary">Support file: .Pdf Max 5MB</small>
+              <!-- Document Preview -->
+              <div v-if="documentFiles.length" class="mt-2">
+                <div
+                  v-for="(file, index) in documentFiles"
+                  :key="index"
+                  class="d-flex align-items-center gap-2 mb-2"
+                >
+                  <i class="bi bi-file-earmark-text"></i>
+                  <span>{{ file.name }}</span>
+                  <button
+                    type="button"
+                    class="btn btn-danger btn-sm"
+                    @click="removeDocument(index)"
+                  >
+                    x
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Status -->
+            <div class="form-group mb-3">
+              <label for="status" class="form-label fw-bold">Status</label>
+              <div class="d-flex gap-2">
+                <div class="form-check">
+                  <input
+                    v-model="movedService.status"
+                    class="form-check-input"
+                    type="radio"
+                    name="status"
+                    id="statusPending"
+                    value="Pending Customers"
+                  />
+                  <label class="form-check-label" for="statusPending"> Pending Customers </label>
+                </div>
+                <div class="form-check">
+                  <input
+                    v-model="movedService.status"
+                    class="form-check-input"
+                    type="radio"
+                    name="status"
+                    id="statusValidation"
+                    value="Validation Customers"
+                  />
+                  <label class="form-check-label" for="statusValidation">
+                    Validation Customers
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" @click="closeModal">Close</button>
+            <button type="submit" class="btn btn-danger text-white" :disabled="!isDataChanged">
+              Submit
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</template>
 
 <style scoped>
 input:focus {
