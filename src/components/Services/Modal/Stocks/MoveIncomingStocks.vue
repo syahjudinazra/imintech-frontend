@@ -75,6 +75,7 @@ import { ref, watch, onMounted, reactive } from 'vue'
 import { Modal } from 'bootstrap'
 import { showToast } from '@/utilities/toast'
 import { cloneDeep } from 'lodash-es'
+import axios from 'axios'
 import '@vuepic/vue-datepicker/dist/main.css'
 import 'vue-select/dist/vue-select.css'
 
@@ -84,14 +85,12 @@ const props = defineProps({
     required: true,
     default: () => ({}),
   },
-  usages: {
-    type: Array,
-    default: () => [],
-  },
 })
 
 const emit = defineEmits(['update', 'close'])
-
+//Reff
+const usages = ref([])
+const isLoadingUsages = ref(false)
 // State
 const isDataChanged = ref(false)
 const initialService = ref(null)
@@ -117,6 +116,21 @@ const moveForm = async () => {
   hideModal()
 }
 
+const fetchUsages = async () => {
+  if (usages.value.length > 0) return // Skip if already loaded
+
+  try {
+    isLoadingUsages.value = true
+    const response = await axios.get('usages')
+    usages.value = response.data.data
+  } catch (error) {
+    console.error('Data not found', error)
+    showToast('Failed to fetch usages.', 'error')
+  } finally {
+    isLoadingUsages.value = false
+  }
+}
+
 // Reset form
 const resetForm = () => {
   Object.keys(changedFields).forEach((key) => delete changedFields[key])
@@ -125,6 +139,7 @@ const resetForm = () => {
 
 // Modal handlers
 const showModal = () => {
+  fetchUsages()
   moveModal?.show()
 }
 

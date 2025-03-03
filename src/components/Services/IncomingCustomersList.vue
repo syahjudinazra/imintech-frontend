@@ -4,7 +4,6 @@ import axios from 'axios'
 import { showToast } from '@/utilities/toast'
 import ViewIncoming from '../Services/Modal/ViewIncoming.vue'
 import MoveIncomingCustomers from '../Services/Modal/Customers/MoveIncomingCustomers.vue'
-import RequestPendingCustomers from '../Services/Modal/Customers/SparepartsPendingCustomers.vue'
 import EditIncoming from '../Services/Modal/EditIncoming.vue'
 import DeleteServices from '../Services/Modal/DeleteServices.vue'
 import Search from '../Layouts/SearchAll.vue'
@@ -15,11 +14,7 @@ import { mockServerItems } from '../../mock/mockIncomingCustomers'
 const id = ref(null)
 const services = ref([])
 const servicesDevice = ref([])
-const sparepartsDevice = ref([])
-const sparepartRequests = ref([])
 const usages = ref([])
-const technicians = ref([])
-const spareparts = ref([])
 const moveModalRef = ref(null)
 const viewModalRef = ref(null)
 const editModalRef = ref(null)
@@ -28,11 +23,6 @@ const viewService = ref({})
 const moveService = ref({})
 const editService = ref({})
 const loading = ref(true)
-
-// New refs for Request Spareparts modal
-const showRequestModal = ref(false)
-const selectedServiceId = ref(null)
-const selectedCustomerName = ref('')
 
 const token = localStorage.getItem('token')
 // Constants
@@ -169,53 +159,6 @@ const fetchServicesDevice = async () => {
   }
 }
 
-const fetchUsages = async () => {
-  try {
-    usages.value = await fetchAllData('usages')
-  } catch (error) {
-    console.error('Data not found', error)
-    showToast('Failed to fetch usages.', 'error')
-  }
-}
-
-const fetchTechnicians = async () => {
-  try {
-    technicians.value = await fetchAllData('technician')
-  } catch (error) {
-    console.error('Data not found', error)
-    showToast('Failed to fetch technician.', 'error')
-  }
-}
-
-const fetchSpareparts = async () => {
-  try {
-    spareparts.value = await fetchAllData('spareparts')
-  } catch (error) {
-    console.error('Data not found', error)
-    showToast('Failed to fetch spareparts.', 'error')
-  }
-}
-
-const fetchSparepartsDevice = async () => {
-  try {
-    sparepartsDevice.value = await fetchAllData('spareparts-device')
-  } catch (error) {
-    console.error('Data not found', error)
-    showToast('Failed to fetch device types.', 'error')
-  }
-}
-
-const fetchSparepartRequests = async (serviceId) => {
-  try {
-    const response = await axios.get(`services/${serviceId}/sparepart-requests`)
-    return response.data.data
-  } catch (error) {
-    console.error('Failed to fetch sparepart requests:', error)
-    showToast('Failed to fetch sparepart requests', 'error')
-    return []
-  }
-}
-
 const updateServices = async (updatedServices) => {
   try {
     const response = await axios.put(`services/${id.value}`, updatedServices)
@@ -264,11 +207,6 @@ const deleteServices = async () => {
 const viewModal = async (service) => {
   viewService.value = { ...service }
   id.value = service.id
-
-  // Fetch sparepart requests for this service
-  const requests = await fetchSparepartRequests(service.id)
-  sparepartRequests.value = requests
-
   viewModalRef.value.showModal()
 }
 
@@ -276,12 +214,6 @@ const moveModal = (service) => {
   moveService.value = { ...service }
   id.value = service.id
   moveModalRef.value.showModal()
-}
-
-const reqModal = (service) => {
-  selectedServiceId.value = service.id
-  selectedCustomerName.value = service.customers
-  showRequestModal.value = true
 }
 
 const editModal = (service) => {
@@ -303,12 +235,6 @@ const closeMoveModal = () => {
   moveModalRef.value.hideModal()
 }
 
-const closeReqModal = () => {
-  showRequestModal.value = false
-  selectedServiceId.value = null
-  selectedCustomerName.value = ''
-}
-
 const closeEditModal = () => {
   editModalRef.value.hideModal()
 }
@@ -323,17 +249,13 @@ const closeDeleteModal = () => {
 onMounted(() => {
   loadFromServer()
   fetchServicesDevice()
-  fetchUsages()
-  fetchTechnicians()
-  fetchSpareparts()
-  fetchSparepartsDevice()
 })
 </script>
 
 <template>
   <div class="container-fluid">
-    <ProcessNavigation />
     <div class="d-flex justify-content-between align-items-center">
+      <ProcessNavigation />
       <div class="add-button"></div>
       <div class="others d-flex align-items-center gap-2">
         <Search :onSearch="updateSearch" />
@@ -400,12 +322,6 @@ onMounted(() => {
                 <a
                   href="#"
                   class="dropdown-item head-text text-decoration-none"
-                  @click.prevent="reqModal(item)"
-                  >Request Spareparts</a
-                >
-                <a
-                  href="#"
-                  class="dropdown-item head-text text-decoration-none"
                   @click.prevent="deleteModal(item)"
                   >Delete</a
                 >
@@ -416,12 +332,7 @@ onMounted(() => {
       </EasyDataTable>
     </div>
 
-    <ViewIncoming
-      ref="viewModalRef"
-      :service="viewService"
-      :sparepart-requests="sparepartRequests"
-      @close="closeViewModal"
-    />
+    <ViewIncoming ref="viewModalRef" :service="viewService" @close="closeViewModal" />
 
     <EditIncoming
       ref="editModalRef"
@@ -435,19 +346,8 @@ onMounted(() => {
       ref="moveModalRef"
       :service="moveService"
       :usages="usages"
-      :spareparts="spareparts"
       @update="moveServices"
       @close="closeMoveModal"
-    />
-
-    <RequestPendingCustomers
-      v-model="showRequestModal"
-      :service-id="selectedServiceId"
-      :spareparts="spareparts"
-      :spareparts-device="sparepartsDevice"
-      :customer-name="selectedCustomerName"
-      @update="reqSpareparts"
-      @close="closeReqModal"
     />
 
     <DeleteServices ref="deleteModalRef" @delete="deleteServices" @close="closeDeleteModal" />

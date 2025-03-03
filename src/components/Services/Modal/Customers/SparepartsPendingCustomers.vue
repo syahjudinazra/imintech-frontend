@@ -27,11 +27,17 @@ const props = defineProps({
     required: true,
     default: () => [],
   },
+  // Add new loading prop to handle parent's loading state
+  loading: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 const emit = defineEmits(['update:modelValue', 'update', 'close'])
 
-const loading = ref(false)
+// Use internal loading state for operations specific to this component
+const internalLoading = ref(false)
 const existingRequests = ref([])
 
 const formData = ref({
@@ -43,6 +49,9 @@ const formData = ref({
     },
   ],
 })
+
+// Combined loading state for UI
+const isLoading = computed(() => props.loading || internalLoading.value)
 
 // Watch for modal visibility changes
 watch(
@@ -57,21 +66,21 @@ watch(
 // Fetch existing sparepart requests
 const fetchExistingRequests = async () => {
   try {
-    loading.value = true
+    internalLoading.value = true
     const response = await axios.get(`services/${props.serviceId}/sparepart-requests`)
     existingRequests.value = response.data.data
   } catch (error) {
     console.error('Failed to fetch existing requests:', error)
     showToast('Failed to load existing requests', 'error')
   } finally {
-    loading.value = false
+    internalLoading.value = false
   }
 }
 
 // Cancel a sparepart request
 const cancelRequest = async (requestId) => {
   try {
-    loading.value = true
+    internalLoading.value = true
     const response = await axios.delete(
       `services/${props.serviceId}/sparepart-requests/${requestId}`,
     )
@@ -86,7 +95,7 @@ const cancelRequest = async (requestId) => {
     const errorMessage = error.response?.data?.message || 'Failed to cancel request'
     showToast(errorMessage, 'error')
   } finally {
-    loading.value = false
+    internalLoading.value = false
   }
 }
 
@@ -111,7 +120,6 @@ const availableDeviceTypes = computed(() => {
   }))
 })
 
-// Get available spareparts for a device
 // Get available spareparts for a device
 const availableSparepartsForDevice = computed(() => {
   return (deviceId) => {
@@ -186,13 +194,14 @@ const updateSparepartDetails = (index) => {
     formData.value.spareparts[index].quantity = 1
   }
 }
+
 const handleSubmit = async () => {
   if (!validateForm()) {
     showToast('Please fill all required fields correctly', 'error')
     return
   }
 
-  loading.value = true
+  internalLoading.value = true
   try {
     const requestData = {
       spareparts: formData.value.spareparts.map((item) => ({
@@ -215,7 +224,7 @@ const handleSubmit = async () => {
     const errorMessage = error.response?.data?.message || 'Failed to submit request'
     showToast(errorMessage, 'error')
   } finally {
-    loading.value = false
+    internalLoading.value = false
   }
 }
 
@@ -240,6 +249,17 @@ const validateForm = () => {
               <h5 class="modal-title">Request Spareparts</h5>
               <button type="button" class="btn-close" @click="closeModal"></button>
             </div>
+
+            <!-- Loading overlay -->
+            <div
+              v-if="isLoading"
+              class="position-absolute w-100 h-100 top-0 start-0 d-flex justify-content-center align-items-center bg-white bg-opacity-75"
+            >
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+            </div>
+
             <div class="modal-body">
               <form @submit.prevent="handleSubmit" class="needs-validation" novalidate>
                 <!-- Service Info Section -->
@@ -264,7 +284,7 @@ const validateForm = () => {
                       type="button"
                       class="btn btn-sm btn-secondary"
                       @click="addSparepartRow"
-                      :disabled="formData.spareparts.length >= 4"
+                      :disabled="formData.spareparts.length >= 4 || isLoading"
                     >
                       <CIcon :icon="cilPlus" /> Add Sparepart
                     </button>
@@ -279,6 +299,7 @@ const validateForm = () => {
                         class="form-select shadow-none"
                         required
                         @change="updateSparepartOptions(index)"
+                        :disabled="isLoading"
                       >
                         <option value="">Select Device Type</option>
                         <option
@@ -299,7 +320,7 @@ const validateForm = () => {
                         v-model="item.no_spareparts"
                         class="form-select shadow-none"
                         required
-                        :disabled="!item.spareparts_devices_id"
+                        :disabled="!item.spareparts_devices_id || isLoading"
                         @change="updateSparepartDetails(index)"
                       >
                         <option value="">Select No Spareparts</option>
@@ -328,7 +349,7 @@ const validateForm = () => {
                         required
                         min="1"
                         :max="getMaxQuantity(item.no_spareparts)"
-                        :disabled="!item.no_spareparts"
+                        :disabled="!item.no_spareparts || isLoading"
                       />
                       <div class="invalid-feedback">
                         Please enter a valid quantity (1-{{ getMaxQuantity(item.no_spareparts) }})
@@ -340,7 +361,7 @@ const validateForm = () => {
                         type="button"
                         class="btn btn-danger btn-sm mb-2"
                         @click="removeSparepartRow(index)"
-                        :disabled="formData.spareparts.length === 1"
+                        :disabled="formData.spareparts.length === 1 || isLoading"
                       >
                         <CIcon :icon="cilTrash" style="color: white" />
                       </button>
@@ -354,9 +375,9 @@ const validateForm = () => {
                 type="button"
                 class="btn btn-danger text-white"
                 @click="handleSubmit"
-                :disabled="loading || !formData.spareparts.some((part) => part.no_spareparts)"
+                :disabled="isLoading || !formData.spareparts.some((part) => part.no_spareparts)"
               >
-                {{ loading ? 'Submitting...' : 'Submit Request' }}
+                {{ isLoading ? 'Submitting...' : 'Submit Request' }}
               </button>
             </div>
             <!-- Existing Sparepart Requests Section -->
@@ -383,7 +404,7 @@ const validateForm = () => {
                         <button
                           class="btn btn-danger btn-sm text-white"
                           @click="cancelRequest(request.id)"
-                          :disabled="loading"
+                          :disabled="isLoading"
                         >
                           Cancel
                         </button>

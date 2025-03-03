@@ -19,7 +19,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, onUnmounted } from 'vue'
 
 const props = defineProps({
   onSearch: {
@@ -29,23 +29,29 @@ const props = defineProps({
 })
 
 const searchTerm = ref('')
-let debounceTimeout
+let debounceTimeout = null
 
 const debounceSearch = () => {
   clearTimeout(debounceTimeout)
+  console.log('Input detected, search term:', searchTerm.value)
+
   debounceTimeout = setTimeout(() => {
-    props.onSearch(searchTerm.value.trim())
+    const trimmedTerm = searchTerm.value.trim()
+    console.log('Debounce complete, calling onSearch with:', trimmedTerm)
+    props.onSearch(trimmedTerm)
   }, 300)
 }
 
 const resetSearch = () => {
   searchTerm.value = ''
+  console.log('Search reset, calling onSearch with empty string')
   props.onSearch('')
 }
 
-// Clear the timeout when the component is unmounted
-watch(() => {
-  return () => clearTimeout(debounceTimeout)
+onUnmounted(() => {
+  if (debounceTimeout) {
+    clearTimeout(debounceTimeout)
+  }
 })
 </script>
 

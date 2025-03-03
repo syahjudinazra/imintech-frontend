@@ -14,11 +14,9 @@ import { mockServerItems } from '../../mock/mockDoneStocks'
 const id = ref(null)
 const services = ref([])
 const servicesDevice = ref([])
-const sparepartsDevice = ref([])
 const sparepartRequests = ref([])
 const usages = ref([])
 const technicians = ref([])
-const spareparts = ref([])
 const moveModalRef = ref(null)
 const viewModalRef = ref(null)
 const editModalRef = ref(null)
@@ -181,24 +179,6 @@ const fetchTechnicians = async () => {
   }
 }
 
-const fetchSpareparts = async () => {
-  try {
-    spareparts.value = await fetchAllData('spareparts')
-  } catch (error) {
-    console.error('Data not found', error)
-    showToast('Failed to fetch spareparts.', 'error')
-  }
-}
-
-const fetchSparepartsDevice = async () => {
-  try {
-    sparepartsDevice.value = await fetchAllData('spareparts-device')
-  } catch (error) {
-    console.error('Data not found', error)
-    showToast('Failed to fetch device types.', 'error')
-  }
-}
-
 const fetchSparepartRequests = async (serviceId) => {
   try {
     const response = await axios.get(`services/${serviceId}/sparepart-requests`)
@@ -306,15 +286,13 @@ onMounted(() => {
   fetchServicesDevice()
   fetchUsages()
   fetchTechnicians()
-  fetchSpareparts()
-  fetchSparepartsDevice()
 })
 </script>
 
 <template>
   <div class="container-fluid">
-    <ProcessNavigationStocks />
     <div class="d-flex justify-content-between align-items-center">
+      <ProcessNavigationStocks />
       <div class="add-button"></div>
       <div class="others d-flex align-items-center gap-2">
         <Search :onSearch="updateSearch" />

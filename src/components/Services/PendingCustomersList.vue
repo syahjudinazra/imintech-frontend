@@ -33,6 +33,7 @@ const loading = ref(true)
 const showRequestModal = ref(false)
 const selectedServiceId = ref(null)
 const selectedCustomerName = ref('')
+const sparepartsLoading = ref(false)
 
 const token = localStorage.getItem('token')
 // Constants
@@ -187,21 +188,39 @@ const fetchTechnicians = async () => {
   }
 }
 
+// Only load spareparts data when needed
 const fetchSpareparts = async () => {
+  if (spareparts.value.length > 0) return spareparts.value
+
   try {
-    spareparts.value = await fetchAllData('spareparts')
+    sparepartsLoading.value = true
+    const data = await fetchAllData('spareparts')
+    spareparts.value = data
+    return data
   } catch (error) {
     console.error('Data not found', error)
     showToast('Failed to fetch spareparts.', 'error')
+    return []
+  } finally {
+    sparepartsLoading.value = false
   }
 }
 
+// Only load spareparts device data when needed
 const fetchSparepartsDevice = async () => {
+  if (sparepartsDevice.value.length > 0) return sparepartsDevice.value
+
   try {
-    sparepartsDevice.value = await fetchAllData('spareparts-device')
+    sparepartsLoading.value = true
+    const data = await fetchAllData('spareparts-device')
+    sparepartsDevice.value = data
+    return data
   } catch (error) {
     console.error('Data not found', error)
     showToast('Failed to fetch device types.', 'error')
+    return []
+  } finally {
+    sparepartsLoading.value = false
   }
 }
 
@@ -213,6 +232,19 @@ const fetchSparepartRequests = async (serviceId) => {
     console.error('Failed to fetch sparepart requests:', error)
     showToast('Failed to fetch sparepart requests', 'error')
     return []
+  }
+}
+
+// Function to load all spareparts data when the Request Spareparts modal is opened
+const loadSparepartsData = async () => {
+  sparepartsLoading.value = true
+  try {
+    await Promise.all([fetchSpareparts(), fetchSparepartsDevice()])
+  } catch (error) {
+    console.error('Failed to load spareparts data:', error)
+    showToast('Failed to load necessary data for request', 'error')
+  } finally {
+    sparepartsLoading.value = false
   }
 }
 
@@ -278,9 +310,11 @@ const moveModal = (service) => {
   moveModalRef.value.showModal()
 }
 
-const reqModal = (service) => {
+const reqModal = async (service) => {
   selectedServiceId.value = service.id
   selectedCustomerName.value = service.customers
+  // Only load spareparts data when request modal is opened
+  await loadSparepartsData()
   showRequestModal.value = true
 }
 
@@ -320,20 +354,22 @@ const closeDeleteModal = () => {
   id.value = null
 }
 
+const reqSpareparts = () => {
+  refreshList()
+}
+
 onMounted(() => {
   loadFromServer()
   fetchServicesDevice()
   fetchUsages()
   fetchTechnicians()
-  fetchSpareparts()
-  fetchSparepartsDevice()
 })
 </script>
 
 <template>
   <div class="container-fluid">
-    <ProcessNavigation />
     <div class="d-flex justify-content-between align-items-center">
+      <ProcessNavigation />
       <div class="add-button"></div>
       <div class="others d-flex align-items-center gap-2">
         <Search :onSearch="updateSearch" />
