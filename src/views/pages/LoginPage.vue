@@ -88,7 +88,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, getCurrentInstance } from 'vue'
 import axios from 'axios'
 import loginbg3 from '@/assets/images/loginbg3.png'
 import { useRouter } from 'vue-router'
@@ -107,6 +107,10 @@ const emailError = ref('')
 const passwordError = ref('')
 const serverErrors = ref({})
 const router = useRouter()
+
+// Get the app instance to access global properties
+const app = getCurrentInstance()
+const $auth = app?.appContext.config.globalProperties.$auth
 
 const handleSubmit = () => {
   submitted.value = true
@@ -144,6 +148,11 @@ const getLogin = async () => {
   try {
     loading.value = true
 
+    // Clear any existing session before login attempt
+    if ($auth) {
+      $auth.clearSession()
+    }
+
     const response = await axios.post('login', {
       email: email.value,
       password: password.value,
@@ -151,11 +160,28 @@ const getLogin = async () => {
 
     const token = response.data.token
     const user = response.data.users
-    localStorage.setItem('token', token)
+
+    // Use the $auth service to set token with expiry
+    if ($auth) {
+      const success = $auth.setToken(token)
+      console.log('Token set successfully:', success)
+      console.log('Expiry time:', $auth.getExpiryTime())
+    } else {
+      // Fallback if $auth is not available
+      console.log('$auth not available, using localStorage directly')
+      localStorage.setItem('token', token)
+    }
+
     localStorage.setItem('users', JSON.stringify(user))
     showToast('Login successfully', 'success')
-    router.push({ name: 'Dashboard' })
+
+    // Short delay before redirecting to ensure token is set
+    setTimeout(() => {
+      router.push({ name: 'Dashboard' })
+    }, 100)
   } catch (error) {
+    console.error('Login error:', error)
+
     if (error.response) {
       const { data, status } = error.response
 
@@ -170,10 +196,14 @@ const getLogin = async () => {
           showToast('Incorrect password', 'error')
         }
       } else {
-        showToast('Login failed. Please try again later.', 'error')
+        showToast(`Login failed (${status}). Please try again later.`, 'error')
       }
+    } else if (error.request) {
+      // Request was made but no response received
+      showToast('Server not responding. Please check your connection.', 'error')
     } else {
-      showToast('Login failed. Please check your internet connection.', 'error')
+      // Something happened in setting up the request
+      showToast(`Login error: ${error.message}`, 'error')
     }
     clearInput()
   } finally {

@@ -177,6 +177,17 @@ onMounted(() => {
               readonly
             />
           </div>
+
+          <!--Completeness-->
+          <div class="mb-3">
+            <label class="form-label fw-bold" for="completeness">Device Completeness</label>
+            <textarea
+              :value="service?.completeness"
+              class="form-control shadow-none bg-light"
+              id="completeness"
+              readonly
+            ></textarea>
+          </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" @click="closeModal">Close</button>

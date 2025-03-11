@@ -145,6 +145,17 @@
             />
           </div>
 
+          <!--Completeness-->
+          <div class="mb-3">
+            <label class="form-label fw-bold" for="completeness">Device Completeness</label>
+            <textarea
+              :value="service?.completeness"
+              class="form-control shadow-none bg-light"
+              id="completeness"
+              readonly
+            ></textarea>
+          </div>
+
           <!--Note-->
           <div class="mb-3">
             <label class="fw-bold" for="note">Note</label>

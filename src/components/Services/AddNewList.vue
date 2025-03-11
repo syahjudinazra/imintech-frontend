@@ -15,7 +15,45 @@ const services = ref({
   contact: '',
   services_devices_id: null,
   status: '',
+  completeness: '',
 })
+
+// Define device completeness items
+const deviceCompletenessItems = ref([
+  { id: 'dus', label: 'Dus iMin', checked: false },
+  { id: 'adaptor', label: 'Adaptor/Charger', checked: false },
+  { id: 'kabel', label: 'Kabel Power/Kabel USB', checked: false },
+  { id: 'printer', label: 'Printer', checked: false },
+  { id: 'scanner', label: 'Scanner', checked: false },
+  { id: 'docking', label: 'Docking', checked: false },
+  { id: 'second_screen', label: '2nd Screen', checked: false },
+  { id: 'kabel_screen', label: 'Kabel 2nd Screen', checked: false },
+  { id: 'manual', label: 'Buku Manual', checked: false },
+])
+
+// Store selected completeness items
+const selectedCompleteness = ref('')
+
+// Update the selected completeness with the labels of checked items
+const updateCompletenessData = () => {
+  // Get all checked item labels and join them with commas
+  const checkedLabels = deviceCompletenessItems.value
+    .filter((item) => item.checked)
+    .map((item) => item.label)
+    .join(', ')
+
+  // Store the comma-separated string
+  selectedCompleteness.value = checkedLabels
+
+  // Update the note field to include the completeness data
+  updateNoteWithCompleteness()
+}
+
+// Update the note field with the completeness information
+const updateNoteWithCompleteness = () => {
+  // Set the completeness field to the selected completeness items
+  services.value.completeness = selectedCompleteness.value
+}
 
 const servicesDevice = ref([])
 const isLoading = ref(false)
@@ -104,6 +142,11 @@ const addServices = async () => {
   try {
     isLoading.value = true
     const formData = new FormData()
+
+    // Update note with latest completeness data before submission
+    updateNoteWithCompleteness()
+
+    // Process all fields except 'completeness' (which doesn't exist in the database)
     Object.entries(services.value).forEach(([key, value]) => {
       if (key === 'date_in_services' && value) {
         formData.append(key, new Date(value).toISOString().split('T')[0])
@@ -139,14 +182,18 @@ const addServices = async () => {
 
 const clearInput = () => {
   Object.keys(services.value).forEach((key) => {
-    if (key === 'note') {
-      services.value[key] = 'Tanggal Pembelian:\nKelengkapan:'
-    } else if (key === 'status') {
+    if (key === 'status') {
       services.value[key] = ''
     } else {
       services.value[key] = ''
     }
   })
+  // Reset all checkboxes
+  deviceCompletenessItems.value.forEach((item) => {
+    item.checked = false
+  })
+  // Clear selected completeness
+  selectedCompleteness.value = ''
   services.value.date_in_services = null
 }
 
@@ -162,9 +209,9 @@ const updateOwnerRelatedFields = () => {
 
 onMounted(() => {
   fetchServicesDevice()
+  generateTicketService()
 })
 </script>
-
 <template>
   <div class="container w-50 p-3">
     <div class="row addDataForms">
@@ -220,7 +267,7 @@ onMounted(() => {
         </div>
 
         <!--Owner Section-->
-        <div class="form-group mb-3">
+        <div class="form-group">
           <label class="form-label dark-text fw-bold">Owner</label><br />
           <div class="form-check form-check-inline">
             <input
@@ -233,7 +280,7 @@ onMounted(() => {
             />
             <label class="form-label dark-text form-check-label" for="stocks">Stocks</label>
           </div>
-          <div class="form-check form-check-inline mb-3">
+          <div class="form-check form-check-inline">
             <input
               v-model="services.owner"
               class="form-check-input mt-1"
@@ -281,7 +328,6 @@ onMounted(() => {
             class="form-control shadow-none"
             id="contact"
             placeholder="Input Contact (0812xxxxxxx)"
-            required
           />
         </div>
 
@@ -301,6 +347,21 @@ onMounted(() => {
               {{ searching ? `No results found for "${search}"` : 'Start typing to search...' }}
             </template>
           </v-select>
+        </div>
+
+        <!--Device Completeness Section-->
+        <div class="form-group mb-3">
+          <label class="form-label dark-text fw-bold" for="completeness">Device Completeness</label>
+          <div v-for="item in deviceCompletenessItems" :key="item.id" class="form-check">
+            <input
+              class="form-check-input"
+              type="checkbox"
+              :id="item.id"
+              v-model="item.checked"
+              @change="updateCompletenessData"
+            />
+            <label class="form-check-label" :for="item.id">{{ item.label }}</label>
+          </div>
         </div>
 
         <!--Status Section-->
