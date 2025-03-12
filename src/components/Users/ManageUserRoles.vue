@@ -45,7 +45,20 @@ const permissions = computed(() => {
   const standardPermissions = pages.value.flatMap((page) =>
     actions.value.map((action) => `${action} ${page}`),
   )
-  const specialPermissions = ['Move SN Stocks', 'Move Services', 'Move Loan']
+  const specialPermissions = [
+    'Move SN Stocks',
+    'Move Loan',
+    'Move Incoming',
+    'Move Queue',
+    'Move Pending',
+    'Move Validation',
+    'Move Done',
+    'Edit Incoming',
+    'Edit Queue',
+    'Edit Pending',
+    'Edit Validation',
+    'Edit Done',
+  ]
   return [...standardPermissions, ...specialPermissions]
 })
 
@@ -269,21 +282,49 @@ watch(selectedUser, () => {
                     </label>
                   </div>
 
-                  <!-- Special "move" permissions for Services and Loan pages -->
-                  <div class="form-check" v-if="page === 'Services'">
-                    <input
-                      class="form-check-input shadow-none"
-                      type="checkbox"
-                      :id="`${page}-moveSN`"
-                      :value="`Move ${page}`"
-                      v-model="selectedPermissions"
-                      :disabled="!roleAssigned"
-                      :checked="userPermissions.includes(`Move ${page}`)"
-                    />
-                    <label class="form-check-label" :for="`${page}-moveSN`">
-                      {{ `Move ${page}` }}
-                    </label>
+                  <!-- Special permissions for Services -->
+                  <div class="" v-if="page === 'Services'">
+                    <div
+                      class="form-check"
+                      v-for="stage in ['Incoming', 'Queue', 'Pending', 'Validation', 'Done']"
+                      :key="`Move-${stage}`"
+                    >
+                      <input
+                        class="form-check-input shadow-none"
+                        type="checkbox"
+                        :id="`Services-Move-${stage}`"
+                        :value="`Move ${stage}`"
+                        v-model="selectedPermissions"
+                        :disabled="!roleAssigned"
+                        :checked="userPermissions.includes(`Move ${stage}`)"
+                      />
+                      <label class="form-check-label" :for="`Services-Move-${stage}`">
+                        {{ `Move ${stage}` }}
+                      </label>
+                    </div>
+
+                    <!-- Edit permissions for each stage -->
+                    <div
+                      class="form-check"
+                      v-for="stage in ['Incoming', 'Queue', 'Pending', 'Validation', 'Done']"
+                      :key="`Edit-${stage}`"
+                    >
+                      <input
+                        class="form-check-input shadow-none"
+                        type="checkbox"
+                        :id="`Services-Edit-${stage}`"
+                        :value="`Edit ${stage}`"
+                        v-model="selectedPermissions"
+                        :disabled="!roleAssigned"
+                        :checked="userPermissions.includes(`Edit ${stage}`)"
+                      />
+                      <label class="form-check-label" :for="`Services-Edit-${stage}`">
+                        {{ `Edit ${stage}` }}
+                      </label>
+                    </div>
                   </div>
+
+                  <!-- Special permissions for Loan -->
                   <div class="form-check" v-if="page === 'Loan'">
                     <input
                       class="form-check-input shadow-none"

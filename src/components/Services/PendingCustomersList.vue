@@ -129,8 +129,8 @@ const checkPermission = (permissionName) => {
 
 // Create computed property for permission
 const canView = computed(() => checkPermission('View Services'))
-const canEdit = computed(() => checkPermission('Edit Services'))
-const canMove = computed(() => checkPermission('Move Services'))
+const canEdit = computed(() => checkPermission('Edit Pending'))
+const canMove = computed(() => checkPermission('Move Pending'))
 
 // Generic function to fetch all data
 const fetchAllData = async (endpoint, currentPage = 1, allData = []) => {

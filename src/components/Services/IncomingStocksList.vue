@@ -118,8 +118,8 @@ const checkPermission = (permissionName) => {
 
 // Create computed property for permission
 const canView = computed(() => checkPermission('View Services'))
-const canEdit = computed(() => checkPermission('Edit Services'))
-const canMove = computed(() => checkPermission('Move Services'))
+const canEdit = computed(() => checkPermission('Edit Incoming'))
+const canMove = computed(() => checkPermission('Move Incoming'))
 
 // Generic function to fetch all data
 const fetchAllData = async (endpoint, currentPage = 1, allData = []) => {
@@ -255,8 +255,8 @@ onMounted(() => {
 
 <template>
   <div class="container-fluid">
-    <ProcessNavigationStocks />
     <div class="d-flex justify-content-between align-items-center">
+      <ProcessNavigationStocks />
       <div class="add-button"></div>
       <div class="others d-flex align-items-center gap-2">
         <Search :onSearch="updateSearch" />
