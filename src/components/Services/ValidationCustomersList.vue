@@ -2,7 +2,7 @@
 import { ref, onMounted, computed, watch } from 'vue'
 import axios from 'axios'
 import { showToast } from '@/utilities/toast'
-import ViewValidationCustomers from '../Services/Modal/Customers/ViewValidationCustomers.vue'
+import ViewValidation from './Modal/ViewValidation.vue'
 import MoveValidationCustomers from '../Services/Modal/Customers/MoveValidationCustomers.vue'
 import EditValidationCustomers from '../Services/Modal/Customers/EditValidationCustomers.vue'
 import DeleteServices from '../Services/Modal/DeleteServices.vue'
@@ -335,7 +335,6 @@ onMounted(() => {
             >
             <div class="btn-group dropend">
               <a
-                v-if="canEdit"
                 type="button"
                 class="text-decoration-none dropdown-toggle"
                 data-bs-toggle="dropdown"
@@ -345,6 +344,7 @@ onMounted(() => {
               </a>
               <ul class="dropdown-menu">
                 <a
+                  v-if="canEdit"
                   href="#"
                   class="dropdown-item head-text text-decoration-none"
                   @click.prevent="editModal(item)"
@@ -370,7 +370,7 @@ onMounted(() => {
       </EasyDataTable>
     </div>
 
-    <ViewValidationCustomers
+    <ViewValidation
       ref="viewModalRef"
       :service="viewService"
       :sparepart-requests="sparepartRequests"

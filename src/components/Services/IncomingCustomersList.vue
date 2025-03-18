@@ -297,7 +297,6 @@ onMounted(() => {
             >
             <div class="btn-group dropend">
               <a
-                v-if="canEdit"
                 type="button"
                 class="text-decoration-none dropdown-toggle"
                 data-bs-toggle="dropdown"
@@ -307,6 +306,7 @@ onMounted(() => {
               </a>
               <ul class="dropdown-menu">
                 <a
+                  v-if="canEdit"
                   href="#"
                   class="dropdown-item head-text text-decoration-none"
                   @click.prevent="editModal(item)"

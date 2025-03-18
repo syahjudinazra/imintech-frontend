@@ -2,24 +2,21 @@
 import { ref, onMounted, computed, watch } from 'vue'
 import axios from 'axios'
 import { showToast } from '@/utilities/toast'
-import ViewQueue from '../Services/Modal/ViewQueue.vue'
-import MoveQueueStocks from '../Services/Modal/Stocks/MoveQueueStocks.vue'
-import RequestPendingCustomers from '../Services/Modal/Customers/SparepartsPendingCustomers.vue'
-import EditPendingCustomers from '../Services/Modal/Customers/EditPendingCustomers.vue'
+import ViewDelivery from '../Services/Modal/ViewDelivery.vue'
+import MoveDelivery from './Modal/Customers/MoveDeliveryCustomers.vue'
+import EditValidationCustomers from '../Services/Modal/Customers/EditValidationCustomers.vue'
 import DeleteServices from '../Services/Modal/DeleteServices.vue'
 import Search from '../Layouts/SearchAll.vue'
-import ProcessNavigationStocks from './etc/ProcessNavigationStocks.vue'
-import { mockServerItems } from '../../mock/mockQueueStocks'
+import ProcessNavigation from './etc/ProcessNavigation.vue'
+import { mockServerItems } from '../../mock/mockDeliveryCustomers'
 
 // Refs
 const id = ref(null)
 const services = ref([])
 const servicesDevice = ref([])
-const sparepartsDevice = ref([])
 const sparepartRequests = ref([])
 const usages = ref([])
 const technicians = ref([])
-const spareparts = ref([])
 const moveModalRef = ref(null)
 const viewModalRef = ref(null)
 const editModalRef = ref(null)
@@ -28,12 +25,6 @@ const viewService = ref({})
 const moveService = ref({})
 const editService = ref({})
 const loading = ref(true)
-
-// New refs for Request Spareparts modal
-const showRequestModal = ref(false)
-const selectedServiceId = ref(null)
-const selectedCustomerName = ref('')
-const sparepartsLoading = ref(false)
 
 const token = localStorage.getItem('token')
 // Constants
@@ -55,6 +46,27 @@ const serverOptions = ref({
   sortType: 'desc',
   searchTerm: '',
 })
+
+// Add permission check utility
+const checkPermission = (permissionName) => {
+  try {
+    const userData = JSON.parse(localStorage.getItem('users'))
+    if (!userData?.permissions) return false
+
+    // Check if the permission exists
+    return userData.permissions.some(
+      (permission) => permission.name.toLowerCase() === permissionName.toLowerCase(),
+    )
+  } catch (error) {
+    console.error('Error checking permissions:', error)
+    return false
+  }
+}
+
+// Create computed property for permission
+const canView = computed(() => checkPermission('View Services'))
+const canEdit = computed(() => checkPermission('Edit Validation'))
+const canMove = computed(() => checkPermission('Move Validation'))
 
 const formatDate = (date) => {
   if (!date) return '-'
@@ -110,27 +122,6 @@ watch(
   },
   { deep: true },
 )
-
-// Add permission check utility
-const checkPermission = (permissionName) => {
-  try {
-    const userData = JSON.parse(localStorage.getItem('users'))
-    if (!userData?.permissions) return false
-
-    // Check if the permission exists
-    return userData.permissions.some(
-      (permission) => permission.name.toLowerCase() === permissionName.toLowerCase(),
-    )
-  } catch (error) {
-    console.error('Error checking permissions:', error)
-    return false
-  }
-}
-
-// Create computed property for permission
-const canView = computed(() => checkPermission('View Services'))
-const canEdit = computed(() => checkPermission('Edit Queue'))
-const canMove = computed(() => checkPermission('Move Queue'))
 
 // Generic function to fetch all data
 const fetchAllData = async (endpoint, currentPage = 1, allData = []) => {
@@ -188,42 +179,6 @@ const fetchTechnicians = async () => {
   }
 }
 
-// Only load spareparts data when needed
-const fetchSpareparts = async () => {
-  if (spareparts.value.length > 0) return spareparts.value
-
-  try {
-    sparepartsLoading.value = true
-    const data = await fetchAllData('spareparts')
-    spareparts.value = data
-    return data
-  } catch (error) {
-    console.error('Data not found', error)
-    showToast('Failed to fetch spareparts.', 'error')
-    return []
-  } finally {
-    sparepartsLoading.value = false
-  }
-}
-
-// Only load spareparts device data when needed
-const fetchSparepartsDevice = async () => {
-  if (sparepartsDevice.value.length > 0) return sparepartsDevice.value
-
-  try {
-    sparepartsLoading.value = true
-    const data = await fetchAllData('spareparts-device')
-    sparepartsDevice.value = data
-    return data
-  } catch (error) {
-    console.error('Data not found', error)
-    showToast('Failed to fetch device types.', 'error')
-    return []
-  } finally {
-    sparepartsLoading.value = false
-  }
-}
-
 const fetchSparepartRequests = async (serviceId) => {
   try {
     const response = await axios.get(`services/${serviceId}/sparepart-requests`)
@@ -232,19 +187,6 @@ const fetchSparepartRequests = async (serviceId) => {
     console.error('Failed to fetch sparepart requests:', error)
     showToast('Failed to fetch sparepart requests', 'error')
     return []
-  }
-}
-
-// Function to load all spareparts data when the Request Spareparts modal is opened
-const loadSparepartsData = async () => {
-  sparepartsLoading.value = true
-  try {
-    await Promise.all([fetchSpareparts(), fetchSparepartsDevice()])
-  } catch (error) {
-    console.error('Failed to load spareparts data:', error)
-    showToast('Failed to load necessary data for request', 'error')
-  } finally {
-    sparepartsLoading.value = false
   }
 }
 
@@ -310,14 +252,6 @@ const moveModal = (service) => {
   moveModalRef.value.showModal()
 }
 
-const reqModal = async (service) => {
-  selectedServiceId.value = service.id
-  selectedCustomerName.value = service.customers
-  // Only load spareparts data when request modal is opened
-  await loadSparepartsData()
-  showRequestModal.value = true
-}
-
 const editModal = (service) => {
   editService.value = { ...service }
   id.value = service.id
@@ -337,12 +271,6 @@ const closeMoveModal = () => {
   moveModalRef.value.hideModal()
 }
 
-const closeReqModal = () => {
-  showRequestModal.value = false
-  selectedServiceId.value = null
-  selectedCustomerName.value = ''
-}
-
 const closeEditModal = () => {
   editModalRef.value.hideModal()
 }
@@ -352,10 +280,6 @@ const closeDeleteModal = () => {
     deleteModalRef.value.hideModal()
   }
   id.value = null
-}
-
-const reqSpareparts = () => {
-  refreshList()
 }
 
 onMounted(() => {
@@ -369,7 +293,7 @@ onMounted(() => {
 <template>
   <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center">
-      <ProcessNavigationStocks />
+      <ProcessNavigation />
       <div class="add-button"></div>
       <div class="others d-flex align-items-center gap-2">
         <Search :onSearch="updateSearch" />
@@ -436,12 +360,6 @@ onMounted(() => {
                 <a
                   href="#"
                   class="dropdown-item head-text text-decoration-none"
-                  @click.prevent="reqModal(item)"
-                  >Request Spareparts</a
-                >
-                <a
-                  href="#"
-                  class="dropdown-item head-text text-decoration-none"
                   @click.prevent="deleteModal(item)"
                   >Delete</a
                 >
@@ -452,40 +370,28 @@ onMounted(() => {
       </EasyDataTable>
     </div>
 
-    <ViewQueue
+    <ViewDelivery
       ref="viewModalRef"
       :service="viewService"
       :sparepart-requests="sparepartRequests"
       @close="closeViewModal"
     />
 
-    <EditPendingCustomers
+    <EditValidationCustomers
       ref="editModalRef"
       :service="editService"
       :service-device="servicesDevice"
       :usages="usages"
+      :technicians="technicians"
       @update="updateServices"
       @close="closeEditModal"
     />
 
-    <MoveQueueStocks
+    <MoveDelivery
       ref="moveModalRef"
       :service="moveService"
-      :technicians="technicians"
-      :spareparts="spareparts"
       @update="moveServices"
       @close="closeMoveModal"
-    />
-
-    <RequestPendingCustomers
-      v-model="showRequestModal"
-      :service-id="selectedServiceId"
-      :spareparts="spareparts"
-      :spareparts-device="sparepartsDevice"
-      :customer-name="selectedCustomerName"
-      :loading="sparepartsLoading"
-      @update="reqSpareparts"
-      @close="closeReqModal"
     />
 
     <DeleteServices ref="deleteModalRef" @delete="deleteServices" @close="closeDeleteModal" />

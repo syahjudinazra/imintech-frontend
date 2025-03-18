@@ -64,7 +64,7 @@
                         id="statusQueue"
                         value="Queue Customers"
                       />
-                      <label class="form-check-label" for="statusQueue"> Queue Customers </label>
+                      <label class="form-check-label" for="statusQueue"> Queue </label>
                     </div>
                     <div class="form-check me-2">
                       <input
@@ -75,9 +75,7 @@
                         id="statusPending"
                         value="Pending Customers"
                       />
-                      <label class="form-check-label" for="statusPending">
-                        Pending Customers
-                      </label>
+                      <label class="form-check-label" for="statusPending"> Pending </label>
                     </div>
                     <div class="form-check me-2">
                       <input
@@ -88,9 +86,18 @@
                         id="statusValidation"
                         value="Validation Customers"
                       />
-                      <label class="form-check-label" for="statusValidation">
-                        Validation Customers
-                      </label>
+                      <label class="form-check-label" for="statusValidation"> Validation </label>
+                    </div>
+                    <div class="form-check me-2">
+                      <input
+                        v-model="status"
+                        class="form-check-input"
+                        type="radio"
+                        name="status"
+                        id="statusDelivery"
+                        value="Delivery Customers"
+                      />
+                      <label class="form-check-label" for="statusDelivery"> Delivery </label>
                     </div>
                     <div class="form-check">
                       <input
@@ -101,7 +108,7 @@
                         id="statusDone"
                         value="Done Customers"
                       />
-                      <label class="form-check-label" for="statusDone"> Done Customers </label>
+                      <label class="form-check-label" for="statusDone"> Done </label>
                     </div>
                   </div>
                 </div>

@@ -64,7 +64,7 @@
                         id="statusQueue"
                         value="Queue Stocks"
                       />
-                      <label class="form-check-label" for="statusQueue"> Queue Stocks </label>
+                      <label class="form-check-label" for="statusQueue"> Queue </label>
                     </div>
                     <div class="form-check me-2">
                       <input
@@ -75,7 +75,7 @@
                         id="statusPending"
                         value="Pending Stocks"
                       />
-                      <label class="form-check-label" for="statusPending"> Pending Stocks </label>
+                      <label class="form-check-label" for="statusPending"> Pending </label>
                     </div>
                     <div class="form-check me-2">
                       <input
@@ -86,9 +86,18 @@
                         id="statusValidation"
                         value="Validation Stocks"
                       />
-                      <label class="form-check-label" for="statusValidation">
-                        Validation Stocks
-                      </label>
+                      <label class="form-check-label" for="statusValidation"> Validation </label>
+                    </div>
+                    <div class="form-check me-2">
+                      <input
+                        v-model="status"
+                        class="form-check-input"
+                        type="radio"
+                        name="status"
+                        id="statusDelivery"
+                        value="Delivery Stocks"
+                      />
+                      <label class="form-check-label" for="statusDelivery"> Delivery </label>
                     </div>
                     <div class="form-check">
                       <input
@@ -99,7 +108,7 @@
                         id="statusDone"
                         value="Done Stocks"
                       />
-                      <label class="form-check-label" for="statusDone"> Done Stocks </label>
+                      <label class="form-check-label" for="statusDone"> Done </label>
                     </div>
                   </div>
                 </div>

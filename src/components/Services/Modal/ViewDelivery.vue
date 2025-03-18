@@ -148,7 +148,7 @@ onMounted(() => {
 
           <!--Customers-->
           <div class="mb-3">
-            <label class="fw-bold" for="customers">Customers</label>
+            <label class="form-label fw-bold" for="customers">Customers</label>
             <input
               :value="service?.customers"
               type="text"
@@ -178,6 +178,30 @@ onMounted(() => {
               type="text"
               class="form-control shadow-none bg-light"
               id="contact"
+              readonly
+            />
+          </div>
+
+          <!--Address-->
+          <div class="mb-3">
+            <label class="form-label fw-bold" for="address">Address</label>
+            <input
+              :value="service?.address"
+              type="text"
+              class="form-control shadow-none bg-light"
+              id="address"
+              readonly
+            />
+          </div>
+
+          <!--Expedition-->
+          <div class="mb-3">
+            <label class="form-label fw-bold" for="expedition">Expedition</label>
+            <input
+              :value="service?.expedition"
+              type="text"
+              class="form-control shadow-none bg-light"
+              id="expedition"
               readonly
             />
           </div>
@@ -236,7 +260,7 @@ onMounted(() => {
 
           <!--Damage-->
           <div class="mb-3">
-            <label class="fw-bold" for="damage">Damage</label>
+            <label class="form-label fw-bold" for="damage">Damage</label>
             <textarea
               :value="service?.damage"
               class="form-control shadow-none bg-light"
@@ -247,7 +271,7 @@ onMounted(() => {
 
           <!--Repair-->
           <div class="mb-3">
-            <label class="fw-bold" for="repair">Repair</label>
+            <label class="form-label fw-bold" for="repair">Repair</label>
             <textarea
               :value="service?.repair"
               class="form-control shadow-none bg-light"
@@ -294,7 +318,7 @@ onMounted(() => {
 
           <!-- Date in -->
           <div class="mb-3">
-            <label class="fw-bold">Date of Entry</label>
+            <label class="form-label fw-bold">Date of Entry</label>
             <VueDatePicker
               class="shadow-none bg-light"
               :model-value="formatDateForPicker(service?.date_in_services)"
@@ -309,7 +333,7 @@ onMounted(() => {
 
           <!-- Date out -->
           <div class="mb-3">
-            <label class="fw-bold">Date Exit</label>
+            <label class="form-label fw-bold">Date Exit</label>
             <VueDatePicker
               class="shadow-none bg-light"
               :model-value="formatDateForPicker(service?.date_out_services)"
@@ -335,7 +359,7 @@ onMounted(() => {
 
           <!--Note-->
           <div class="mb-3">
-            <label class="fw-bold" for="note">Note</label>
+            <label class="form-label fw-bold" for="note">Note</label>
             <textarea
               :value="service?.note"
               class="form-control shadow-none bg-light"

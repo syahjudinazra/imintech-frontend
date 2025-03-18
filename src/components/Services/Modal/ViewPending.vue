@@ -39,7 +39,7 @@
 
           <!--Customers-->
           <div class="mb-3">
-            <label class="fw-bold" for="customers">Customers</label>
+            <label class="form-label fw-bold" for="customers">Customers</label>
             <input
               :value="service?.customers"
               type="text"
@@ -121,7 +121,7 @@
 
           <!--Damage-->
           <div class="mb-3">
-            <label class="fw-bold" for="damage">Damage</label>
+            <label class="form-label fw-bold" for="damage">Damage</label>
             <textarea
               :value="service?.damage"
               class="form-control shadow-none bg-light"
@@ -132,7 +132,7 @@
 
           <!-- Date in -->
           <div class="mb-3">
-            <label class="fw-bold">Date of Entry</label>
+            <label class="form-label fw-bold">Date of Entry</label>
             <VueDatePicker
               class="shadow-none bg-light"
               :model-value="formatDateForPicker(service?.date_in_services)"
@@ -158,7 +158,7 @@
 
           <!--Note-->
           <div class="mb-3">
-            <label class="fw-bold" for="note">Note</label>
+            <label class="form-label fw-bold" for="note">Note</label>
             <textarea
               :value="service?.note"
               class="form-control shadow-none bg-light"

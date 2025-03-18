@@ -31,23 +31,27 @@ const route = useRoute()
 const menuItems = ref([
   {
     path: '/services/incoming-customers',
-    name: 'Incoming Customers',
+    name: 'Incoming',
   },
   {
     path: '/services/queue-customers',
-    name: 'Queue Customers',
+    name: 'Queue',
   },
   {
     path: '/services/pending-customers',
-    name: 'Pending Customers',
+    name: 'Pending',
   },
   {
     path: '/services/validation-customers',
-    name: 'Validation Customers',
+    name: 'Validation',
+  },
+  {
+    path: '/services/delivery-customers',
+    name: 'Delivery',
   },
   {
     path: '/services/done-customers',
-    name: 'Done Customers',
+    name: 'Done',
   },
 ])
 

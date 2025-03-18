@@ -162,6 +162,12 @@ const routes = [
             meta: { requiresAuth: true },
           },
           {
+            path: '/services/delivery-customers',
+            name: 'Delivery Customers',
+            component: () => import('@/views/services/DeliveryCustomers.vue'),
+            meta: { requiresAuth: true },
+          },
+          {
             path: '/services/done-customers',
             name: 'Done Customers',
             component: () => import('@/views/services/DoneCustomers.vue'),
@@ -183,6 +189,12 @@ const routes = [
             path: '/services/validation-stocks',
             name: 'Validation Stocks',
             component: () => import('@/views/services/ValidationStocks.vue'),
+            meta: { requiresAuth: true },
+          },
+          {
+            path: '/services/delivery-stocks',
+            name: 'Delivery Stocks',
+            component: () => import('@/views/services/DeliveryStocks.vue'),
             meta: { requiresAuth: true },
           },
           {

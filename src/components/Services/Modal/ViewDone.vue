@@ -182,6 +182,42 @@ onMounted(() => {
             />
           </div>
 
+          <!--Address-->
+          <div class="mb-3">
+            <label class="form-label fw-bold" for="address">Address</label>
+            <input
+              :value="service?.address"
+              type="text"
+              class="form-control shadow-none bg-light"
+              id="address"
+              readonly
+            />
+          </div>
+
+          <!--Expedition-->
+          <div class="mb-3">
+            <label class="form-label fw-bold" for="expedition">Expedition</label>
+            <input
+              :value="service?.expedition"
+              type="text"
+              class="form-control shadow-none bg-light"
+              id="expedition"
+              readonly
+            />
+          </div>
+
+          <!--Resi Number-->
+          <div class="mb-3">
+            <label class="form-label fw-bold" for="no_resi">Resi Number</label>
+            <input
+              :value="service?.no_resi"
+              type="text"
+              class="form-control shadow-none bg-light"
+              id="no_resi"
+              readonly
+            />
+          </div>
+
           <!--Device Type-->
           <div class="mb-3">
             <label class="form-label fw-bold">Device Type</label>
