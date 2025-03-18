@@ -180,6 +180,7 @@ const moveForm = async () => {
   formData.append('no_spareparts', movedService.no_spareparts || '')
   formData.append('sn_kanibal', movedService.sn_kanibal || '')
   formData.append('date_out_services', formattedDate || '')
+  formData.append('expedition', movedService.expedition || '')
   formData.append('note', movedService.note || '')
   formData.append('status', movedService.status || '')
 
@@ -390,6 +391,18 @@ defineExpose({
                 :format="customDateFormat"
                 @update:model-value="handleDateChange"
                 readonly
+              />
+            </div>
+
+            <!-- Expedition -->
+            <div class="mb-3">
+              <label for="expedition" class="form-label fw-bold">Expedition</label>
+              <input
+                v-model="movedService.expedition"
+                type="text"
+                class="form-control shadow-none"
+                id="expedition"
+                placeholder="Input Expedition"
               />
             </div>
 

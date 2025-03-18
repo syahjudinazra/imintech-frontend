@@ -13,6 +13,7 @@ const services = ref({
   customers: '',
   pic: '',
   contact: '',
+  address: '',
   services_devices_id: null,
   status: '',
   completeness: '',
@@ -328,6 +329,18 @@ onMounted(() => {
             class="form-control shadow-none"
             id="contact"
             placeholder="Input Contact (0812xxxxxxx)"
+          />
+        </div>
+
+        <!--Address Section-->
+        <div class="form-group mb-3">
+          <label class="form-label dark-text fw-bold" for="address">Address</label>
+          <textarea
+            v-model="services.address"
+            type="number"
+            class="form-control shadow-none"
+            id="address"
+            placeholder="Input Address"
           />
         </div>
 
