@@ -204,8 +204,8 @@ const routes = [
             meta: { requiresAuth: true },
           },
           {
-            path: '/services/temporary-note',
-            name: 'Temporary Note',
+            path: '/services/manual-offering',
+            name: 'Manual Offering',
             component: () => import('@/views/services/TemporaryNote.vue'),
             meta: { requiresAuth: true },
           },

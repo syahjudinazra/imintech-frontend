@@ -3,17 +3,24 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { jsPDF } from 'jspdf'
 import 'jspdf-autotable'
 import { showToast } from '@/utilities/toast'
+import { Modal } from 'bootstrap'
 import { cilPlus, cilTrash } from '@coreui/icons'
-import CIcon from '@coreui/icons-vue'
 
 const props = defineProps({
   service: {
     type: Object,
     required: true,
   },
+  visible: {
+    type: Boolean,
+    default: false,
+  },
 })
 
-const emit = defineEmits(['download', 'back'])
+const emit = defineEmits(['close', 'download'])
+
+// For Bootstrap modal
+const modalInstance = ref(null)
 
 // Logo handling
 const logoUrl = ref('/src/assets/images/darivisi.png')
@@ -468,6 +475,7 @@ const generateOffering = () => {
 
     showToast('Offering downloaded successfully', 'success')
     emit('download', offeringForDownload)
+    emit('close')
   } catch (error) {
     console.error('Error generating offering:', error)
   }
@@ -478,7 +486,7 @@ watch(
   () => props.service,
   (newValue) => {
     if (newValue) {
-      // Populate form with service data as initial values
+      // Populate form with service data
       offeringData.value.customerName = newValue.customers || ''
       offeringData.value.serialNumber = newValue.serial_number || ''
       offeringData.value.address = newValue.address || ''
@@ -496,240 +504,256 @@ watch(
         },
       ]
       offeringData.value.shippingCost = 0
-
-      // Extract the last 3 digits from ticket_services as uniqueDigit
-      if (newValue.ticket_services && newValue.ticket_services.length >= 3) {
-        const lastThreeDigits = newValue.ticket_services.slice(-3)
-        offeringData.value.uniqueDigit = parseInt(lastThreeDigits, 10) || 0
-      }
     }
   },
   { immediate: true, deep: true },
 )
 
+const showModal = () => {
+  if (!modalInstance.value) {
+    const modalElement = document.getElementById('downloadOfferingModal')
+    modalInstance.value = new Modal(modalElement)
+  }
+  modalInstance.value.show()
+}
+
+const hideModal = () => {
+  if (modalInstance.value) {
+    modalInstance.value.hide()
+  }
+  emit('close')
+}
+
+// Expose methods to parent component
+defineExpose({
+  showModal,
+  hideModal,
+})
+
 onMounted(() => {
-  // Any initialization needed for standalone page
+  // Initialize modal
+  const modalElement = document.getElementById('downloadOfferingModal')
+  modalInstance.value = new Modal(modalElement)
 })
 </script>
 
 <template>
-  <div class="container-fluid py-4">
-    <div class="card">
-      <div
-        class="card-header bg-primary text-white d-flex justify-content-between align-items-center"
-      >
-        <h5 class="mb-0">Generate Offering</h5>
-      </div>
-      <div class="card-body">
-        <div class="row mb-4">
-          <div class="col-md-6">
-            <div class="form-group mb-3">
-              <label for="customerName" class="form-label fw-bold">Customer</label>
-              <input
-                type="text"
-                class="form-control shadow-none"
-                id="customerName"
-                v-model="offeringData.customerName"
-                placeholder="Enter customer name"
-              />
-            </div>
-            <div class="form-group mb-3">
-              <label for="ticket_services" class="form-label fw-bold">Ticket Service</label>
-              <input
-                type="text"
-                class="form-control shadow-none"
-                id="ticket_services"
-                v-model="offeringData.ticket_services"
-                placeholder="Enter ticket service number"
-              />
-            </div>
-            <div class="form-group">
-              <label for="serialNumber" class="form-label fw-bold">Serial Number</label>
-              <input
-                type="text"
-                class="form-control shadow-none"
-                id="serialNumber"
-                v-model="offeringData.serialNumber"
-                placeholder="Enter serial number"
-              />
-            </div>
+  <div
+    class="modal fade"
+    id="downloadOfferingModal"
+    tabindex="-1"
+    aria-labelledby="downloadOfferingModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="downloadOfferingModalLabel">Download Offering</h5>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group mb-2">
+            <label for="customerName" class="form-label fw-bold">Customer</label>
+            <input
+              type="text"
+              class="form-control shadow-none bg-light"
+              id="customerName"
+              v-model="offeringData.customerName"
+              readonly
+            />
           </div>
-          <div class="col-md-6">
-            <div class="form-group mb-3">
-              <label for="address" class="form-label fw-bold">Address</label>
-              <textarea
-                class="form-control shadow-none"
-                id="address"
-                v-model="offeringData.address"
-                rows="2"
-                placeholder="Enter customer address"
-              ></textarea>
-            </div>
-            <div class="row">
-              <div class="col-md-6">
-                <div class="form-group">
-                  <label for="damage" class="form-label fw-bold">Damage</label>
-                  <textarea
-                    class="form-control shadow-none"
-                    id="damage"
-                    v-model="offeringData.damage"
-                    rows="2"
-                    placeholder="Enter damage description"
-                  ></textarea>
-                </div>
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="ticket_services" class="form-label fw-bold">Ticket Service</label>
+                <input
+                  type="text"
+                  class="form-control shadow-none bg-light"
+                  id="ticket_services"
+                  v-model="offeringData.ticket_services"
+                  readonly
+                />
               </div>
-              <div class="col-md-6">
-                <div class="form-group">
-                  <label for="repair" class="form-label fw-bold">Repair</label>
-                  <textarea
-                    class="form-control shadow-none"
-                    id="repair"
-                    v-model="offeringData.repair"
-                    rows="2"
-                    placeholder="Enter repair description"
-                  ></textarea>
-                </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="serialNumber" class="form-label fw-bold">Serial Number</label>
+                <input
+                  type="text"
+                  class="form-control shadow-none bg-light"
+                  id="serialNumber"
+                  v-model="offeringData.serialNumber"
+                  readonly
+                />
               </div>
             </div>
           </div>
-        </div>
-
-        <h5 class="mb-3 border-bottom pb-2">Items</h5>
-        <div class="table-responsive">
-          <table class="table table-bordered">
-            <thead class="bg-light">
-              <tr>
-                <th width="50" class="text-center">#</th>
-                <th>Item & Deskripsi</th>
-                <th width="80" class="text-center">Jml</th>
-                <th width="120" class="text-center">Tarif</th>
-                <th width="120" class="text-center">Jumlah</th>
-                <th width="80" class="text-center">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="(item, index) in offeringData.items" :key="index">
-                <td class="text-center">{{ index + 1 }}</td>
-                <td>
-                  <input
-                    type="text"
-                    class="form-control shadow-none"
-                    v-model="item.description"
-                    placeholder="Enter item description"
-                  />
-                </td>
-                <td>
-                  <input
-                    type="number"
-                    class="form-control shadow-none text-center"
-                    v-model="item.quantity"
-                    @input="calculateItemTotal(index)"
-                    min="1"
-                  />
-                </td>
-                <td>
-                  <input
-                    type="number"
-                    class="form-control shadow-none text-end"
-                    v-model="item.price"
-                    @input="calculateItemTotal(index)"
-                  />
-                </td>
-                <td class="text-end">{{ formatCurrency(item.total) }}</td>
-                <td class="text-center">
-                  <button
-                    v-if="index > 0"
-                    class="btn btn-sm btn-danger"
-                    @click="removeItem(index)"
-                    title="Remove item"
-                  >
-                    <CIcon :icon="cilTrash" class="text-white" />
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-            <tfoot>
-              <tr>
-                <td colspan="6" class="py-2">
-                  <button class="btn btn-sm btn-danger text-white" @click="addItem">
-                    <CIcon :icon="cilPlus" class="text-white" /> Add Item
-                  </button>
-                </td>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
-
-        <div class="row mt-4">
-          <div class="col-md-6">
-            <div class="card shadow-sm">
-              <div class="card-header bg-light">
-                <h6 class="mb-0">Additional Costs</h6>
+          <div class="row mb-3">
+            <div class="col-md-12">
+              <div class="form-group">
+                <label for="address" class="form-label fw-bold">Address</label>
+                <textarea
+                  class="form-control shadow-none bg-light"
+                  id="address"
+                  v-model="offeringData.address"
+                  rows="2"
+                  readonly
+                ></textarea>
               </div>
-              <div class="card-body">
-                <div class="form-group mb-3">
-                  <label for="shippingCost" class="form-label">Biaya Pengiriman</label>
-                  <div class="input-group">
-                    <span class="input-group-text">Rp</span>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="damage" class="form-label fw-bold">Damage</label>
+                <textarea
+                  class="form-control shadow-none bg-light"
+                  id="damage"
+                  v-model="offeringData.damage"
+                  rows="2"
+                  readonly
+                ></textarea>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="repair" class="form-label fw-bold">Repair</label>
+                <textarea
+                  class="form-control shadow-none bg-light"
+                  id="repair"
+                  v-model="offeringData.repair"
+                  rows="2"
+                  readonly
+                ></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="table table-bordered">
+              <thead>
+                <tr>
+                  <th width="50">#</th>
+                  <th>Item & Deskripsi</th>
+                  <th width="80">Jml</th>
+                  <th width="120">Tarif</th>
+                  <th width="120">Jumlah</th>
+                  <th width="80">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(item, index) in offeringData.items" :key="index">
+                  <td>{{ index + 1 }}</td>
+                  <td>
+                    <input
+                      type="text"
+                      class="form-control shadow-none"
+                      v-model="item.description"
+                    />
+                  </td>
+                  <td>
                     <input
                       type="number"
                       class="form-control shadow-none"
-                      id="shippingCost"
-                      v-model="offeringData.shippingCost"
-                      @input="calculateTotals"
+                      v-model="item.quantity"
+                      @input="calculateItemTotal(index)"
+                      min="1"
                     />
-                  </div>
-                </div>
-                <div class="form-group">
-                  <label for="uniqueDigit" class="form-label">Digit Unik</label>
-                  <div class="input-group">
-                    <span class="input-group-text">Rp</span>
+                  </td>
+                  <td>
                     <input
                       type="number"
                       class="form-control shadow-none"
-                      id="uniqueDigit"
-                      v-model="offeringData.uniqueDigit"
-                      @input="calculateTotals"
+                      v-model="item.price"
+                      @input="calculateItemTotal(index)"
                     />
-                  </div>
-                  <small class="text-muted">3 digit terakhir dari Ticket Service</small>
-                </div>
+                  </td>
+                  <td>{{ formatCurrency(item.total) }}</td>
+                  <td>
+                    <button
+                      v-if="index > 0"
+                      class="btn btn-sm btn-danger"
+                      @click="removeItem(index)"
+                    >
+                      <CIcon :icon="cilTrash" class="text-white" />
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="6">
+                    <button class="btn btn-sm btn-danger text-white" @click="addItem">
+                      <CIcon :icon="cilPlus" class="text-white" /> Add Item
+                    </button>
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group mb-3">
+                <label for="shippingCost" class="form-label fw-bold">Biaya Pengiriman</label>
+                <input
+                  type="number"
+                  class="form-control shadow-none"
+                  id="shippingCost"
+                  v-model="offeringData.shippingCost"
+                  @input="calculateTotals"
+                />
+              </div>
+              <div class="form-group">
+                <label for="uniqueDigit" class="form-label fw-bold">Digit Unik</label>
+                <input
+                  type="number"
+                  class="form-control shadow-none"
+                  id="uniqueDigit"
+                  v-model="offeringData.uniqueDigit"
+                  @input="calculateTotals"
+                />
+                <small class="text-muted">Masukan 3 digit terakhir dari Ticket Service</small>
               </div>
             </div>
-          </div>
-          <div class="col-md-6">
-            <div class="card shadow-sm">
-              <div class="card-header bg-light">
-                <h6 class="mb-0">Summary</h6>
-              </div>
-              <div class="card-body">
-                <div class="d-flex justify-content-between mb-2">
-                  <span>Sub Total:</span>
-                  <strong>{{ formatCurrency(subtotal) }}</strong>
-                </div>
-                <div class="d-flex justify-content-between mb-2">
-                  <span>PPN 11%:</span>
-                  <strong>{{ formatCurrency(ppn) }}</strong>
-                </div>
-                <div class="d-flex justify-content-between mb-2">
-                  <span>Biaya Pengiriman:</span>
-                  <strong>{{ formatCurrency(parseFloat(offeringData.shippingCost || 0)) }}</strong>
-                </div>
-                <div class="d-flex justify-content-between mb-2">
-                  <span>Digit unik:</span>
-                  <strong>{{ formatCurrency(parseFloat(offeringData.uniqueDigit || 0)) }}</strong>
-                </div>
-                <hr class="my-2" />
-                <div class="d-flex justify-content-between">
-                  <span class="fw-bold">Total:</span>
-                  <strong class="text-primary">IDR {{ formatCurrency(total) }}</strong>
+            <div class="col-md-6">
+              <div class="card">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between">
+                    <span>Sub Total:</span>
+                    <strong>{{ formatCurrency(subtotal) }}</strong>
+                  </div>
+                  <div class="d-flex justify-content-between">
+                    <span>PPN 11%:</span>
+                    <strong>{{ formatCurrency(ppn) }}</strong>
+                  </div>
+                  <div class="d-flex justify-content-between">
+                    <span>Biaya Pengiriman:</span>
+                    <strong>{{
+                      formatCurrency(parseFloat(offeringData.shippingCost || 0))
+                    }}</strong>
+                  </div>
+                  <div class="d-flex justify-content-between">
+                    <span>Digit unik:</span>
+                    <strong>{{ formatCurrency(parseFloat(offeringData.uniqueDigit || 0)) }}</strong>
+                  </div>
+                  <hr />
+                  <div class="d-flex justify-content-between">
+                    <span>Total:</span>
+                    <strong>{{ formatCurrency(total) }}</strong>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-
-        <div class="d-flex justify-content-end mt-4">
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
           <button type="button" class="btn btn-primary" @click="generateOffering">
             Download Offering
           </button>
@@ -747,17 +771,5 @@ textarea:focus {
 
 .table input {
   min-width: 80px;
-}
-
-.table th {
-  font-weight: 600;
-}
-
-.card-header h5 {
-  font-weight: 600;
-}
-
-.form-label {
-  font-weight: 500;
 }
 </style>

@@ -157,8 +157,8 @@ export default [
       },
       {
         component: 'CNavItem',
-        name: 'Temporary Note',
-        to: '/services/temporary-note',
+        name: 'Manual Offering',
+        to: '/services/manual-offering',
       },
       {
         component: 'CNavItem',

@@ -3,10 +3,11 @@ import { ref, onMounted, computed, watch } from 'vue'
 import axios from 'axios'
 import { showToast } from '@/utilities/toast'
 import ViewPending from './Modal/ViewPending.vue'
-import MovePendingStocks from '../Services/Modal/Stocks/MovePendingStocks.vue'
-import RequestPendingCustomers from '../Services/Modal/Customers/SparepartsPendingCustomers.vue'
-import EditPendingCustomers from '../Services/Modal/Customers/EditPendingCustomers.vue'
-import DeleteServices from '../Services/Modal/DeleteServices.vue'
+import MovePendingStocks from './Modal/Stocks/MovePendingStocks.vue'
+import RequestPendingCustomers from './Modal/Customers/SparepartsPendingCustomers.vue'
+import DownloadOffering from './Pdf/DownloadOffering.vue'
+import EditPendingCustomers from './Modal/Customers/EditPendingCustomers.vue'
+import DeleteServices from './Modal/DeleteServices.vue'
 import Search from '../Layouts/SearchAll.vue'
 import ProcessNavigationStocks from './etc/ProcessNavigationStocks.vue'
 import { mockServerItems } from '../../mock/mockPendingStocks'
@@ -34,6 +35,10 @@ const showRequestModal = ref(false)
 const selectedServiceId = ref(null)
 const selectedCustomerName = ref('')
 const sparepartsLoading = ref(false)
+
+//refs for Offering
+const downloadOfferingModalRef = ref(null)
+const offeringService = ref({})
 
 const token = localStorage.getItem('token')
 // Constants
@@ -293,6 +298,19 @@ const deleteServices = async () => {
   }
 }
 
+const offeringModal = (service) => {
+  offeringService.value = { ...service }
+  downloadOfferingModalRef.value.showModal()
+}
+
+const closeOfferingModal = () => {
+  downloadOfferingModalRef.value.hideModal()
+}
+
+const handleOfferingDownload = () => {
+  refreshList()
+}
+
 const viewModal = async (service) => {
   viewService.value = { ...service }
   id.value = service.id
@@ -442,6 +460,12 @@ onMounted(() => {
                 <a
                   href="#"
                   class="dropdown-item head-text text-decoration-none"
+                  @click.prevent="offeringModal(item)"
+                  >Download Offering</a
+                >
+                <a
+                  href="#"
+                  class="dropdown-item head-text text-decoration-none"
                   @click.prevent="deleteModal(item)"
                   >Delete</a
                 >
@@ -485,6 +509,13 @@ onMounted(() => {
       :customer-name="selectedCustomerName"
       @update="reqSpareparts"
       @close="closeReqModal"
+    />
+
+    <DownloadOffering
+      ref="downloadOfferingModalRef"
+      :service="offeringService"
+      @download="handleOfferingDownload"
+      @close="closeOfferingModal"
     />
 
     <DeleteServices ref="deleteModalRef" @delete="deleteServices" @close="closeDeleteModal" />
