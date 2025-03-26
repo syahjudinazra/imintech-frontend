@@ -157,8 +157,8 @@ export default [
       },
       {
         component: 'CNavItem',
-        name: 'Manual Offering',
-        to: '/services/manual-offering',
+        name: 'Manual Quotation',
+        to: '/services/manual-quotation',
       },
       {
         component: 'CNavItem',

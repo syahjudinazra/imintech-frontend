@@ -321,6 +321,28 @@ onMounted(() => {
               />
             </div>
 
+            <!--Address-->
+            <div class="mb-3">
+              <label for="address" class="form-label fw-bold">Address</label>
+              <textarea
+                v-model="editedService.address"
+                type="text"
+                class="form-control shadow-none"
+                id="address"
+              />
+            </div>
+
+            <!--Expedition-->
+            <div class="mb-3">
+              <label for="expedition" class="form-label fw-bold">Expedition</label>
+              <input
+                v-model="editedService.expedition"
+                type="text"
+                class="form-control shadow-none"
+                id="expedition"
+              />
+            </div>
+
             <!--Device Type-->
             <div class="mb-3">
               <label for="serviceDevice" class="form-label fw-bold">Device Type</label>

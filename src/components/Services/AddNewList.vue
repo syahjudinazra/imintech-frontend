@@ -4,6 +4,8 @@ import axios from 'axios'
 import { showToast } from '@/utilities/toast'
 import VueDatePicker from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
+import ExportService from './Excel/ExportServices.vue'
+import ImportServices from './Excel/ImportServices.vue'
 
 const services = ref({
   serial_number: '',
@@ -101,6 +103,8 @@ const checkPermission = (permissionName) => {
 
 // Create computed property for permission
 const canCreate = computed(() => checkPermission('Create Services'))
+const canExport = computed(() => checkPermission('Export Services'))
+const canImport = computed(() => checkPermission('Import Services'))
 
 // Generic function to fetch all data
 const fetchAllData = async (endpoint, currentPage = 1, allData = []) => {
@@ -216,9 +220,13 @@ onMounted(() => {
 <template>
   <div class="container w-50 p-3">
     <div class="row addDataForms">
-      <div class="d-flex justify-content-between mb-2">
+      <div class="d-flex align-items-center justify-content-between">
         <div class="title">
           <h1 class="dark-text mb-3 text-gray-800">Incoming Service</h1>
+        </div>
+        <div class="additional-button d-flex gap-2">
+          <ExportService v-if="canExport" />
+          <ImportServices v-if="canImport" />
         </div>
       </div>
       <hr class="dark-text w-100" />

@@ -1,13 +1,23 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import axios from 'axios'
 import { CIcon } from '@coreui/icons-vue'
 import { cilCloudUpload } from '@coreui/icons'
 import { showToast } from '@/utilities/toast'
+import * as bootstrap from 'bootstrap'
 
 const fileInput = ref(null)
 const loading = ref(false)
 const error = ref('')
+const dropdownElementRef = ref(null)
+let dropdownInstance = null
+
+onMounted(() => {
+  // Initialize dropdown manually
+  if (dropdownElementRef.value) {
+    dropdownInstance = new bootstrap.Dropdown(dropdownElementRef.value)
+  }
+})
 
 const importExcel = () => {
   fileInput.value.click()
@@ -65,18 +75,12 @@ const downloadTemplate = async () => {
 
 <template>
   <div class="btn-group">
-    <button
-      @click="importExcel"
-      type="button"
-      class="btn btn-secondary btn-sm"
-      data-bs-toggle="modal"
-      data-bs-target="#importModal"
-      :disabled="loading"
-    >
+    <button @click="importExcel" type="button" class="btn btn-secondary btn-sm" :disabled="loading">
       <CIcon :icon="cilCloudUpload" style="color: white" />
       <span>{{ loading ? 'Uploading...' : 'Import Excel' }}</span>
     </button>
     <button
+      ref="dropdownElementRef"
       type="button"
       class="btn btn-secondary btn-sm dropdown-toggle dropdown-toggle-split"
       data-bs-toggle="dropdown"

@@ -185,7 +185,7 @@ onMounted(() => {
           <!--Address-->
           <div class="mb-3">
             <label class="form-label fw-bold" for="address">Address</label>
-            <input
+            <textarea
               :value="service?.address"
               type="text"
               class="form-control shadow-none bg-light"

@@ -2,11 +2,11 @@
 import { ref, onMounted, computed, watch } from 'vue'
 import axios from 'axios'
 import { showToast } from '@/utilities/toast'
-import ViewQueue from '../Services/Modal/ViewQueue.vue'
-import MoveQueueCustomers from '../Services/Modal/Customers/MoveQueueCustomers.vue'
-import RequestPendingCustomers from '../Services/Modal/Customers/SparepartsPendingCustomers.vue'
-import EditPendingCustomers from '../Services/Modal/Customers/EditPendingCustomers.vue'
-import DeleteServices from '../Services/Modal/DeleteServices.vue'
+import ViewQueue from './Modal/ViewQueue.vue'
+import MoveQueueCustomers from './Modal/Customers/MoveQueueCustomers.vue'
+import RequestPendingCustomers from './Modal/Customers/SparepartsPendingCustomers.vue'
+import EditQueue from './Modal/EditQueue.vue'
+import DeleteServices from './Modal/DeleteServices.vue'
 import Search from '../Layouts/SearchAll.vue'
 import ProcessNavigation from './etc/ProcessNavigation.vue'
 import { mockServerItems } from '../../mock/mockQueueCustomers'
@@ -461,7 +461,7 @@ onMounted(() => {
       @close="closeViewModal"
     />
 
-    <EditPendingCustomers
+    <EditQueue
       ref="editModalRef"
       :service="editService"
       :service-device="servicesDevice"

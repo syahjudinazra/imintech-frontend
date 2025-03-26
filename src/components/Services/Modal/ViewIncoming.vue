@@ -129,6 +129,17 @@ onMounted(() => {
             />
           </div>
 
+          <!--Address-->
+          <div class="mb-3">
+            <label class="form-label fw-bold" for="address">Address</label>
+            <textarea
+              :value="service?.address"
+              class="form-control shadow-none bg-light"
+              id="address"
+              readonly
+            ></textarea>
+          </div>
+
           <!--Device Type-->
           <div class="mb-3">
             <label class="form-label fw-bold">Device Type</label>

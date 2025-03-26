@@ -17,6 +17,10 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
+  usages: {
+    type: Array,
+    default: () => [],
+  },
 })
 
 const emit = defineEmits(['update', 'close'])
@@ -142,6 +146,10 @@ const editForm = () => {
       updatedService.date_in_services = updatedService.date_in_services.toISOString().split('T')[0]
     }
 
+    if (updatedService.usages_id) {
+      updatedService.usage = updatedService.usages_id
+    }
+
     emit('update', updatedService)
     hideModal()
   } catch (error) {
@@ -210,7 +218,7 @@ onMounted(() => {
             <!--Owner-->
             <div class="mb-3">
               <div class="form-group">
-                <label class="form-label fw-bold">Owner</label><br />
+                <label class="fw-bold">Owner</label><br />
                 <div class="form-check form-check-inline">
                   <input
                     v-model="editedService.owner"
@@ -242,6 +250,7 @@ onMounted(() => {
                 type="text"
                 class="form-control shadow-none"
                 id="customers"
+                required
               />
             </div>
 
@@ -313,9 +322,42 @@ onMounted(() => {
               />
             </div>
 
+            <!--Usage-->
+            <div class="mb-3">
+              <label for="usage" class="form-label fw-bold">Usage</label>
+              <v-select
+                v-model="editedService.usages_id"
+                :options="usages"
+                :reduce="(usage) => usage.id"
+                label="name"
+                :searchable="true"
+                :clearable="false"
+                placeholder="Select Usages"
+                id="usage"
+                required
+              >
+                <template #no-options="{ search, searching }">
+                  <template v-if="searching">
+                    No results found for <em>{{ search }}</em>
+                  </template>
+                  <em v-else>Start typing to search...</em>
+                </template>
+              </v-select>
+            </div>
+
+            <!--Damage-->
+            <div class="mb-3">
+              <label for="damage" class="form-label fw-bold">Damage</label>
+              <textarea
+                v-model="editedService.damage"
+                class="form-control shadow-none"
+                id="damage"
+              />
+            </div>
+
             <!--Date of Entry-->
             <div class="mb-3">
-              <label class="form-label fw-bold" for="date_in_services">Date of Entry</label>
+              <label class="fw-bold" for="date_in_services">Date of Entry</label>
               <VueDatePicker
                 v-model="editedService.date_in_services"
                 :enable-time-picker="false"
@@ -338,6 +380,12 @@ onMounted(() => {
                 />
                 <label class="form-check-label" :for="'edit_' + item.id">{{ item.label }}</label>
               </div>
+            </div>
+
+            <!--Note-->
+            <div class="mb-3">
+              <label for="note" class="form-label fw-bold">Note</label>
+              <textarea v-model="editedService.note" class="form-control shadow-none" id="note" />
             </div>
           </div>
           <div class="modal-footer">
