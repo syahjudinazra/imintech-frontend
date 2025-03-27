@@ -461,7 +461,7 @@ onMounted(() => {
                   href="#"
                   class="dropdown-item head-text text-decoration-none"
                   @click.prevent="offeringModal(item)"
-                  >Download Offering</a
+                  >Download Quotation</a
                 >
                 <a
                   href="#"

@@ -80,13 +80,12 @@ const subtotal = computed(() => {
 })
 
 const calculateDPPAndPPN = () => {
-  // Calculate DPP and PPN for each item
   offeringData.value.items.forEach((item) => {
-    // Calculate DPP (Base Price) per item
-    item.dpp = item.total / 1.11
+    // Calculate DPP
+    item.dpp = item.price / 1.11
 
-    // Calculate PPN (VAT) per item
-    item.ppn = item.total * 0.11
+    // Calculate PPN
+    item.ppn = item.price * 0.099099
   })
 }
 
@@ -95,7 +94,7 @@ const dpp = computed(() => {
 })
 
 const ppn = computed(() => {
-  return subtotal.value * 0.11
+  return subtotal.value * 0.099099
 })
 
 const total = computed(() => {
@@ -138,9 +137,8 @@ const formatCurrency = (value) => {
   return new Intl.NumberFormat('id-ID').format(value)
 }
 
-// Add this method to generate a random 3-digit number
+//  Method to generate a random 3-digit number
 const generateRandomUniqueDigit = () => {
-  // Generate random number between 100 and 999 (inclusive)
   return Math.floor(Math.random() * 900) + 100
 }
 
@@ -154,9 +152,11 @@ const generateOffering = () => {
     const month = (today.getMonth() + 1).toString().padStart(2, '0')
     const day = today.getDate().toString().padStart(2, '0')
     const uniqueNumber = offeringData.value.uniqueDigit
+    const customer = offeringData.value.customerName
+    const serialNumber = offeringData.value.serialNumber
 
     const ppaNumber = `PPM-${day}${month}${year}-${uniqueNumber}`
-
+    const nameFile = `PPM-${day}${month}${year}-${uniqueNumber}_${customer}_${serialNumber}`
     // Create new jsPDF instance
     const doc = new jsPDF({
       orientation: 'portrait',
@@ -502,7 +502,7 @@ const generateOffering = () => {
     doc.text('  ketentuan ini.', 25, 241)
 
     // Save the PDF
-    doc.save(`${ppaNumber}.pdf`)
+    doc.save(`${nameFile}.pdf`)
 
     // Create offering data object with combined damage and repair descriptions
     const offeringForDownload = {
@@ -667,9 +667,9 @@ onMounted(() => {
                     min="1"
                   />
                 </td>
-                <td class="text-end">{{ formatCurrency(dpp) }}</td>
+                <td class="text-end">{{ formatCurrency(item.dpp) }}</td>
 
-                <td class="text-end">{{ formatCurrency(ppn) }}</td>
+                <td class="text-end">{{ formatCurrency(item.ppn) }}</td>
                 <td>
                   <input
                     type="number"

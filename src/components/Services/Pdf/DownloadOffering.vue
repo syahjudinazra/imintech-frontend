@@ -5,6 +5,7 @@ import 'jspdf-autotable'
 import { showToast } from '@/utilities/toast'
 import { Modal } from 'bootstrap'
 import { cilPlus, cilTrash } from '@coreui/icons'
+import logoDariVisi from '@/assets/images/darivisi.png'
 
 const props = defineProps({
   service: {
@@ -23,7 +24,7 @@ const emit = defineEmits(['close', 'download'])
 const modalInstance = ref(null)
 
 // Logo handling
-const logoUrl = ref('/src/assets/images/darivisi.png')
+const logoUrl = ref(logoDariVisi)
 const logoLoaded = ref(false)
 const logoError = ref(false)
 const logo = new Image()
@@ -70,12 +71,14 @@ const offeringData = ref({
     {
       description: '',
       quantity: 1,
+      dpp: 0,
+      ppn: 0,
       price: 0,
       total: 0,
     },
   ],
   shippingCost: 0,
-  uniqueDigit: 0, // Now editable directly in the form
+  uniqueDigit: 0,
   offeringDate: formatDate(new Date()),
 })
 
@@ -84,14 +87,27 @@ const subtotal = computed(() => {
   return offeringData.value.items.reduce((sum, item) => sum + item.total, 0)
 })
 
+const calculateDPPAndPPN = () => {
+  offeringData.value.items.forEach((item) => {
+    // Calculate DPP
+    item.dpp = item.price / 1.11
+
+    // Calculate PPN
+    item.ppn = item.price * 0.099099
+  })
+}
+
+const dpp = computed(() => {
+  return subtotal.value / 1.11
+})
+
 const ppn = computed(() => {
-  return subtotal.value * 0.11
+  return subtotal.value * 0.099099
 })
 
 const total = computed(() => {
   return (
     subtotal.value +
-    ppn.value +
     parseFloat(offeringData.value.shippingCost || 0) +
     parseFloat(offeringData.value.uniqueDigit || 0)
   )
@@ -101,12 +117,15 @@ const total = computed(() => {
 const calculateItemTotal = (index) => {
   const item = offeringData.value.items[index]
   item.total = item.quantity * item.price
+  calculateDPPAndPPN()
 }
 
 const addItem = () => {
   offeringData.value.items.push({
     description: '',
     quantity: 1,
+    dpp: 0,
+    ppn: 0,
     price: 0,
     total: 0,
   })
@@ -114,6 +133,7 @@ const addItem = () => {
 
 const removeItem = (index) => {
   offeringData.value.items.splice(index, 1)
+  calculateDPPAndPPN()
 }
 
 const calculateTotals = () => {
@@ -134,8 +154,11 @@ const generateOffering = () => {
     const month = (today.getMonth() + 1).toString().padStart(2, '0')
     const day = today.getDate().toString().padStart(2, '0')
     const uniqueNumber = offeringData.value.uniqueDigit
+    const customer = offeringData.value.customerName
+    const serialNumber = offeringData.value.serialNumber
 
-    const ppaNumber = `PPA-${day}${month}${year}-${uniqueNumber}`
+    const ppaNumber = `PPM-${day}${month}${year}-${uniqueNumber}`
+    const nameFile = `PPM-${day}${month}${year}-${uniqueNumber}_${customer}_${serialNumber}`
 
     // Create new jsPDF instance
     const doc = new jsPDF({
@@ -272,73 +295,95 @@ const generateOffering = () => {
     // Items table
     doc.autoTable({
       startY: 135,
-      head: [['#', 'Item & Deskripsi', 'Jml', 'Tarif', 'Jumlah']],
+      head: [['#', 'Item & Deskripsi', 'Jml', 'DPP', 'PPN 11 %', 'Tarif', 'Jumlah']],
       body: offeringData.value.items.map((item, index) => [
         index + 1,
         item.description,
         item.quantity,
+        formatCurrency(item.dpp),
+        formatCurrency(item.ppn),
         formatCurrency(item.price),
         formatCurrency(item.total),
       ]),
       foot: [
-        ['', '', '', 'Sub Total', formatCurrency(subtotal.value)],
-        ['', '', '', 'PPN 11%', formatCurrency(ppn.value)],
+        ['', '', '', '', '', 'Sub Total', formatCurrency(subtotal.value)],
         [
+          '',
+          '',
           '',
           '',
           '',
           'Biaya Pengiriman',
           formatCurrency(parseFloat(offeringData.value.shippingCost || 0)),
         ],
-        ['', '', '', 'Digit unik', formatCurrency(parseFloat(offeringData.value.uniqueDigit || 0))],
-        ['', '', '', 'Total', `IDR${formatCurrency(total.value)}`],
+        [
+          '',
+          '',
+          '',
+          '',
+          '',
+          'Digit unik',
+          formatCurrency(parseFloat(offeringData.value.uniqueDigit || 0)),
+        ],
+        [
+          '',
+          '',
+          '',
+          '',
+          '',
+          {
+            content: 'Total',
+            styles: {
+              fontStyle: 'bold',
+              fillColor: [240, 240, 240],
+              textColor: [0, 0, 0],
+            },
+          },
+          {
+            content: `IDR${formatCurrency(total.value)}`,
+            styles: {
+              fontStyle: 'bold',
+              fillColor: [240, 240, 240],
+              textColor: [0, 0, 0],
+            },
+          },
+        ],
       ],
       theme: 'grid',
-      headStyles: { fillColor: [60, 60, 60] },
+      headStyles: { fillColor: [60, 60, 60], halign: 'center' },
       footStyles: {
         fillColor: [255, 255, 255],
         textColor: [0, 0, 0],
-        fontStyle: 'bold',
-        halign: 'right', // This aligns all footer text to the right
-      },
-      // Make only the "Total" row have a grey background
-      didDrawCell: (data) => {
-        if (data.section === 'foot' && data.row.index === 4) {
-          // Last row in footer (Total)
-          doc.setFillColor(240, 240, 240)
-          doc.rect(data.cell.x, data.cell.y, data.cell.width, data.cell.height, 'F')
-          doc.setTextColor(0, 0, 0)
-          if (data.column.index >= 3) {
-            doc.setFont('helvetica', 'bold')
-            doc.text(
-              data.cell.text,
-              data.cell.x + data.cell.width - 2,
-              data.cell.y + data.cell.height / 2,
-              {
-                align: 'right',
-                baseline: 'middle',
-              },
-            )
-          }
-        }
+        fontStyle: 'normal',
+        halign: 'right',
       },
       columnStyles: {
         0: { cellWidth: 10 },
         1: { cellWidth: 'auto' },
         2: { cellWidth: 15, halign: 'center' },
-        3: { cellWidth: 30, halign: 'right' },
-        4: { cellWidth: 30, halign: 'right' },
+        3: { cellWidth: 30, halign: 'center' },
+        4: { cellWidth: 'auto', halign: 'center' },
+        5: { cellWidth: 'auto', halign: 'center' },
+        6: { cellWidth: 'auto', halign: 'center' },
       },
       styles: {
         fontSize: 9,
         cellPadding: 2,
       },
     })
-    // Add note at the bottom with right alignment
+    // note transfer
     const finalY = doc.lastAutoTable.finalY + 10
     doc.setFontSize(8)
     doc.text('*Pastikan jumlah transfer sesuai dengan invoice', 195, finalY, { align: 'right' })
     doc.text('termasuk 3 digit unik terakhir', 195, finalY + 4, { align: 'right' })
+
+    // Add note before new page
+    doc.setFontSize(8)
+    doc.text(
+      'Catatan : Batas waktu permintaan untuk penerbitan faktur pajak 3 hari dari tanggal Invoice.',
+      15,
+      doc.internal.pageSize.height - 15, // Position at the bottom of the page with some margin
+    )
 
     // Add a new page for Terms and Conditions
     doc.addPage()
@@ -351,116 +396,116 @@ const generateOffering = () => {
     // 1. Service Timeframe Section
     doc.setFontSize(10)
     doc.setFont('helvetica', 'bold')
-    doc.text('1. Waktu Pengerjaan:', 20, 65)
+    doc.text('1. Waktu Pengerjaan:', 20, 45)
     doc.setFont('helvetica', 'normal')
     doc.text(
       '• Waktu pengerjaan perbaikan adalah maksimal 4 (empat) hari kerja, tidak termasuk waktu pengiriman.',
       25,
-      72,
+      52,
     )
-    doc.text('• Waktu pengerjaan dihitung sejak perangkat diterima di Service Center kami.', 25, 79)
+    doc.text('• Waktu pengerjaan dihitung sejak perangkat diterima di Service Center kami.', 25, 59)
     doc.text(
       '• Pengerjaan unit di luar garansi akan dilakukan setelah pembayaran diterima.',
       25,
-      86,
+      66,
     )
 
     // 2. Service Warranty Section
     doc.setFont('helvetica', 'bold')
-    doc.text('2. Garansi Layanan:', 20, 98)
+    doc.text('2. Garansi Layanan:', 20, 78)
     doc.setFont('helvetica', 'normal')
     doc.text(
       '• Untuk layanan perbaikan tanpa penggantian suku cadang, diberikan garansi selama 1 (satu) bulan.',
       25,
-      105,
+      85,
     )
     doc.text(
       '• Untuk layanan perbaikan dengan penggantian suku cadang, diberikan garansi selama 3 (tiga) bulan.',
       25,
-      112,
+      92,
     )
     doc.text(
       '• Garansi mencakup perbaikan ulang terhadap masalah yang sama yang terjadi selama masa garansi.',
       25,
-      119,
+      99,
     )
 
     // 3. Inspection Fee Section
     doc.setFont('helvetica', 'bold')
-    doc.text('3. Biaya Pemeriksaan:', 20, 131)
+    doc.text('3. Biaya Pemeriksaan:', 20, 111)
     doc.setFont('helvetica', 'normal')
     doc.text(
       '• Pelanggan akan dikenakan biaya pemeriksaan sebesar Rp50.000 (lima puluh ribu rupiah).',
       25,
-      138,
+      118,
     )
-    doc.text('  Biaya pemeriksaan dikenakan dalam kondisi berikut:', 25, 145)
+    doc.text('  Biaya pemeriksaan dikenakan dalam kondisi berikut:', 25, 125)
     doc.text(
       '    - Pelanggan tidak menyetujui saran perbaikan yang diberikan oleh teknisi.',
       25,
-      152,
+      132,
     )
     doc.text(
       '    - Setelah pemeriksaan, tidak ditemukan kerusakan pada perangkat yang dikirimkan.',
       25,
-      159,
+      139,
     )
 
     // 4. Other Terms Section
     doc.setFont('helvetica', 'bold')
-    doc.text('4. Ketentuan Lain', 20, 171)
+    doc.text('4. Ketentuan Lain', 20, 151)
     doc.setFont('helvetica', 'normal')
     doc.text(
       '• Service Center berhak menolak perbaikan, jika perangkat yang di terima, tidak sesuai dengan standar',
       25,
-      178,
+      158,
     )
-    doc.text('  operasional perusahaan.', 25, 185)
+    doc.text('  operasional perusahaan.', 25, 165)
     doc.text(
       '• Pelanggan wajib memberikan informasi yang benar, dan lengkap terkait kerusakan perangkat.',
       25,
-      192,
+      172,
     )
     doc.text(
       '• Service Center tidak bertanggung jawab atas kehilangan data, yang terjadi selama proses perbaikan.',
       25,
-      199,
+      179,
     )
     doc.text(
       '• Biaya pengiriman perangkat ke Service Center, dan pengiriman perangkat kembali ke pelanggan, di',
       25,
-      206,
+      186,
     )
-    doc.text('  tanggung oleh pelanggan.', 25, 213)
+    doc.text('  tanggung oleh pelanggan.', 25, 193)
     doc.text(
       '• Apabila unit selesai atau batal servis tidak diambil lebih dari 3 (tiga) bulan kalender sejak diterima di',
       25,
-      220,
+      200,
     )
     doc.text(
       '  Service Center, berhak melakukan proses daur ulang (recycle) dan unit tidak dapat diambil kembali.',
       25,
-      227,
+      207,
     )
 
     // Notes Section
     doc.setFont('helvetica', 'bold')
-    doc.text('Catatan:', 20, 240)
+    doc.text('Catatan:', 20, 220)
     doc.setFont('helvetica', 'normal')
     doc.text(
       '• Syarat dan ketentuan ini dapat berubah sewaktu-waktu tanpa pemberitahuan sebelumnya.',
       25,
-      247,
+      227,
     )
     doc.text(
       '• Dengan menggunakan layanan kami, pelanggan dianggap telah membaca dan menyetujui syarat dan',
       25,
-      254,
+      234,
     )
-    doc.text('  ketentuan ini.', 25, 261)
+    doc.text('  ketentuan ini.', 25, 241)
 
     // Save the PDF
-    doc.save(`${ppaNumber}.pdf`)
+    doc.save(`${nameFile}.pdf`)
 
     // Create offering data object with combined damage and repair descriptions
     const offeringForDownload = {
@@ -469,15 +514,16 @@ const generateOffering = () => {
       ppaNumber,
       date: formatDate(today),
       subtotal: subtotal.value,
+      dpp: dpp.value,
       ppn: ppn.value,
       total: total.value,
     }
 
-    showToast('Offering downloaded successfully', 'success')
+    showToast('Quotation downloaded successfully', 'success')
     emit('download', offeringForDownload)
     emit('close')
   } catch (error) {
-    console.error('Error generating offering:', error)
+    console.error('Error generating quotation:', error)
   }
 }
 
@@ -499,6 +545,8 @@ watch(
         {
           description: '',
           quantity: 1,
+          dpp: 0,
+          ppn: 0,
           price: 0,
           total: 0,
         },
@@ -548,7 +596,7 @@ onMounted(() => {
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="downloadOfferingModalLabel">Download Offering</h5>
+          <h5 class="modal-title" id="downloadOfferingModalLabel">Download Quotation</h5>
           <button
             type="button"
             class="btn-close"
@@ -636,14 +684,16 @@ onMounted(() => {
 
           <div class="table-responsive">
             <table class="table table-bordered">
-              <thead>
+              <thead class="bg-light">
                 <tr>
-                  <th width="50">#</th>
-                  <th>Item & Deskripsi</th>
-                  <th width="80">Jml</th>
-                  <th width="120">Tarif</th>
-                  <th width="120">Jumlah</th>
-                  <th width="80">Action</th>
+                  <th class="text-center">#</th>
+                  <th width="150">Item & Deskripsi</th>
+                  <th class="text-center">Jml</th>
+                  <th width="120" class="text-center">DPP</th>
+                  <th width="120" class="text-center">PPN 11%</th>
+                  <th width="120" class="text-center">Tarif</th>
+                  <th width="120" class="text-center">Jumlah</th>
+                  <th width="50" class="text-center">Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -665,6 +715,9 @@ onMounted(() => {
                       min="1"
                     />
                   </td>
+                  <td class="text-end">{{ formatCurrency(item.dpp) }}</td>
+
+                  <td class="text-end">{{ formatCurrency(item.ppn) }}</td>
                   <td>
                     <input
                       type="number"
@@ -673,7 +726,7 @@ onMounted(() => {
                       @input="calculateItemTotal(index)"
                     />
                   </td>
-                  <td>{{ formatCurrency(item.total) }}</td>
+                  <td class="text-end">{{ formatCurrency(item.total) }}</td>
                   <td>
                     <button
                       v-if="index > 0"
@@ -729,10 +782,6 @@ onMounted(() => {
                     <strong>{{ formatCurrency(subtotal) }}</strong>
                   </div>
                   <div class="d-flex justify-content-between">
-                    <span>PPN 11%:</span>
-                    <strong>{{ formatCurrency(ppn) }}</strong>
-                  </div>
-                  <div class="d-flex justify-content-between">
                     <span>Biaya Pengiriman:</span>
                     <strong>{{
                       formatCurrency(parseFloat(offeringData.shippingCost || 0))
@@ -755,7 +804,7 @@ onMounted(() => {
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
           <button type="button" class="btn btn-primary" @click="generateOffering">
-            Download Offering
+            Download Quotation
           </button>
         </div>
       </div>
