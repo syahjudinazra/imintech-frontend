@@ -386,7 +386,7 @@ onMounted(() => {
 
 <template>
   <div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center">
+    <div class="d-flex gap-2 justify-content-between align-items-center">
       <ProcessNavigationStocks />
       <div class="add-button"></div>
       <div class="others d-flex align-items-center gap-2">
@@ -461,7 +461,7 @@ onMounted(() => {
                   href="#"
                   class="dropdown-item head-text text-decoration-none"
                   @click.prevent="offeringModal(item)"
-                  >Download Offering</a
+                  >Download Quotation</a
                 >
                 <a
                   href="#"

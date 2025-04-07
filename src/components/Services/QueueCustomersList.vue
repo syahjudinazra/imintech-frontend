@@ -370,7 +370,7 @@ onMounted(() => {
 
 <template>
   <div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center">
+    <div class="d-flex gap-2 justify-content-between align-items-center">
       <ProcessNavigation />
       <div class="add-button"></div>
       <div class="others d-flex align-items-center gap-2">

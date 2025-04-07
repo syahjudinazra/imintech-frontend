@@ -157,8 +157,8 @@ const generateOffering = () => {
     const customer = offeringData.value.customerName
     const serialNumber = offeringData.value.serialNumber
 
-    const ppaNumber = `PPM-${day}${month}${year}-${uniqueNumber}`
-    const nameFile = `PPM-${day}${month}${year}-${uniqueNumber}_${customer}_${serialNumber}`
+    const ppaNumber = `PPA-${day}${month}${year}-${uniqueNumber}`
+    const nameFile = `PPA-${day}${month}${year}-${uniqueNumber}_${customer}_${serialNumber}`
 
     // Create new jsPDF instance
     const doc = new jsPDF({
