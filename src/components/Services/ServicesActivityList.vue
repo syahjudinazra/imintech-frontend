@@ -29,7 +29,7 @@
         <p>No activity logs found</p>
       </template>
       <template #item-created_at="{ created_at }">
-        {{ formatDate(created_at) }}
+        {{ created_at }}
       </template>
       <template #item-causer="{ causer }">
         {{ causer?.name || 'System' }}
@@ -140,12 +140,6 @@ const handleSearch = (term) => {
   serverOptions.value.page = 1 // Reset to first page
   serverOptions.value.search = term
   // Debounced search will be triggered by the watcher
-}
-
-// Format date for display
-const formatDate = (date) => {
-  if (!date) return ''
-  return new Date(date).toLocaleString()
 }
 
 // Format properties for display
