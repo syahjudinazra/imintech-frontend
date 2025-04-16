@@ -131,6 +131,7 @@ const checkPermission = (permissionName) => {
 const canView = computed(() => checkPermission('View Services'))
 const canEdit = computed(() => checkPermission('Edit Queue'))
 const canMove = computed(() => checkPermission('Move Queue'))
+const canDelete = computed(() => checkPermission('Delete Services'))
 
 // Generic function to fetch all data
 const fetchAllData = async (endpoint, currentPage = 1, allData = []) => {
@@ -440,6 +441,7 @@ onMounted(() => {
                   >Request Spareparts</a
                 >
                 <a
+                  v-if="canDelete"
                   href="#"
                   class="dropdown-item head-text text-decoration-none"
                   @click.prevent="deleteModal(item)"

@@ -68,33 +68,33 @@ export default [
   },
   {
     component: 'CNavGroup',
-    name: 'Delivery',
+    name: 'Shipments',
     to: '/delivery',
     icon: 'cil-truck',
     items: [
       {
         component: 'CNavItem',
-        name: 'Customer Delivery',
+        name: 'Customer',
         to: '/delivery/customer',
       },
       {
         component: 'CNavItem',
-        name: 'Warehouse Delivery',
+        name: 'Warehouse',
         to: '/delivery/warehouse',
       },
       {
         component: 'CNavItem',
-        name: 'Service Delivery',
+        name: 'Services',
         to: '/delivery/service',
       },
       {
         component: 'CNavItem',
-        name: 'Loan Delivery',
+        name: 'Loan',
         to: '/delivery/loan',
       },
       {
         component: 'CNavItem',
-        name: 'Sold Delivery',
+        name: 'Sold',
         to: '/delivery/sold',
       },
     ],

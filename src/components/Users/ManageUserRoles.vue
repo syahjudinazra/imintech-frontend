@@ -14,7 +14,7 @@ const loading = ref(false)
 const roleAssigned = ref(false)
 const baseColor = ref('#dc3545')
 
-const pages = ref(['Stocks', 'Delivery', 'Loan', 'Services', 'Spareparts', 'Firmwares'])
+const pages = ref(['Stocks', 'Shipments', 'Loan', 'Services', 'Spareparts', 'Firmwares'])
 const actions = ref(['Create', 'Edit', 'View', 'Delete', 'Import', 'Export', 'Template'])
 
 // Table Configuration
@@ -52,11 +52,13 @@ const permissions = computed(() => {
     'Move Queue',
     'Move Pending',
     'Move Validation',
+    'Move Delivery',
     'Move Done',
     'Edit Incoming',
     'Edit Queue',
     'Edit Pending',
     'Edit Validation',
+    'Edit Delivery',
     'Edit Done',
   ]
   return [...standardPermissions, ...specialPermissions]
@@ -286,7 +288,14 @@ watch(selectedUser, () => {
                   <div class="" v-if="page === 'Services'">
                     <div
                       class="form-check"
-                      v-for="stage in ['Incoming', 'Queue', 'Pending', 'Validation', 'Done']"
+                      v-for="stage in [
+                        'Incoming',
+                        'Queue',
+                        'Pending',
+                        'Validation',
+                        'Delivery',
+                        'Done',
+                      ]"
                       :key="`Move-${stage}`"
                     >
                       <input
@@ -306,7 +315,14 @@ watch(selectedUser, () => {
                     <!-- Edit permissions for each stage -->
                     <div
                       class="form-check"
-                      v-for="stage in ['Incoming', 'Queue', 'Pending', 'Validation', 'Done']"
+                      v-for="stage in [
+                        'Incoming',
+                        'Queue',
+                        'Pending',
+                        'Validation',
+                        'Delivery',
+                        'Done',
+                      ]"
                       :key="`Edit-${stage}`"
                     >
                       <input

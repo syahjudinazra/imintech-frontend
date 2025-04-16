@@ -65,8 +65,9 @@ const checkPermission = (permissionName) => {
 
 // Create computed property for permission
 const canView = computed(() => checkPermission('View Services'))
-const canEdit = computed(() => checkPermission('Edit Validation'))
-const canMove = computed(() => checkPermission('Move Validation'))
+const canEdit = computed(() => checkPermission('Edit Delivery'))
+const canMove = computed(() => checkPermission('Move Delivery'))
+const canDelete = computed(() => checkPermission('Delete Services'))
 
 const formatDate = (date) => {
   if (!date) return '-'
@@ -358,6 +359,7 @@ onMounted(() => {
                   >Move</a
                 >
                 <a
+                  v-if="canDelete"
                   href="#"
                   class="dropdown-item head-text text-decoration-none"
                   @click.prevent="deleteModal(item)"
