@@ -122,8 +122,9 @@ const userRole = ref('')
 const token = localStorage.getItem('token')
 // Constants
 const baseColor = '#e55353'
+
 const headers = ref([
-  { text: 'Name', value: 'name' },
+  { text: 'Name', value: 'name', sortable: true },
   { text: 'Action', value: 'action' },
 ])
 
