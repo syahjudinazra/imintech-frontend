@@ -191,7 +191,7 @@ onMounted(() => {
 const updateLoanDevice = async () => {
   try {
     loading.value = true
-    const response = await axios.put(`loan-device/${id.value}`, editLoanDevice.value)
+    const response = await axios.put(`loans-device/${id.value}`, editLoanDevice.value)
     showToast(response.data.message, 'success')
     closeModal()
     refreshList()
@@ -204,7 +204,7 @@ const updateLoanDevice = async () => {
 
 const deleteLoanDevice = async () => {
   try {
-    const response = await axios.delete(`loan-device/${id.value}`)
+    const response = await axios.delete(`loans-device/${id.value}`)
     showToast(response.data.message, 'success')
     closeModal()
     refreshList()
