@@ -1,3 +1,135 @@
+<script setup>
+import { ref, onMounted, watch } from 'vue'
+import { Modal } from 'bootstrap'
+import axios from 'axios'
+import { showToast } from '@/utilities/toast'
+import AddSales from '../Sales/Modal/AddSales.vue'
+import Search from '../../Layouts/SearchAll'
+import StatusPage from '../../../components/StatusPage/404Page.vue'
+import { mockServerItems } from '../../../mock/mockSales'
+
+let editForm
+let deleteForm
+const editSales = ref({})
+const loading = ref(false)
+const sales = ref([])
+const id = ref(null)
+const userRole = ref('')
+
+const token = localStorage.getItem('token')
+// Constants
+const baseColor = '#e55353'
+const headers = ref([
+  { text: 'Sales', value: 'name', sortable: true },
+  { text: 'Phone Number', value: 'phone', sortable: true },
+  { text: 'Action', value: 'action' },
+])
+
+const serverItemsLength = ref(0)
+const serverOptions = ref({
+  page: 1,
+  rowsPerPage: 10,
+  sortBy: 'name',
+  sortType: 'desc',
+  searchTerm: '',
+})
+
+const refreshSales = () => {
+  loadFromServer()
+}
+
+async function fetchUserRole() {
+  try {
+    const response = await axios.get('user')
+    const roles = response.data.roles || []
+    userRole.value = roles.some((role) => role.name === 'superadmin') ? 'superadmin' : 'user'
+  } catch (error) {
+    console.error('Error fetching user roles:', error)
+  }
+}
+
+const loadFromServer = async () => {
+  loading.value = true
+  try {
+    const { serverCurrentPageItems, serverTotalItemsLength } = await mockServerItems(
+      serverOptions.value,
+      token,
+    )
+    sales.value = serverCurrentPageItems
+    serverItemsLength.value = serverTotalItemsLength
+  } catch (error) {
+    console.error('Error loading data', error)
+    showToast('Failed to load sales data.', 'error')
+  } finally {
+    loading.value = false
+  }
+}
+
+const updateSearch = (term) => {
+  serverOptions.value.searchTerm = term
+  serverOptions.value.page = 1
+  loadFromServer()
+}
+
+watch(
+  serverOptions,
+  () => {
+    loadFromServer()
+  },
+  { deep: true },
+)
+
+onMounted(() => {
+  editForm = new Modal(document.getElementById('editForm'))
+  deleteForm = new Modal(document.getElementById('deleteForm'))
+  loadFromServer()
+  fetchUserRole()
+})
+
+const updateSales = async () => {
+  try {
+    loading.value = true
+    const response = await axios.put(`sales/${id.value}`, editSales.value)
+    showToast(response.data.message, 'success')
+    closeModal()
+    refreshSales()
+  } catch (error) {
+    console.error('Data failed to change', error)
+    showToast(error.data.message, 'error')
+    closeModal()
+  }
+}
+
+const deleteSales = async () => {
+  try {
+    const response = await axios.delete(`sales/${id.value}`)
+    showToast(response.data.message, 'success')
+    closeModal()
+    refreshSales()
+  } catch (error) {
+    console.error('Data failed to delete', error)
+    showToast(error.data.message, 'error')
+    closeModal()
+  }
+}
+
+function editModal(sales) {
+  editSales.value = { ...sales }
+  id.value = sales.id
+  editForm.show()
+}
+
+function deleteModal(sales) {
+  id.value = sales.id
+  deleteForm.show()
+}
+
+function closeModal() {
+  editForm.hide()
+  deleteForm.hide()
+}
+</script>
+
 <template>
   <div class="container-fluid" v-if="userRole === 'superadmin'">
     <div class="d-flex justify-content-between align-items-center">
@@ -109,138 +241,6 @@
     </div>
   </div>
 </template>
-
-<script setup>
-import { ref, onMounted, watch } from 'vue'
-import { Modal } from 'bootstrap'
-import axios from 'axios'
-import { showToast } from '@/utilities/toast'
-import AddSales from '../Sales/Modal/AddSales.vue'
-import Search from '../../Layouts/SearchAll'
-import StatusPage from '../../../components/StatusPage/404Page.vue'
-import { mockServerItems } from '../../../mock/mockSales'
-
-let editForm
-let deleteForm
-const editSales = ref({})
-const loading = ref(false)
-const sales = ref([])
-const id = ref(null)
-const userRole = ref('')
-
-const token = localStorage.getItem('token')
-// Constants
-const baseColor = '#e55353'
-const headers = ref([
-  { text: 'Sales', value: 'name' },
-  { text: 'Phone Number', value: 'phone' },
-  { text: 'Action', value: 'action' },
-])
-
-const serverItemsLength = ref(0)
-const serverOptions = ref({
-  page: 1,
-  rowsPerPage: 10,
-  sortBy: 'name',
-  sortType: 'desc',
-  searchTerm: '',
-})
-
-const refreshSales = () => {
-  loadFromServer()
-}
-
-async function fetchUserRole() {
-  try {
-    const response = await axios.get('user')
-    const roles = response.data.roles || []
-    userRole.value = roles.some((role) => role.name === 'superadmin') ? 'superadmin' : 'user'
-  } catch (error) {
-    console.error('Error fetching user roles:', error)
-  }
-}
-
-const loadFromServer = async () => {
-  loading.value = true
-  try {
-    const { serverCurrentPageItems, serverTotalItemsLength } = await mockServerItems(
-      serverOptions.value,
-      token,
-    )
-    sales.value = serverCurrentPageItems
-    serverItemsLength.value = serverTotalItemsLength
-  } catch (error) {
-    console.error('Error loading data', error)
-    showToast('Failed to load sales data.', 'error')
-  } finally {
-    loading.value = false
-  }
-}
-
-const updateSearch = (term) => {
-  serverOptions.value.searchTerm = term
-  serverOptions.value.page = 1
-  loadFromServer()
-}
-
-watch(
-  serverOptions,
-  () => {
-    loadFromServer()
-  },
-  { deep: true },
-)
-
-onMounted(() => {
-  editForm = new Modal(document.getElementById('editForm'))
-  deleteForm = new Modal(document.getElementById('deleteForm'))
-  loadFromServer()
-  fetchUserRole()
-})
-
-const updateSales = async () => {
-  try {
-    loading.value = true
-    const response = await axios.put(`sales/${id.value}`, editSales.value)
-    showToast(response.data.message, 'success')
-    closeModal()
-    refreshSales()
-  } catch (error) {
-    console.error('Data failed to change', error)
-    showToast(error.data.message, 'error')
-    closeModal()
-  }
-}
-
-const deleteSales = async () => {
-  try {
-    const response = await axios.delete(`sales/${id.value}`)
-    showToast(response.data.message, 'success')
-    closeModal()
-    refreshSales()
-  } catch (error) {
-    console.error('Data failed to delete', error)
-    showToast(error.data.message, 'error')
-    closeModal()
-  }
-}
-
-function editModal(sales) {
-  editSales.value = { ...sales }
-  id.value = sales.id
-  editForm.show()
-}
-
-function deleteModal(sales) {
-  id.value = sales.id
-  deleteForm.show()
-}
-
-function closeModal() {
-  editForm.hide()
-  deleteForm.hide()
-}
-</script>
 
 <style scoped>
 .customize-table {

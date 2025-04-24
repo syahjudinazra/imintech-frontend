@@ -190,7 +190,7 @@ const getRegister = async () => {
     showToast('Registration successful. Login Now!', 'success')
     router.push({ name: 'LoginPage' })
   } catch (error) {
-    showToast('Registration failed. Please try again!', 'success')
+    showToast('Registration failed. Please try again!', 'error')
     console.error('Error registering user:', error.message)
   } finally {
     loading.value = false

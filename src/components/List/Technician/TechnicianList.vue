@@ -1,106 +1,3 @@
-<template>
-  <div class="container-fluid" v-if="userRole === 'superadmin'">
-    <div class="d-flex justify-content-between align-items-center">
-      <div class="add-button">
-        <AddTechnician @data-added="refreshList()" />
-      </div>
-      <div class="others-technician d-flex align-items-center gap-2">
-        <Search :onSearch="updateSearch" />
-      </div>
-    </div>
-    <div class="mt-2">
-      <EasyDataTable
-        v-model:server-options="serverOptions"
-        :server-items-length="serverItemsLength"
-        @update:options="serverOptions = $event"
-        :headers="headers"
-        :items="technician"
-        :loading="loading"
-        :theme-color="baseColor"
-        :rows-per-page="10"
-        table-class-name="customize-table"
-        alternating
-        show-index
-        border-cell
-        buttons-pagination
-      >
-        <template #loading>
-          <div class="loader"></div>
-        </template>
-        <template #empty-message>
-          <p>Data not found</p>
-        </template>
-        <template #item-action="item">
-          <div class="d-flex gap-2">
-            <a href="#" class="head-text text-decoration-none" @click="editModal(item)">Edit</a>
-            <a href="#" class="head-text text-decoration-none" @click="deleteModal(item)">Delete</a>
-          </div>
-        </template>
-      </EasyDataTable>
-    </div>
-  </div>
-  <p v-else-if="userRole === ''">Loading...</p>
-  <StatusPage v-else />
-
-  <!--Edit Modal-->
-  <div
-    class="modal fade"
-    id="editForm"
-    tabindex="-1"
-    aria-labelledby="editForm_label"
-    aria-hidden="true"
-  >
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="editForm_label">Edit Data</h5>
-          <button type="button" class="btn-close" aria-label="Close" @click="closeModal"></button>
-        </div>
-        <form @submit.prevent="updateTechnician" enctype="multipart/form-data">
-          <div class="modal-body">
-            <div class="mb-3">
-              <label for="name" class="form-label fw-bold">Name</label>
-              <input
-                v-model="editTechnician.name"
-                type="text"
-                class="form-control shadow-none"
-                id="name"
-              />
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" @click="closeModal">Close</button>
-            <button type="submit" class="btn btn-danger text-white" :disabled="loading">
-              {{ loading ? 'Submitting...' : 'Submit' }}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  <!--Delete Modal-->
-  <div class="modal fade show" id="deleteForm">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Delete Data</h5>
-          <button type="button" class="btn-close" aria-label="Close" @click="closeModal"></button>
-        </div>
-        <div class="modal-body">
-          <p>Are you sure want delete this data?</p>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" @click="closeModal">Close</button>
-          <button type="button" class="btn btn-danger text-white" @click="deleteTechnician">
-            Delete
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import { Modal } from 'bootstrap'
@@ -123,7 +20,7 @@ const token = localStorage.getItem('token')
 // Constants
 const baseColor = '#e55353'
 const headers = ref([
-  { text: 'Name', value: 'name' },
+  { text: 'Name', value: 'name', sortable: true },
   { text: 'Action', value: 'action' },
 ])
 
@@ -231,6 +128,109 @@ function closeModal() {
   deleteForm.hide()
 }
 </script>
+
+<template>
+  <div class="container-fluid" v-if="userRole === 'superadmin'">
+    <div class="d-flex justify-content-between align-items-center">
+      <div class="add-button">
+        <AddTechnician @data-added="refreshList()" />
+      </div>
+      <div class="others-technician d-flex align-items-center gap-2">
+        <Search :onSearch="updateSearch" />
+      </div>
+    </div>
+    <div class="mt-2">
+      <EasyDataTable
+        v-model:server-options="serverOptions"
+        :server-items-length="serverItemsLength"
+        @update:options="serverOptions = $event"
+        :headers="headers"
+        :items="technician"
+        :loading="loading"
+        :theme-color="baseColor"
+        :rows-per-page="10"
+        table-class-name="customize-table"
+        alternating
+        show-index
+        border-cell
+        buttons-pagination
+      >
+        <template #loading>
+          <div class="loader"></div>
+        </template>
+        <template #empty-message>
+          <p>Data not found</p>
+        </template>
+        <template #item-action="item">
+          <div class="d-flex gap-2">
+            <a href="#" class="head-text text-decoration-none" @click="editModal(item)">Edit</a>
+            <a href="#" class="head-text text-decoration-none" @click="deleteModal(item)">Delete</a>
+          </div>
+        </template>
+      </EasyDataTable>
+    </div>
+  </div>
+  <p v-else-if="userRole === ''">Loading...</p>
+  <StatusPage v-else />
+
+  <!--Edit Modal-->
+  <div
+    class="modal fade"
+    id="editForm"
+    tabindex="-1"
+    aria-labelledby="editForm_label"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="editForm_label">Edit Data</h5>
+          <button type="button" class="btn-close" aria-label="Close" @click="closeModal"></button>
+        </div>
+        <form @submit.prevent="updateTechnician" enctype="multipart/form-data">
+          <div class="modal-body">
+            <div class="mb-3">
+              <label for="name" class="form-label fw-bold">Name</label>
+              <input
+                v-model="editTechnician.name"
+                type="text"
+                class="form-control shadow-none"
+                id="name"
+              />
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" @click="closeModal">Close</button>
+            <button type="submit" class="btn btn-danger text-white" :disabled="loading">
+              {{ loading ? 'Submitting...' : 'Submit' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!--Delete Modal-->
+  <div class="modal fade show" id="deleteForm">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Delete Data</h5>
+          <button type="button" class="btn-close" aria-label="Close" @click="closeModal"></button>
+        </div>
+        <div class="modal-body">
+          <p>Are you sure want delete this data?</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" @click="closeModal">Close</button>
+          <button type="button" class="btn btn-danger text-white" @click="deleteTechnician">
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
 
 <style scoped>
 .customize-table {

@@ -1,61 +1,3 @@
-<template>
-  <div class="container-fluid" v-if="userRole === 'superadmin'">
-    <div class="d-flex justify-content-between align-items-center">
-      <div class="add-button">
-        <AddFirmwaresDevice @data-added="refreshList()" />
-      </div>
-      <div class="others-firmwares-device d-flex align-items-center gap-2">
-        <Search :onSearch="updateSearch" />
-      </div>
-    </div>
-    <div class="mt-2">
-      <EasyDataTable
-        v-model:server-options="serverOptions"
-        :server-items-length="serverItemsLength"
-        @update:options="serverOptions = $event"
-        :headers="headers"
-        :items="firmwaresdevice"
-        :loading="loading"
-        :theme-color="baseColor"
-        :rows-per-page="10"
-        table-class-name="customize-table"
-        alternating
-        show-index
-        border-cell
-        buttons-pagination
-      >
-        <template #loading>
-          <div class="loader"></div>
-        </template>
-        <template #empty-message>
-          <p>Data not found</p>
-        </template>
-        <template #item-action="item">
-          <div class="d-flex gap-2">
-            <a href="#" class="head-text text-decoration-none" @click="editModal(item)">Edit</a>
-            <a href="#" class="head-text text-decoration-none" @click="deleteModal(item)">Delete</a>
-          </div>
-        </template>
-      </EasyDataTable>
-    </div>
-  </div>
-  <p v-else-if="userRole === ''">Loading...</p>
-  <StatusPage v-else />
-
-  <EditFirmwaresDevice
-    ref="editModalRef"
-    :firmwares-device="editFirmwaresDevice"
-    @update="updateFirmwaresDevice"
-    @close="closeEditModal"
-  />
-
-  <DeleteFirmwaresDevice
-    ref="deleteModalRef"
-    @delete="deleteFirmwaresDevice"
-    @close="closeDeleteModal"
-  />
-</template>
-
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import axios from 'axios'
@@ -79,7 +21,7 @@ const token = localStorage.getItem('token')
 // Constants
 const baseColor = '#e55353'
 const headers = ref([
-  { text: 'Name', value: 'name' },
+  { text: 'Name', value: 'name', sortable: true },
   { text: 'Action', value: 'action' },
 ])
 
@@ -187,6 +129,64 @@ function closeDeleteModal() {
   deleteModalRef.value.hideModal()
 }
 </script>
+
+<template>
+  <div class="container-fluid" v-if="userRole === 'superadmin'">
+    <div class="d-flex justify-content-between align-items-center">
+      <div class="add-button">
+        <AddFirmwaresDevice @data-added="refreshList()" />
+      </div>
+      <div class="others-firmwares-device d-flex align-items-center gap-2">
+        <Search :onSearch="updateSearch" />
+      </div>
+    </div>
+    <div class="mt-2">
+      <EasyDataTable
+        v-model:server-options="serverOptions"
+        :server-items-length="serverItemsLength"
+        @update:options="serverOptions = $event"
+        :headers="headers"
+        :items="firmwaresdevice"
+        :loading="loading"
+        :theme-color="baseColor"
+        :rows-per-page="10"
+        table-class-name="customize-table"
+        alternating
+        show-index
+        border-cell
+        buttons-pagination
+      >
+        <template #loading>
+          <div class="loader"></div>
+        </template>
+        <template #empty-message>
+          <p>Data not found</p>
+        </template>
+        <template #item-action="item">
+          <div class="d-flex gap-2">
+            <a href="#" class="head-text text-decoration-none" @click="editModal(item)">Edit</a>
+            <a href="#" class="head-text text-decoration-none" @click="deleteModal(item)">Delete</a>
+          </div>
+        </template>
+      </EasyDataTable>
+    </div>
+  </div>
+  <p v-else-if="userRole === ''">Loading...</p>
+  <StatusPage v-else />
+
+  <EditFirmwaresDevice
+    ref="editModalRef"
+    :firmwares-device="editFirmwaresDevice"
+    @update="updateFirmwaresDevice"
+    @close="closeEditModal"
+  />
+
+  <DeleteFirmwaresDevice
+    ref="deleteModalRef"
+    @delete="deleteFirmwaresDevice"
+    @close="closeDeleteModal"
+  />
+</template>
 
 <style scoped>
 .customize-table {
