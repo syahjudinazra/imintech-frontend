@@ -114,25 +114,15 @@ export default {
       document.documentElement.addEventListener('ColorSchemeChange', () => {
         if (mainChartRef.value) {
           mainChartRef.value.chart,
-            (options.scales.x.grid.borderColor = getStyle(
-              '--cui-border-color-translucent',
-            ))
+            (options.scales.x.grid.borderColor = getStyle('--cui-border-color-translucent'))
           mainChartRef.value.chart,
-            (options.scales.x.grid.color = getStyle(
-              '--cui-border-color-translucent',
-            ))
+            (options.scales.x.grid.color = getStyle('--cui-border-color-translucent'))
+          mainChartRef.value.chart, (options.scales.x.ticks.color = getStyle('--cui-body-color'))
           mainChartRef.value.chart,
-            (options.scales.x.ticks.color = getStyle('--cui-body-color'))
+            (options.scales.y.grid.borderColor = getStyle('--cui-border-color-translucent'))
           mainChartRef.value.chart,
-            (options.scales.y.grid.borderColor = getStyle(
-              '--cui-border-color-translucent',
-            ))
-          mainChartRef.value.chart,
-            (options.scales.y.grid.color = getStyle(
-              '--cui-border-color-translucent',
-            ))
-          mainChartRef.value.chart,
-            (options.scales.y.ticks.color = getStyle('--cui-body-color'))
+            (options.scales.y.grid.color = getStyle('--cui-border-color-translucent'))
+          mainChartRef.value.chart, (options.scales.y.ticks.color = getStyle('--cui-body-color'))
           mainChartRef.value.chart.update()
         }
       })

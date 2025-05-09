@@ -75,7 +75,7 @@ import MainChart from './MainChart'
 import WidgetsStatsA from './../widgets/WidgetsStatsTypeA.vue'
 
 export default {
-  name: 'Dashboard',
+  name: 'DashboardPage',
   components: {
     MainChart,
     WidgetsStatsA,
