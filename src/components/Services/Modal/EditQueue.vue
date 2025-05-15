@@ -316,9 +316,8 @@ onMounted(() => {
               <input
                 v-model="editedService.serial_number"
                 type="text"
-                class="form-control bg-light shadow-none"
+                class="form-control shadow-none"
                 id="serial_number"
-                readonly
               />
             </div>
 
