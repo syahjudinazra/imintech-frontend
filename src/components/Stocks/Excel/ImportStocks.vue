@@ -33,9 +33,49 @@ const handleFileUpload = async (event) => {
       })
       console.log('Excel import successful:', response.data)
       showToast('Excel file imported successfully!', 'success')
+
+      // Reset file input after successful upload
+      event.target.value = ''
     } catch (err) {
-      error.value = err.response?.data?.data || 'An error occurred during the import process.'
-      showToast('Failed to import Excel file. Please try again.', 'error')
+      // Get error details from response
+      const errorData = err.response?.data
+      const errorMessage = errorData?.message || errorData?.data || ''
+      const errorCode = errorData?.code || ''
+
+      console.error('Import error:', errorData)
+
+      // Check for duplicate serial number error
+      if (
+        errorCode === 'DUPLICATE_SERIAL_NUMBER' ||
+        errorCode === 'duplicate_serial_number' ||
+        (typeof errorMessage === 'string' &&
+          errorMessage.toLowerCase().includes('duplicate') &&
+          errorMessage.toLowerCase().includes('serial'))
+      ) {
+        showToast('Failed Import, Serial Number Duplicate', 'error')
+        error.value = 'Duplicate serial numbers detected in the Excel file.'
+      } else if (errorData?.errors) {
+        // Handle validation errors (Laravel validation format)
+        const validationErrors = Object.values(errorData.errors).flat()
+        const hasDuplicateError = validationErrors.some(
+          (err) => err.toLowerCase().includes('duplicate') && err.toLowerCase().includes('serial'),
+        )
+
+        if (hasDuplicateError) {
+          showToast('Failed Import, Serial Number Duplicate', 'error')
+          error.value = 'Duplicate serial numbers detected in the Excel file.'
+        } else {
+          showToast('Failed to import Excel file. Please check your data.', 'error')
+          error.value = validationErrors.join('; ')
+        }
+      } else {
+        // Generic error handling
+        showToast('Failed to import Excel file. Please try again.', 'error')
+        error.value = errorMessage || 'An error occurred during the import process.'
+      }
+
+      // Reset file input on error
+      event.target.value = ''
     } finally {
       loading.value = false
     }
@@ -96,141 +136,3 @@ const downloadTemplate = async () => {
     </ul>
   </div>
 </template>
-
-<style scoped>
-.loader {
-  --w: 10ch;
-  font-weight: bold;
-  font-family: monospace;
-  font-size: 30px;
-  line-height: 1.2em;
-  letter-spacing: var(--w);
-  width: var(--w);
-  overflow: hidden;
-  white-space: nowrap;
-  color: #0000;
-  animation: l19 2s infinite linear;
-}
-.loader:before {
-  content: 'Downloading...';
-}
-
-@keyframes l19 {
-  0% {
-    text-shadow: calc(0 * var(--w)) 0, calc(-1 * var(--w)) 0, calc(-2 * var(--w)) 0,
-      calc(-3 * var(--w)) 0, calc(-4 * var(--w)) 0, calc(-5 * var(--w)) 0, calc(-6 * var(--w)) 0,
-      calc(-7 * var(--w)) 0, calc(-8 * var(--w)) 0, calc(-9 * var(--w)) 0;
-  }
-  4% {
-    text-shadow: calc(0 * var(--w)) 0 #000, calc(-1 * var(--w)) 0, calc(-2 * var(--w)) 0,
-      calc(-3 * var(--w)) 0, calc(-4 * var(--w)) 0, calc(-5 * var(--w)) 0, calc(-6 * var(--w)) 0,
-      calc(-7 * var(--w)) 0, calc(-8 * var(--w)) 0, calc(-9 * var(--w)) 0;
-  }
-  8% {
-    text-shadow: calc(0 * var(--w)) 0 #000, calc(-1 * var(--w)) 0 #000, calc(-2 * var(--w)) 0,
-      calc(-3 * var(--w)) 0, calc(-4 * var(--w)) 0, calc(-5 * var(--w)) 0, calc(-6 * var(--w)) 0,
-      calc(-7 * var(--w)) 0, calc(-8 * var(--w)) 0, calc(-9 * var(--w)) 0;
-  }
-  12% {
-    text-shadow: calc(0 * var(--w)) 0 #000, calc(-1 * var(--w)) 0 #000, calc(-2 * var(--w)) 0 #000,
-      calc(-3 * var(--w)) 0, calc(-4 * var(--w)) 0, calc(-5 * var(--w)) 0, calc(-6 * var(--w)) 0,
-      calc(-7 * var(--w)) 0, calc(-8 * var(--w)) 0, calc(-9 * var(--w)) 0;
-  }
-  16% {
-    text-shadow: calc(0 * var(--w)) 0 #000, calc(-1 * var(--w)) 0 #000, calc(-2 * var(--w)) 0 #000,
-      calc(-3 * var(--w)) 0 #000, calc(-4 * var(--w)) 0, calc(-5 * var(--w)) 0,
-      calc(-6 * var(--w)) 0, calc(-7 * var(--w)) 0, calc(-8 * var(--w)) 0, calc(-9 * var(--w)) 0;
-  }
-  20% {
-    text-shadow: calc(0 * var(--w)) 0 #000, calc(-1 * var(--w)) 0 #000, calc(-2 * var(--w)) 0 #000,
-      calc(-3 * var(--w)) 0 #000, calc(-4 * var(--w)) 0 #000, calc(-5 * var(--w)) 0,
-      calc(-6 * var(--w)) 0, calc(-7 * var(--w)) 0, calc(-8 * var(--w)) 0, calc(-9 * var(--w)) 0;
-  }
-  24% {
-    text-shadow: calc(0 * var(--w)) 0 #000, calc(-1 * var(--w)) 0 #000, calc(-2 * var(--w)) 0 #000,
-      calc(-3 * var(--w)) 0 #000, calc(-4 * var(--w)) 0 #000, calc(-5 * var(--w)) 0 #000,
-      calc(-6 * var(--w)) 0, calc(-7 * var(--w)) 0, calc(-8 * var(--w)) 0, calc(-9 * var(--w)) 0;
-  }
-  28% {
-    text-shadow: calc(0 * var(--w)) 0 #000, calc(-1 * var(--w)) 0 #000, calc(-2 * var(--w)) 0 #000,
-      calc(-3 * var(--w)) 0 #000, calc(-4 * var(--w)) 0 #000, calc(-5 * var(--w)) 0 #000,
-      calc(-6 * var(--w)) 0 #000, calc(-7 * var(--w)) 0, calc(-8 * var(--w)) 0,
-      calc(-9 * var(--w)) 0;
-  }
-  32% {
-    text-shadow: calc(0 * var(--w)) 0 #000, calc(-1 * var(--w)) 0 #000, calc(-2 * var(--w)) 0 #000,
-      calc(-3 * var(--w)) 0 #000, calc(-4 * var(--w)) 0 #000, calc(-5 * var(--w)) 0 #000,
-      calc(-6 * var(--w)) 0 #000, calc(-7 * var(--w)) 0 #000, calc(-8 * var(--w)) 0,
-      calc(-9 * var(--w)) 0;
-  }
-  36% {
-    text-shadow: calc(0 * var(--w)) 0 #000, calc(-1 * var(--w)) 0 #000, calc(-2 * var(--w)) 0 #000,
-      calc(-3 * var(--w)) 0 #000, calc(-4 * var(--w)) 0 #000, calc(-5 * var(--w)) 0 #000,
-      calc(-6 * var(--w)) 0 #000, calc(-7 * var(--w)) 0 #000, calc(-8 * var(--w)) 0 #000,
-      calc(-9 * var(--w)) 0;
-  }
-  40%,
-  60% {
-    text-shadow: calc(0 * var(--w)) 0 #000, calc(-1 * var(--w)) 0 #000, calc(-2 * var(--w)) 0 #000,
-      calc(-3 * var(--w)) 0 #000, calc(-4 * var(--w)) 0 #000, calc(-5 * var(--w)) 0 #000,
-      calc(-6 * var(--w)) 0 #000, calc(-7 * var(--w)) 0 #000, calc(-8 * var(--w)) 0 #000,
-      calc(-9 * var(--w)) 0 #000;
-  }
-  64% {
-    text-shadow: calc(0 * var(--w)) 0, calc(-1 * var(--w)) 0 #000, calc(-2 * var(--w)) 0 #000,
-      calc(-3 * var(--w)) 0 #000, calc(-4 * var(--w)) 0 #000, calc(-5 * var(--w)) 0 #000,
-      calc(-6 * var(--w)) 0 #000, calc(-7 * var(--w)) 0 #000, calc(-8 * var(--w)) 0 #000,
-      calc(-9 * var(--w)) 0 #000;
-  }
-  68% {
-    text-shadow: calc(0 * var(--w)) 0, calc(-1 * var(--w)) 0, calc(-2 * var(--w)) 0 #000,
-      calc(-3 * var(--w)) 0 #000, calc(-4 * var(--w)) 0 #000, calc(-5 * var(--w)) 0 #000,
-      calc(-6 * var(--w)) 0 #000, calc(-7 * var(--w)) 0 #000, calc(-8 * var(--w)) 0 #000,
-      calc(-9 * var(--w)) 0 #000;
-  }
-  72% {
-    text-shadow: calc(0 * var(--w)) 0, calc(-1 * var(--w)) 0, calc(-2 * var(--w)) 0,
-      calc(-3 * var(--w)) 0 #000, calc(-4 * var(--w)) 0 #000, calc(-5 * var(--w)) 0 #000,
-      calc(-6 * var(--w)) 0 #000, calc(-7 * var(--w)) 0 #000, calc(-8 * var(--w)) 0 #000,
-      calc(-9 * var(--w)) 0 #000;
-  }
-  76% {
-    text-shadow: calc(0 * var(--w)) 0, calc(-1 * var(--w)) 0, calc(-2 * var(--w)) 0,
-      calc(-3 * var(--w)) 0, calc(-4 * var(--w)) 0 #000, calc(-5 * var(--w)) 0 #000,
-      calc(-6 * var(--w)) 0 #000, calc(-7 * var(--w)) 0 #000, calc(-8 * var(--w)) 0 #000,
-      calc(-9 * var(--w)) 0 #000;
-  }
-  80% {
-    text-shadow: calc(0 * var(--w)) 0, calc(-1 * var(--w)) 0, calc(-2 * var(--w)) 0,
-      calc(-3 * var(--w)) 0, calc(-4 * var(--w)) 0, calc(-5 * var(--w)) 0 #000,
-      calc(-6 * var(--w)) 0 #000, calc(-7 * var(--w)) 0 #000, calc(-8 * var(--w)) 0 #000,
-      calc(-9 * var(--w)) 0 #000;
-  }
-  84% {
-    text-shadow: calc(0 * var(--w)) 0, calc(-1 * var(--w)) 0, calc(-2 * var(--w)) 0,
-      calc(-3 * var(--w)) 0, calc(-4 * var(--w)) 0, calc(-5 * var(--w)) 0,
-      calc(-6 * var(--w)) 0 #000, calc(-7 * var(--w)) 0 #000, calc(-8 * var(--w)) 0 #000,
-      calc(-9 * var(--w)) 0 #000;
-  }
-  88% {
-    text-shadow: calc(0 * var(--w)) 0, calc(-1 * var(--w)) 0, calc(-2 * var(--w)) 0,
-      calc(-3 * var(--w)) 0, calc(-4 * var(--w)) 0, calc(-5 * var(--w)) 0, calc(-6 * var(--w)) 0,
-      calc(-7 * var(--w)) 0 #000, calc(-8 * var(--w)) 0 #000, calc(-9 * var(--w)) 0 #000;
-  }
-  92% {
-    text-shadow: calc(0 * var(--w)) 0, calc(-1 * var(--w)) 0, calc(-2 * var(--w)) 0,
-      calc(-3 * var(--w)) 0, calc(-4 * var(--w)) 0, calc(-5 * var(--w)) 0, calc(-6 * var(--w)) 0,
-      calc(-7 * var(--w)) 0, calc(-8 * var(--w)) 0 #000, calc(-9 * var(--w)) 0 #000;
-  }
-  96% {
-    text-shadow: calc(0 * var(--w)) 0, calc(-1 * var(--w)) 0, calc(-2 * var(--w)) 0,
-      calc(-3 * var(--w)) 0, calc(-4 * var(--w)) 0, calc(-5 * var(--w)) 0, calc(-6 * var(--w)) 0,
-      calc(-7 * var(--w)) 0, calc(-8 * var(--w)) 0, calc(-9 * var(--w)) 0 #000;
-  }
-  100% {
-    text-shadow: calc(0 * var(--w)) 0, calc(-1 * var(--w)) 0, calc(-2 * var(--w)) 0,
-      calc(-3 * var(--w)) 0, calc(-4 * var(--w)) 0, calc(-5 * var(--w)) 0, calc(-6 * var(--w)) 0,
-      calc(-7 * var(--w)) 0, calc(-8 * var(--w)) 0, calc(-9 * var(--w)) 0;
-  }
-}
-</style>

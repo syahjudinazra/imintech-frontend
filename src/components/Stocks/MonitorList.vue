@@ -14,6 +14,7 @@ const devices = ref([])
 const locations = ref([])
 const loading = ref(true)
 const summary = ref({})
+const statusTotals = ref({}) // Added for direct status totals
 const error = ref(null)
 const pagination = ref({
   total: 0,
@@ -75,12 +76,17 @@ const canMove = computed(() => checkPermission('Move SN Stocks'))
 
 // Transform data for table display
 const processedStocks = computed(() => {
+  if (!devices.value || devices.value.length === 0) {
+    return []
+  }
+
   const groupedData = new Map()
 
   // Initialize counters for each device
   devices.value.forEach((device) => {
-    groupedData.set(device.id, {
-      stocks_devices_id: device.id,
+    const deviceId = parseInt(device.id)
+    groupedData.set(deviceId, {
+      stocks_devices_id: deviceId,
       device: device.name,
       warehouse: 0,
       services: 0,
@@ -93,25 +99,34 @@ const processedStocks = computed(() => {
   })
 
   // Update counts from summary data
-  Object.entries(summary.value).forEach(([status, deviceCounts]) => {
-    Object.entries(deviceCounts).forEach(([deviceId, count]) => {
-      const deviceData = groupedData.get(parseInt(deviceId))
-      if (deviceData) {
-        deviceData[status.toLowerCase()] = count
-        deviceData.total += count
+  if (summary.value && Object.keys(summary.value).length > 0) {
+    Object.entries(summary.value).forEach(([status, deviceCounts]) => {
+      if (deviceCounts && typeof deviceCounts === 'object') {
+        Object.entries(deviceCounts).forEach(([deviceId, count]) => {
+          const deviceIdInt = parseInt(deviceId)
+          const deviceData = groupedData.get(deviceIdInt)
+          if (deviceData) {
+            const statusKey = status.toLowerCase()
+            const countValue = parseInt(count) || 0
+            deviceData[statusKey] = countValue
+            deviceData.total += countValue
+          }
+        })
       }
     })
-  })
+  }
 
-  return Array.from(groupedData.values())
+  const result = Array.from(groupedData.values())
+  console.log('Processed Stocks for table:', result) // Debug log
+  return result
 })
 
-// Status helpers
+// Fixed: Status helpers using direct totals from backend
 const getStatusClass = computed(() => (status) => STATUS_CLASSES[status])
 
 const getTotalByStatus = computed(() => (status) => {
-  if (!summary.value[status]) return 0
-  return Object.values(summary.value[status]).reduce((sum, count) => sum + count, 0)
+  // Use the direct totals from backend instead of calculating
+  return statusTotals.value[status] || 0
 })
 
 const getPercentageByStatus = computed(() => (status) => {
@@ -140,13 +155,19 @@ const loadFromServer = async () => {
       data,
       devices: deviceData,
       summary: summaryData,
+      status_totals: statusTotalsData, // Get the direct totals
       pagination: paginationData,
     } = response.data
 
     stocks.value = data
     devices.value = deviceData
     summary.value = summaryData
+    statusTotals.value = statusTotalsData || {} // Store direct totals
     pagination.value = paginationData
+
+    console.log('Status Totals:', statusTotals.value) // Debug log
+    console.log('Summary Data:', summary.value) // Debug log
+    console.log('Devices:', devices.value) // Debug log
   } catch (error) {
     console.error('Error loading data:', error)
     error.value = 'Failed to load stocks data'
@@ -301,63 +322,3 @@ watch(
     </div>
   </div>
 </template>
-
-<style scoped>
-.card {
-  transition: all 0.2s ease-in-out;
-}
-
-.card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
-}
-
-.badge {
-  font-size: 0.8rem;
-  padding: 0.4em 0.6em;
-}
-
-.rotate {
-  animation: rotate 1s linear infinite;
-}
-
-@keyframes rotate {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.loader {
-  width: 50px;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  padding: 6px;
-  background: conic-gradient(from 135deg at top, currentColor 90deg, #0000 0) 0 calc(50% - 4px) /
-      17px 8.5px,
-    radial-gradient(
-        farthest-side at bottom left,
-        #0000 calc(100% - 6px),
-        currentColor calc(100% - 5px) 99%,
-        #0000
-      )
-      top right/50% 50% content-box content-box,
-    radial-gradient(
-        farthest-side at top,
-        #0000 calc(100% - 6px),
-        currentColor calc(100% - 5px) 99%,
-        #0000
-      )
-      bottom/100% 50% content-box content-box;
-  background-repeat: no-repeat;
-  animation: l11 1s infinite linear;
-}
-
-@keyframes l11 {
-  100% {
-    transform: rotate(1turn);
-  }
-}
-</style>
