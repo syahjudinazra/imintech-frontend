@@ -23,18 +23,13 @@ const headers = ref([
   { text: 'Roles', value: 'roles', sortable: true },
 ])
 
-const serverOptions = ref({
-  page: 1,
-  rowsPerPage: 10,
-  sortBy: 'id',
-  sortType: 'asc',
-})
-
+// Remove server options since we're doing client-side pagination
+const allUsers = ref([])
 const serverItemsLength = ref(0)
 
 // Computed Properties
 const tableItems = computed(() => {
-  return users.value.map((user) => ({
+  return allUsers.value.map((user) => ({
     id: user.id,
     name: user.name,
     roles: getRoleForUser(user.id),
@@ -74,7 +69,10 @@ const fetchUsers = async () => {
     const response = await axios.get('users', {
       headers: { Authorization: `Bearer ${token}` },
     })
-    users.value = response.data
+
+    // Store all users
+    allUsers.value = response.data
+    users.value = response.data // Keep this for compatibility with existing code
     serverItemsLength.value = response.data.length
   } catch (error) {
     console.error(error)
@@ -162,34 +160,16 @@ const assignPermissions = async () => {
 
 // Helper Functions
 const getRoleForUser = (userId) => {
-  const user = users.value.find((user) => user.id === userId)
-  return user && user.roles.length > 0 ? user.roles.map((role) => role.name).join(', ') : 'N/A'
+  const user = allUsers.value.find((user) => user.id === userId)
+  return user && user.roles && user.roles.length > 0
+    ? user.roles.map((role) => role.name).join(', ')
+    : 'N/A'
 }
 
 const handleRoleChange = () => {
   selectedPermissions.value = []
   roleAssigned.value = false
   assignRole()
-}
-
-const handleTableOptions = async (options) => {
-  serverOptions.value = options
-  const { page, rowsPerPage, sortBy, sortType } = options
-
-  // Here you would typically make an API call with pagination/sorting parameters
-  // For now, we'll handle it client-side
-  const start = (page - 1) * rowsPerPage
-  const end = start + rowsPerPage
-
-  const sortedUsers = [...users.value].sort((a, b) => {
-    const modifier = sortType === 'desc' ? -1 : 1
-    if (typeof a[sortBy] === 'string') {
-      return modifier * a[sortBy].localeCompare(b[sortBy])
-    }
-    return modifier * (a[sortBy] - b[sortBy])
-  })
-
-  users.value = sortedUsers
 }
 
 // Lifecycle Hooks
@@ -375,19 +355,17 @@ watch(selectedUser, () => {
         <div class="card shadow-sm p-4">
           <h2 class="text-center mb-4">Users</h2>
           <EasyDataTable
-            v-model:server-options="serverOptions"
-            :server-items-length="serverItemsLength"
             :headers="headers"
             :items="tableItems"
             :loading="loading"
             :theme-color="baseColor"
             :rows-per-page="10"
+            :rows-per-page-options="[5, 10, 20, 50]"
             table-class-name="customize-table"
             alternating
             show-index
             border-cell
             buttons-pagination
-            @update:options="handleTableOptions"
           >
             <template #loading>
               <div class="loader"></div>
