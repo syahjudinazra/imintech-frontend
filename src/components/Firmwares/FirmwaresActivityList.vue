@@ -56,6 +56,7 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import axios from 'axios'
+import { showToast } from '@/utilities/toast'
 import Search from '../../components/Layouts/SearchAll'
 import { debounce } from 'lodash'
 
@@ -120,7 +121,7 @@ const loadActivityLogs = async () => {
     activityLogs.value = response.data.data
     serverItemsLength.value = response.data.total
   } catch (error) {
-    console.error('Error loading activity logs:', error)
+    showToast('Failed to load activity logs.', 'error')
   } finally {
     loading.value = false
   }

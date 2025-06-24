@@ -84,12 +84,10 @@ async function AddLocation() {
   try {
     isLoading.value = true
     const response = await axios.post('location', location.value)
-    console.log('Data added successfully:', response.data.message)
     showToast(response.data.message, 'success')
     closeModal()
     window.location.reload()
   } catch (error) {
-    console.error('Error add data:', error)
     showToast(error.data.message, 'error')
   }
 }

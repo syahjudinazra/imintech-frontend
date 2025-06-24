@@ -84,11 +84,9 @@ async function AddSparepartsDevice() {
   try {
     isLoading.value = true
     const response = await axios.post('spareparts-device', sparepartsDevice.value)
-    console.log('Data added successfully:', response.data.message)
     showToast(response.data.message, 'success')
     closeModal()
   } catch (error) {
-    console.error('Error add data:', error)
     showToast(error.data.message, 'error')
   }
 }

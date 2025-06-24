@@ -161,14 +161,11 @@ const getLogin = async () => {
     const token = response.data.token
     const user = response.data.users
 
-    // Use the $auth service to set token with expiry
     if ($auth) {
       const success = $auth.setToken(token)
       console.log('Token set successfully:', success)
       console.log('Expiry time:', $auth.getExpiryTime())
     } else {
-      // Fallback if $auth is not available
-      console.log('$auth not available, using localStorage directly')
       localStorage.setItem('token', token)
     }
 

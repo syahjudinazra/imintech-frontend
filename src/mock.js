@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { showToast } from '@/utilities/toast'
 
 export const mockClientItems = async function (itemsNumber = 100) {
   const mockItems = []
@@ -23,7 +24,7 @@ async function fetchFirmwares() {
     const response = await axios.get(`getfirmwarestable`)
     return response.data.data
   } catch (error) {
-    console.error('Failed to fetch firmwares:', error)
+    showToast('Failed to load firmwares data.', 'error')
     return []
   }
 }

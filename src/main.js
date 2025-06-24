@@ -33,9 +33,6 @@ const setTokenWithExpiry = (token) => {
   const expiryTime = new Date().getTime() + SESSION_DURATION
   localStorage.setItem(TOKEN_KEY, token)
   localStorage.setItem(TOKEN_EXPIRY_KEY, expiryTime.toString())
-
-  // For debugging
-  console.log('Token set with expiry:', new Date(expiryTime).toLocaleTimeString())
 }
 
 // Function to clear token and session data
@@ -49,11 +46,8 @@ const token = localStorage.getItem(TOKEN_KEY)
 
 // Check if token is expired on application start
 if (token && isTokenExpired()) {
-  console.log('Token expired on app start')
   clearSession()
-  // Will redirect to login via router guard or axios interceptor
 } else if (token) {
-  // Reset expiry time if token is still valid (sliding expiration)
   setTokenWithExpiry(token)
 }
 
@@ -77,7 +71,6 @@ axios.interceptors.request.use(
 
     // Check if token is expired before each request
     if (isTokenExpired()) {
-      console.log('Token expired during request')
       clearSession()
       router.push('/pages/login')
       return Promise.reject(new Error('Session expired'))
@@ -118,7 +111,6 @@ axios.interceptors.response.use(
 // Create event to check session periodically
 const checkSessionInterval = setInterval(() => {
   if (isTokenExpired()) {
-    console.log('Token expired during interval check')
     clearSession()
     router.push('/pages/login')
     clearInterval(checkSessionInterval)

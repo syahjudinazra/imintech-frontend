@@ -1,3 +1,237 @@
+<script setup>
+import { ref, watch, onMounted, reactive } from 'vue'
+import { Modal } from 'bootstrap'
+import vSelect from 'vue-select'
+import { showToast } from '@/utilities/toast'
+import { cloneDeep } from 'lodash-es'
+import '@vuepic/vue-datepicker/dist/main.css'
+import 'vue-select/dist/vue-select.css'
+
+const props = defineProps({
+  service: {
+    type: Object,
+    required: true,
+    default: () => ({}),
+  },
+  technicians: {
+    type: Array,
+    required: true,
+    default: () => [],
+  },
+  spareparts: {
+    type: Array,
+    required: true,
+    default: () => [],
+  },
+})
+
+const emit = defineEmits(['update', 'close'])
+
+// State
+const isDataChanged = ref(false)
+const initialService = ref(null)
+const movedService = reactive({})
+const changedFields = reactive({})
+let moveModal = null
+
+// File upload refs
+const imageInput = ref(null)
+const documentInput = ref(null)
+const imageFiles = ref([])
+const documentFiles = ref([])
+const imagePreviewUrls = ref([])
+
+// File validation
+const validateImageFile = (file) => {
+  const maxSize = 2 * 1024 * 1024 // 2MB
+  const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg']
+
+  if (!allowedTypes.includes(file.type)) {
+    showToast(`File ${file.name} must be a JPEG, PNG, or JPG image.`, 'error')
+    return false
+  }
+
+  if (file.size > maxSize) {
+    showToast(`File ${file.name} exceeds 2MB limit.`, 'error')
+    return false
+  }
+
+  return true
+}
+
+const validatePDFFile = (file) => {
+  const maxSize = 5 * 1024 * 1024 // 5MB
+
+  if (file.type !== 'application/pdf') {
+    showToast(`File ${file.name} must be a PDF document.`, 'error')
+    return false
+  }
+
+  if (file.size > maxSize) {
+    showToast(`File ${file.name} exceeds 5MB limit.`, 'error')
+    return false
+  }
+
+  return true
+}
+
+// File handling methods
+const handleImageUpload = (event) => {
+  const files = Array.from(event.target.files)
+  const validFiles = files.filter(validateImageFile)
+
+  validFiles.forEach((file) => {
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      imagePreviewUrls.value.push(e.target.result)
+    }
+    reader.readAsDataURL(file)
+  })
+
+  imageFiles.value = [...imageFiles.value, ...validFiles]
+  if (validFiles.length > 0) {
+    changedFields.images = true
+    isDataChanged.value = true
+  }
+}
+
+const handleDocumentUpload = (event) => {
+  const files = Array.from(event.target.files)
+  const validFiles = files.filter(validatePDFFile)
+
+  documentFiles.value = [...documentFiles.value, ...validFiles]
+  if (validFiles.length > 0) {
+    changedFields.documents = true
+    isDataChanged.value = true
+  }
+}
+
+const removeImage = (index) => {
+  imageFiles.value.splice(index, 1)
+  imagePreviewUrls.value.splice(index, 1)
+  if (imageFiles.value.length === 0) {
+    delete changedFields.images
+  }
+  isDataChanged.value = Object.keys(changedFields).length > 0
+}
+
+const removeDocument = (index) => {
+  documentFiles.value.splice(index, 1)
+  if (documentFiles.value.length === 0) {
+    delete changedFields.documents
+  }
+  isDataChanged.value = Object.keys(changedFields).length > 0
+}
+
+const moveForm = async () => {
+  if (!isDataChanged.value) {
+    showToast('No changes detected.', 'error')
+    return
+  }
+
+  const formData = new FormData()
+
+  // Append basic form fields
+  Object.keys(changedFields).forEach((key) => {
+    if (key !== 'images' && key !== 'documents') {
+      formData.append(key, movedService[key])
+    }
+  })
+
+  // Append files
+  imageFiles.value.forEach((file) => {
+    formData.append('images[]', file)
+  })
+
+  documentFiles.value.forEach((file) => {
+    formData.append('documents[]', file)
+  })
+
+  // Add other required fields
+  formData.append('repair', movedService.repair || '')
+  formData.append('no_spareparts', movedService.no_spareparts || '')
+  formData.append('sn_kanibal', movedService.sn_kanibal || '')
+  formData.append('note', movedService.note || '')
+  formData.append('status', movedService.status || '')
+
+  emit('update', formData)
+  hideModal()
+}
+
+// Reset form
+const resetForm = () => {
+  imageFiles.value = []
+  documentFiles.value = []
+  imagePreviewUrls.value = []
+  if (imageInput.value) imageInput.value.value = ''
+  if (documentInput.value) documentInput.value.value = ''
+  Object.keys(changedFields).forEach((key) => delete changedFields[key])
+  isDataChanged.value = false
+}
+
+// Modal handlers
+const showModal = () => {
+  moveModal?.show()
+}
+
+const hideModal = () => {
+  resetForm()
+  moveModal?.hide()
+}
+
+const closeModal = () => {
+  resetForm()
+  hideModal()
+  emit('close')
+}
+
+// Watchers
+watch(
+  () => props.service,
+  (newService) => {
+    if (newService) {
+      initialService.value = cloneDeep(newService)
+
+      // Clone the service and explicitly set status to 'Validation Customers'
+      const serviceClone = cloneDeep(newService)
+      Object.assign(movedService, serviceClone)
+
+      // Always set status to 'Validation Customers'
+      movedService.status = 'Validation Customers'
+    }
+  },
+  { immediate: true, deep: true },
+)
+
+watch(
+  movedService,
+  (newValue) => {
+    if (initialService.value) {
+      Object.keys(newValue).forEach((key) => {
+        if (JSON.stringify(newValue[key]) !== JSON.stringify(initialService.value[key])) {
+          changedFields[key] = true
+        } else {
+          delete changedFields[key]
+        }
+      })
+      isDataChanged.value = Object.keys(changedFields).length > 0
+    }
+  },
+  { deep: true },
+)
+
+// Lifecycle
+onMounted(() => {
+  moveModal = new Modal(document.getElementById('moveForm'))
+})
+
+// Expose methods
+defineExpose({
+  showModal,
+  hideModal,
+})
+</script>
+
 <template>
   <div
     class="modal fade"
@@ -104,19 +338,6 @@
                 class="form-control shadow-none"
                 id="sn_kanibal"
                 placeholder="Input SN Cannibal"
-              />
-            </div>
-
-            <!-- Date Exit -->
-            <div class="mb-3">
-              <label for="date_out_services" class="form-label fw-bold">Date exit</label>
-              <VueDatePicker
-                v-model="movedService.date_out_services"
-                :enable-time-picker="false"
-                :format="customDateFormat"
-                :model-value="formatDateForPicker(movedService.date_out_services)"
-                @update:model-value="handleDateChange"
-                placeholder="Select Date"
               />
             </div>
 
@@ -227,273 +448,6 @@
     </div>
   </div>
 </template>
-
-<script setup>
-import { ref, watch, onMounted, reactive } from 'vue'
-import { Modal } from 'bootstrap'
-import vSelect from 'vue-select'
-import VueDatePicker from '@vuepic/vue-datepicker'
-import { showToast } from '@/utilities/toast'
-import { cloneDeep } from 'lodash-es'
-import '@vuepic/vue-datepicker/dist/main.css'
-import 'vue-select/dist/vue-select.css'
-
-const props = defineProps({
-  service: {
-    type: Object,
-    required: true,
-    default: () => ({}),
-  },
-  technicians: {
-    type: Array,
-    required: true,
-    default: () => [],
-  },
-  spareparts: {
-    type: Array,
-    required: true,
-    default: () => [],
-  },
-})
-
-const emit = defineEmits(['update', 'close'])
-
-// State
-const isDataChanged = ref(false)
-const initialService = ref(null)
-const movedService = reactive({})
-const changedFields = reactive({})
-let moveModal = null
-
-// File upload refs
-const imageInput = ref(null)
-const documentInput = ref(null)
-const imageFiles = ref([])
-const documentFiles = ref([])
-const imagePreviewUrls = ref([])
-
-// File validation
-const validateImageFile = (file) => {
-  const maxSize = 2 * 1024 * 1024 // 2MB
-  const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg']
-
-  if (!allowedTypes.includes(file.type)) {
-    showToast(`File ${file.name} must be a JPEG, PNG, or JPG image.`, 'error')
-    return false
-  }
-
-  if (file.size > maxSize) {
-    showToast(`File ${file.name} exceeds 2MB limit.`, 'error')
-    return false
-  }
-
-  return true
-}
-
-const validatePDFFile = (file) => {
-  const maxSize = 5 * 1024 * 1024 // 5MB
-
-  if (file.type !== 'application/pdf') {
-    showToast(`File ${file.name} must be a PDF document.`, 'error')
-    return false
-  }
-
-  if (file.size > maxSize) {
-    showToast(`File ${file.name} exceeds 5MB limit.`, 'error')
-    return false
-  }
-
-  return true
-}
-
-// Date handling
-const customDateFormat = 'dd/MM/yyyy'
-
-const formatDateForPicker = (date) => {
-  if (!date) return null
-  return new Date(date)
-}
-
-const formatDateForServer = (date) => {
-  if (!date) return null
-  const d = new Date(date)
-  return d.toISOString().split('T')[0] // Returns YYYY-MM-DD format
-}
-
-const handleDateChange = (newDate) => {
-  movedService.date_out_services = newDate
-  changedFields.date_out_services = true
-  isDataChanged.value = true
-}
-
-// File handling methods
-const handleImageUpload = (event) => {
-  const files = Array.from(event.target.files)
-  const validFiles = files.filter(validateImageFile)
-
-  validFiles.forEach((file) => {
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      imagePreviewUrls.value.push(e.target.result)
-    }
-    reader.readAsDataURL(file)
-  })
-
-  imageFiles.value = [...imageFiles.value, ...validFiles]
-  if (validFiles.length > 0) {
-    changedFields.images = true
-    isDataChanged.value = true
-  }
-}
-
-const handleDocumentUpload = (event) => {
-  const files = Array.from(event.target.files)
-  const validFiles = files.filter(validatePDFFile)
-
-  documentFiles.value = [...documentFiles.value, ...validFiles]
-  if (validFiles.length > 0) {
-    changedFields.documents = true
-    isDataChanged.value = true
-  }
-}
-
-const removeImage = (index) => {
-  imageFiles.value.splice(index, 1)
-  imagePreviewUrls.value.splice(index, 1)
-  if (imageFiles.value.length === 0) {
-    delete changedFields.images
-  }
-  isDataChanged.value = Object.keys(changedFields).length > 0
-}
-
-const removeDocument = (index) => {
-  documentFiles.value.splice(index, 1)
-  if (documentFiles.value.length === 0) {
-    delete changedFields.documents
-  }
-  isDataChanged.value = Object.keys(changedFields).length > 0
-}
-
-const moveForm = async () => {
-  if (!isDataChanged.value) {
-    showToast('No changes detected.', 'error')
-    return
-  }
-
-  const formData = new FormData()
-
-  // Format date before sending to server
-  const formattedDate = formatDateForServer(movedService.date_out_services)
-
-  // Append basic form fields
-  Object.keys(changedFields).forEach((key) => {
-    if (key !== 'images' && key !== 'documents') {
-      if (key === 'date_out_services') {
-        formData.append(key, formattedDate)
-      } else {
-        formData.append(key, movedService[key])
-      }
-    }
-  })
-
-  // Append files
-  imageFiles.value.forEach((file) => {
-    formData.append('images[]', file)
-  })
-
-  documentFiles.value.forEach((file) => {
-    formData.append('documents[]', file)
-  })
-
-  // Add other required fields
-  formData.append('repair', movedService.repair || '')
-  formData.append('no_spareparts', movedService.no_spareparts || '')
-  formData.append('sn_kanibal', movedService.sn_kanibal || '')
-  formData.append('date_out_services', formattedDate || '')
-  formData.append('note', movedService.note || '')
-  formData.append('status', movedService.status || '')
-
-  emit('update', formData)
-  hideModal()
-}
-
-// Reset form
-const resetForm = () => {
-  imageFiles.value = []
-  documentFiles.value = []
-  imagePreviewUrls.value = []
-  if (imageInput.value) imageInput.value.value = ''
-  if (documentInput.value) documentInput.value.value = ''
-  Object.keys(changedFields).forEach((key) => delete changedFields[key])
-  isDataChanged.value = false
-}
-
-// Modal handlers
-const showModal = () => {
-  moveModal?.show()
-}
-
-const hideModal = () => {
-  resetForm()
-  moveModal?.hide()
-}
-
-const closeModal = () => {
-  resetForm()
-  hideModal()
-  emit('close')
-}
-
-// Watchers
-watch(
-  () => props.service,
-  (newService) => {
-    if (newService) {
-      initialService.value = cloneDeep(newService)
-
-      // Clone the service and explicitly set status to 'Validation Customers'
-      const serviceClone = cloneDeep(newService)
-      Object.assign(movedService, serviceClone)
-
-      // Always set status to 'Validation Customers'
-      movedService.status = 'Validation Customers'
-
-      if (movedService.date_out_services) {
-        movedService.date_out_services = formatDateForPicker(movedService.date_out_services)
-      }
-    }
-  },
-  { immediate: true, deep: true },
-)
-
-watch(
-  movedService,
-  (newValue) => {
-    if (initialService.value) {
-      Object.keys(newValue).forEach((key) => {
-        if (JSON.stringify(newValue[key]) !== JSON.stringify(initialService.value[key])) {
-          changedFields[key] = true
-        } else {
-          delete changedFields[key]
-        }
-      })
-      isDataChanged.value = Object.keys(changedFields).length > 0
-    }
-  },
-  { deep: true },
-)
-
-// Lifecycle
-onMounted(() => {
-  moveModal = new Modal(document.getElementById('moveForm'))
-})
-
-// Expose methods
-defineExpose({
-  showModal,
-  hideModal,
-})
-</script>
 
 <style scoped>
 input:focus {

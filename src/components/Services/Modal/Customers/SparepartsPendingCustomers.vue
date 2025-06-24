@@ -63,36 +63,50 @@ watch(
   },
 )
 
-// Fetch existing sparepart requests
+// Update the fetchExistingRequests
 const fetchExistingRequests = async () => {
   try {
     internalLoading.value = true
     const response = await axios.get(`services/${props.serviceId}/sparepart-requests`)
+
     existingRequests.value = response.data.data
   } catch (error) {
-    console.error('Failed to fetch existing requests:', error)
     showToast('Failed to load existing requests', 'error')
   } finally {
     internalLoading.value = false
   }
 }
 
-// Cancel a sparepart request
+// Update the cancelRequest function with better debugging
 const cancelRequest = async (requestId) => {
   try {
+    // Check if requestId is valid
+    if (!requestId || requestId === null || requestId === undefined) {
+      showToast('Invalid request No Sparepart', 'error')
+      return
+    }
+
     internalLoading.value = true
-    const response = await axios.delete(
-      `services/${props.serviceId}/sparepart-requests/${requestId}`,
-    )
+
+    const url = `services/${props.serviceId}/sparepart-requests/${requestId}`
+    const response = await axios.delete(url)
 
     if (response.data.message) {
       showToast(response.data.message, 'success')
-      await fetchExistingRequests() // Refresh the list
-      emit('update') // Notify parent component
+      await fetchExistingRequests()
+      emit('update')
     }
   } catch (error) {
-    console.error('Failed to cancel request:', error)
-    const errorMessage = error.response?.data?.message || 'Failed to cancel request'
+    let errorMessage = 'Failed to cancel request'
+
+    if (error.response?.status === 404) {
+      errorMessage = 'Sparepart request not found'
+    } else if (error.response?.data?.message) {
+      errorMessage = error.response.data.message
+    } else if (error.response?.data?.error) {
+      errorMessage = error.response.data.error
+    }
+
     showToast(errorMessage, 'error')
   } finally {
     internalLoading.value = false
@@ -125,10 +139,10 @@ const availableSparepartsForDevice = computed(() => {
   return (deviceId) => {
     if (!deviceId) return []
     return props.spareparts
-      .filter((part) => part.spareparts_devices_id === deviceId)
+      .filter((part) => part.raw_device_id === deviceId)
       .map((part) => ({
         ...part,
-        label: `${part.no_spareparts} - ${part.name} (Stock: ${part.quantity})`,
+        label: `${part.no_spareparts} - Stock: ${part.quantity}`,
       }))
   }
 })
@@ -202,13 +216,32 @@ const handleSubmit = async () => {
   }
 
   internalLoading.value = true
+
   try {
     const requestData = {
-      spareparts: formData.value.spareparts.map((item) => ({
-        spareparts_devices_id: Number(item.spareparts_devices_id) || null,
-        no_spareparts: item.no_spareparts,
-        quantity: Number(item.quantity),
-      })),
+      spareparts: formData.value.spareparts.map((item) => {
+        // Ensure proper data conversion and validation
+        const processedItem = {
+          spareparts_devices_id: parseInt(item.spareparts_devices_id),
+          no_spareparts: item.no_spareparts.trim(),
+          quantity: parseInt(item.quantity),
+        }
+
+        // Validate processed item before sending
+        if (!processedItem.spareparts_devices_id || isNaN(processedItem.spareparts_devices_id)) {
+          throw new Error(`Invalid device ID for item: ${JSON.stringify(item)}`)
+        }
+
+        if (!processedItem.no_spareparts) {
+          throw new Error(`Invalid sparepart number for item: ${JSON.stringify(item)}`)
+        }
+
+        if (!processedItem.quantity || processedItem.quantity < 1) {
+          throw new Error(`Invalid quantity for item: ${JSON.stringify(item)}`)
+        }
+
+        return processedItem
+      }),
     }
 
     const response = await axios.post(`services/${props.serviceId}/sparepart-requests`, requestData)
@@ -220,14 +253,25 @@ const handleSubmit = async () => {
       resetForm()
     }
   } catch (error) {
-    console.error('Failed to submit sparepart request:', error)
-    const errorMessage = error.response?.data?.message || 'Failed to submit request'
+    showToast('Failed to submit sparepart request:', 'error')
+
+    // Enhanced error logging
+    if (error.response?.data) {
+      // Handle validation errors specifically
+      if (error.response.status === 422 && error.response.data.errors) {
+        const validationErrors = Object.values(error.response.data.errors).flat()
+        showToast(validationErrors.join(', '), 'error')
+        return
+      }
+    }
+
+    const errorMessage =
+      error.response?.data?.message || error.message || 'Failed to submit request'
     showToast(errorMessage, 'error')
   } finally {
     internalLoading.value = false
   }
 }
-
 const validateForm = () => {
   return formData.value.spareparts.every(
     (item) =>
@@ -330,7 +374,7 @@ const validateForm = () => {
                           :value="part.no_spareparts"
                           :disabled="isPartAlreadyRequested(part.no_spareparts)"
                         >
-                          {{ part.no_spareparts }} - {{ part.name }} (Stock: {{ part.quantity }})
+                          {{ part.no_spareparts }} - Stock: {{ part.quantity }}
                           {{
                             isPartAlreadyRequested(part.no_spareparts) ? '- Already Requested' : ''
                           }}

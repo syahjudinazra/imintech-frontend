@@ -264,8 +264,6 @@ const deleteSpareparts = async (sparepartId) => {
 }
 
 function editModal(sparepart) {
-  console.log('Spareparts object received:', sparepart)
-
   if (!sparepart) {
     console.error('Spareparts object is null or undefined')
     showToast('Unable to edit sparepart: Invalid data', 'error')
@@ -279,9 +277,6 @@ function editModal(sparepart) {
     androids_id: sparepart.androids_id,
   }
   id.value = sparepart.id
-
-  console.log('editSpareparts.value set to:', editSpareparts.value)
-  console.log('id.value set to:', id.value)
 
   editModalRef.value.showModal()
 }

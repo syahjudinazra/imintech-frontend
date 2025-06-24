@@ -480,9 +480,9 @@ onMounted(() => {
               />
             </div>
 
-            <!--Completion Date-->
+            <!--Date Exit-->
             <div class="mb-3">
-              <label class="fw-bold" for="date_out_services">Completion Date</label>
+              <label class="fw-bold" for="date_out_services">Date Exit</label>
               <VueDatePicker
                 v-model="editedService.date_out_services"
                 :enable-time-picker="false"

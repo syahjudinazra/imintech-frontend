@@ -104,8 +104,7 @@ const loadFromServer = async () => {
     firmwares.value = serverCurrentPageItems
     serverItemsLength.value = serverTotalItemsLength
   } catch (error) {
-    console.error('Error loading data', error)
-    showToast('Failed to load M2-202 firmware data.', 'error')
+    showToast('Failed to load K1 firmware data.', 'error')
   } finally {
     loading.value = false
   }
@@ -150,7 +149,6 @@ const fetchFirmwaresDevice = async () => {
     const response = await axios.get('firmwares-device')
     firmwaresDevice.value = response.data.firmwaresdevice
   } catch (error) {
-    console.error('Data not found', error)
     showToast('Failed to fetch device types.', 'error')
   }
 }
@@ -160,7 +158,7 @@ const fetchAndroid = async () => {
     const response = await axios.get('android')
     androids.value = response.data.android
   } catch (error) {
-    console.error('Data not found', error)
+    showToast('Failed to fetch Android versions.', 'error')
   }
 }
 </script>

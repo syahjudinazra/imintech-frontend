@@ -117,7 +117,6 @@ const processedStocks = computed(() => {
   }
 
   const result = Array.from(groupedData.values())
-  console.log('Processed Stocks for table:', result) // Debug log
   return result
 })
 
@@ -164,10 +163,6 @@ const loadFromServer = async () => {
     summary.value = summaryData
     statusTotals.value = statusTotalsData || {} // Store direct totals
     pagination.value = paginationData
-
-    console.log('Status Totals:', statusTotals.value) // Debug log
-    console.log('Summary Data:', summary.value) // Debug log
-    console.log('Devices:', devices.value) // Debug log
   } catch (error) {
     console.error('Error loading data:', error)
     error.value = 'Failed to load stocks data'

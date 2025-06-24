@@ -2,7 +2,6 @@
 import { ref, watch, onMounted, reactive } from 'vue'
 import { Modal } from 'bootstrap'
 import vSelect from 'vue-select'
-import VueDatePicker from '@vuepic/vue-datepicker'
 import { showToast } from '@/utilities/toast'
 import { cloneDeep } from 'lodash-es'
 import '@vuepic/vue-datepicker/dist/main.css'
@@ -76,26 +75,6 @@ const validatePDFFile = (file) => {
   return true
 }
 
-// Date handling
-const customDateFormat = 'dd/MM/yyyy'
-
-const formatDateForPicker = (date) => {
-  if (!date) return null
-  return new Date(date)
-}
-
-const formatDateForServer = (date) => {
-  if (!date) return null
-  const d = new Date(date)
-  return d.toISOString().split('T')[0] // Returns YYYY-MM-DD format
-}
-
-const handleDateChange = (newDate) => {
-  movedService.date_out_services = newDate
-  changedFields.date_out_services = true
-  isDataChanged.value = true
-}
-
 // File handling methods
 const handleImageUpload = (event) => {
   const files = Array.from(event.target.files)
@@ -152,17 +131,10 @@ const moveForm = async () => {
 
   const formData = new FormData()
 
-  // Format date before sending to server
-  const formattedDate = formatDateForServer(movedService.date_out_services)
-
   // Append basic form fields
   Object.keys(changedFields).forEach((key) => {
     if (key !== 'images' && key !== 'documents') {
-      if (key === 'date_out_services') {
-        formData.append(key, formattedDate)
-      } else {
-        formData.append(key, movedService[key])
-      }
+      formData.append(key, movedService[key])
     }
   })
 
@@ -179,7 +151,6 @@ const moveForm = async () => {
   formData.append('repair', movedService.repair || '')
   formData.append('no_spareparts', movedService.no_spareparts || '')
   formData.append('sn_kanibal', movedService.sn_kanibal || '')
-  formData.append('date_out_services', formattedDate || '')
   formData.append('expedition', movedService.expedition || '')
   formData.append('note', movedService.note || '')
   formData.append('status', movedService.status || '')
@@ -201,13 +172,6 @@ const resetForm = () => {
 
 // Modal handlers
 const showModal = () => {
-  // Set today's date when modal is opened
-  movedService.date_out_services = new Date()
-
-  // Mark date_out_services as changed
-  changedFields.date_out_services = true
-  isDataChanged.value = true
-
   moveModal?.show()
 }
 
@@ -232,13 +196,6 @@ watch(
       // Clone the service and explicitly set status to 'Validation Customers'
       const serviceClone = cloneDeep(newService)
       Object.assign(movedService, serviceClone)
-
-      // Set today's date as the default date_out_services if none exists
-      if (!movedService.date_out_services) {
-        movedService.date_out_services = new Date()
-      } else {
-        movedService.date_out_services = formatDateForPicker(movedService.date_out_services)
-      }
     }
   },
   { immediate: true, deep: true },
@@ -379,18 +336,6 @@ defineExpose({
                 class="form-control shadow-none"
                 id="sn_kanibal"
                 placeholder="Input SN Cannibal"
-              />
-            </div>
-
-            <!-- Date Exit -->
-            <div class="mb-3">
-              <label for="date_out_services" class="form-label fw-bold">Date exit</label>
-              <VueDatePicker
-                v-model="movedService.date_out_services"
-                :enable-time-picker="false"
-                :format="customDateFormat"
-                @update:model-value="handleDateChange"
-                readonly
               />
             </div>
 

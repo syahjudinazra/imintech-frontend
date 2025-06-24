@@ -19,118 +19,82 @@
         </div>
 
         <div class="modal-body">
-          <!-- Tabs Navigation -->
-          <ul class="nav nav-tabs mb-3" id="moveFormTabs" role="tablist">
-            <li class="nav-item" role="presentation">
-              <button
-                class="nav-link active"
-                id="status-tab"
-                data-bs-toggle="tab"
-                data-bs-target="#status-content"
-                type="button"
-                role="tab"
-              >
-                Status
-              </button>
-            </li>
-            <li class="nav-item" role="presentation">
-              <button
-                class="nav-link"
-                id="copy-tab"
-                data-bs-toggle="tab"
-                data-bs-target="#copy-content"
-                type="button"
-                role="tab"
-              >
-                Copy Data
-              </button>
-            </li>
-          </ul>
-
           <form @submit.prevent="moveForm">
-            <!-- Tab Content -->
             <div class="tab-content" id="moveFormTabsContent">
-              <!-- Status Tab -->
-              <div class="tab-pane fade show active" id="status-content" role="tabpanel">
-                <div class="form-group">
-                  <label class="form-label fw-bold">Status</label>
-                  <div class="d-flex">
-                    <div class="form-check me-2">
-                      <input
-                        v-model="status"
-                        class="form-check-input"
-                        type="radio"
-                        name="status"
-                        id="statusQueue"
-                        value="Queue Stocks"
-                      />
-                      <label class="form-check-label" for="statusQueue"> Queue </label>
-                    </div>
-                    <div class="form-check me-2">
-                      <input
-                        v-model="status"
-                        class="form-check-input"
-                        type="radio"
-                        name="status"
-                        id="statusPending"
-                        value="Pending Stocks"
-                      />
-                      <label class="form-check-label" for="statusPending"> Pending </label>
-                    </div>
-                    <div class="form-check me-2">
-                      <input
-                        v-model="status"
-                        class="form-check-input"
-                        type="radio"
-                        name="status"
-                        id="statusValidation"
-                        value="Validation Stocks"
-                      />
-                      <label class="form-check-label" for="statusValidation"> Validation </label>
-                    </div>
-                    <div class="form-check me-2">
-                      <input
-                        v-model="status"
-                        class="form-check-input"
-                        type="radio"
-                        name="status"
-                        id="statusDelivery"
-                        value="Delivery Stocks"
-                      />
-                      <label class="form-check-label" for="statusDelivery"> Delivery </label>
-                    </div>
-                    <div class="form-check">
-                      <input
-                        v-model="status"
-                        class="form-check-input"
-                        type="radio"
-                        name="status"
-                        id="statusDone"
-                        value="Done Stocks"
-                      />
-                      <label class="form-check-label" for="statusDone"> Done </label>
-                    </div>
-                  </div>
+              <div class="form-group">
+                <!-- Copy Content -->
+                <div class="d-flex justify-content-between mb-2">
+                  <label class="form-label fw-bold">Copy Data</label>
+                  <button
+                    type="button"
+                    class="btn btn-secondary btn-sm shadow-none"
+                    @click="copyText"
+                  >
+                    Copy
+                  </button>
                 </div>
-              </div>
-
-              <!-- Copy Data Tab -->
-              <div class="tab-pane fade" id="copy-content" role="tabpanel">
-                <div class="form-group">
-                  <div class="d-flex justify-content-between mb-2">
-                    <label class="form-label fw-bold">Copy Data</label>
-                    <button
-                      type="button"
-                      class="btn btn-secondary btn-sm shadow-none"
-                      @click="copyText"
-                    >
-                      Copy
-                    </button>
+                <div class="copy-content">
+                  <pre ref="copyContentRef" class="border p-2 bg-light">{{
+                    formattedCopyContent
+                  }}</pre>
+                </div>
+                <!-- Status Form -->
+                <label class="form-label fw-bold">Status</label>
+                <div class="d-flex">
+                  <div class="form-check me-2">
+                    <input
+                      v-model="status"
+                      class="form-check-input"
+                      type="radio"
+                      name="status"
+                      id="statusQueue"
+                      value="Queue Stocks"
+                    />
+                    <label class="form-check-label" for="statusQueue"> Queue </label>
                   </div>
-                  <div class="copy-content">
-                    <pre ref="copyContentRef" class="border p-2 bg-light">{{
-                      formattedCopyContent
-                    }}</pre>
+                  <div class="form-check me-2">
+                    <input
+                      v-model="status"
+                      class="form-check-input"
+                      type="radio"
+                      name="status"
+                      id="statusPending"
+                      value="Pending Stocks"
+                    />
+                    <label class="form-check-label" for="statusPending"> Pending </label>
+                  </div>
+                  <div class="form-check me-2">
+                    <input
+                      v-model="status"
+                      class="form-check-input"
+                      type="radio"
+                      name="status"
+                      id="statusValidation"
+                      value="Validation Stocks"
+                    />
+                    <label class="form-check-label" for="statusValidation"> Validation </label>
+                  </div>
+                  <div class="form-check me-2">
+                    <input
+                      v-model="status"
+                      class="form-check-input"
+                      type="radio"
+                      name="status"
+                      id="statusDelivery"
+                      value="Delivery Stocks"
+                    />
+                    <label class="form-check-label" for="statusDelivery"> Delivery </label>
+                  </div>
+                  <div class="form-check">
+                    <input
+                      v-model="status"
+                      class="form-check-input"
+                      type="radio"
+                      name="status"
+                      id="statusDone"
+                      value="Done Stocks"
+                    />
+                    <label class="form-check-label" for="statusDone"> Done </label>
                   </div>
                 </div>
               </div>
@@ -180,21 +144,21 @@ const formattedCopyContent = computed(() =>
 ${props.service.customers}
 ${props.service.services_devices_id}
 ${props.service.serial_number}
-*Status :* ${props.service.status}
+Status : ${props.service.status}
 
-*Kerusakan :*
+Kerusakan :
 ${props.service.damage}
 
-*Perbaikan :*
+Perbaikan :
 ${props.service.repair}
 
-*No Sparepart :*
+No Sparepart :
 ${props.service.no_spareparts}
 
-*Teknisi :*
+Teknisi :
 ${props.service.technicians_id}
 
-*Catatan :*
+Catatan :
 ${props.service.note}
 `.trim(),
 )
@@ -243,7 +207,6 @@ const copyText = () => {
         showToast('Failed to copy text.', 'error')
       })
   } catch (error) {
-    console.error('Failed to copy text: ', error)
     showToast('Failed to copy text.', 'error')
   }
 }
@@ -275,16 +238,6 @@ defineExpose({
 <style scoped>
 input:focus,
 textarea:focus {
-  border-color: #d22c36;
-}
-
-.nav-tabs .nav-link.active {
-  color: #d22c36;
-  border-color: #d22c36 #d22c36 #fff;
-}
-
-.nav-tabs .nav-link:hover {
-  color: #d22c36;
   border-color: #d22c36;
 }
 </style>

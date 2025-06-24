@@ -19,120 +19,95 @@
         </div>
 
         <div class="modal-body">
-          <!-- Tabs Navigation -->
-          <ul class="nav nav-tabs mb-3" id="moveFormTabs" role="tablist">
-            <li class="nav-item" role="presentation">
-              <button
-                class="nav-link active"
-                id="status-tab"
-                data-bs-toggle="tab"
-                data-bs-target="#status-content"
-                type="button"
-                role="tab"
-              >
-                Status
-              </button>
-            </li>
-            <li class="nav-item" role="presentation">
-              <button
-                class="nav-link"
-                id="copy-tab"
-                data-bs-toggle="tab"
-                data-bs-target="#copy-content"
-                type="button"
-                role="tab"
-              >
-                Copy Data
-              </button>
-            </li>
-          </ul>
-
           <form @submit.prevent="moveForm">
-            <!-- Tab Content -->
             <div class="tab-content" id="moveFormTabsContent">
-              <!-- Status Tab -->
-              <div class="tab-pane fade show active" id="status-content" role="tabpanel">
-                <div class="form-group">
-                  <label class="form-label fw-bold">Status</label>
-                  <div class="d-flex">
-                    <div class="form-check me-2">
-                      <input
-                        v-model="status"
-                        class="form-check-input"
-                        type="radio"
-                        name="status"
-                        id="statusQueue"
-                        value="Queue Customers"
-                      />
-                      <label class="form-check-label" for="statusQueue"> Queue </label>
-                    </div>
-                    <div class="form-check me-2">
-                      <input
-                        v-model="status"
-                        class="form-check-input"
-                        type="radio"
-                        name="status"
-                        id="statusPending"
-                        value="Pending Customers"
-                      />
-                      <label class="form-check-label" for="statusPending"> Pending </label>
-                    </div>
-                    <div class="form-check me-2">
-                      <input
-                        v-model="status"
-                        class="form-check-input"
-                        type="radio"
-                        name="status"
-                        id="statusValidation"
-                        value="Validation Customers"
-                      />
-                      <label class="form-check-label" for="statusValidation"> Validation </label>
-                    </div>
-                    <div class="form-check me-2">
-                      <input
-                        v-model="status"
-                        class="form-check-input"
-                        type="radio"
-                        name="status"
-                        id="statusDelivery"
-                        value="Delivery Customers"
-                      />
-                      <label class="form-check-label" for="statusDelivery"> Delivery </label>
-                    </div>
-                    <div class="form-check">
-                      <input
-                        v-model="status"
-                        class="form-check-input"
-                        type="radio"
-                        name="status"
-                        id="statusDone"
-                        value="Done Customers"
-                      />
-                      <label class="form-check-label" for="statusDone"> Done </label>
-                    </div>
+              <div class="form-group">
+                <!-- Copy Content -->
+                <div class="d-flex justify-content-between mb-2">
+                  <label class="form-label fw-bold">Copy Data</label>
+                  <button
+                    type="button"
+                    class="btn btn-secondary btn-sm shadow-none"
+                    @click="copyText"
+                  >
+                    Copy
+                  </button>
+                </div>
+                <div class="copy-content">
+                  <pre ref="copyContentRef" class="border p-2 bg-light">{{
+                    formattedCopyContent
+                  }}</pre>
+                </div>
+                <!-- Status Form -->
+                <label class="form-label fw-bold">Status</label>
+                <div class="d-flex mb-3">
+                  <div class="form-check me-2">
+                    <input
+                      v-model="status"
+                      class="form-check-input"
+                      type="radio"
+                      name="status"
+                      id="statusQueue"
+                      value="Queue Customers"
+                    />
+                    <label class="form-check-label" for="statusQueue"> Queue </label>
+                  </div>
+                  <div class="form-check me-2">
+                    <input
+                      v-model="status"
+                      class="form-check-input"
+                      type="radio"
+                      name="status"
+                      id="statusPending"
+                      value="Pending Customers"
+                    />
+                    <label class="form-check-label" for="statusPending"> Pending </label>
+                  </div>
+                  <div class="form-check me-2">
+                    <input
+                      v-model="status"
+                      class="form-check-input"
+                      type="radio"
+                      name="status"
+                      id="statusValidation"
+                      value="Validation Customers"
+                    />
+                    <label class="form-check-label" for="statusValidation"> Validation </label>
+                  </div>
+                  <div class="form-check me-2">
+                    <input
+                      v-model="status"
+                      class="form-check-input"
+                      type="radio"
+                      name="status"
+                      id="statusDelivery"
+                      value="Delivery Customers"
+                    />
+                    <label class="form-check-label" for="statusDelivery"> Delivery </label>
+                  </div>
+                  <div class="form-check">
+                    <input
+                      v-model="status"
+                      class="form-check-input"
+                      type="radio"
+                      name="status"
+                      id="statusDone"
+                      value="Done Customers"
+                    />
+                    <label class="form-check-label" for="statusDone"> Done </label>
                   </div>
                 </div>
               </div>
-
-              <!-- Copy Data Tab -->
-              <div class="tab-pane fade" id="copy-content" role="tabpanel">
-                <div class="form-group">
-                  <div class="d-flex justify-content-between mb-2">
-                    <label class="form-label fw-bold">Copy Data</label>
-                    <button
-                      type="button"
-                      class="btn btn-secondary btn-sm shadow-none"
-                      @click="copyText"
-                    >
-                      Copy
-                    </button>
-                  </div>
-                  <div class="copy-content">
-                    <pre ref="copyContentRef" class="border p-2 bg-light">{{
-                      formattedCopyContent
-                    }}</pre>
-                  </div>
-                </div>
+              <!-- Date Exit -->
+              <div class="mb-3" hidden>
+                <label for="date_out_services" class="form-label fw-bold">Date exit</label>
+                <VueDatePicker
+                  v-model="movedService.date_out_services"
+                  :enable-time-picker="false"
+                  :format="customDateFormat"
+                  @update:model-value="handleDateChange"
+                  readonly
+                />
               </div>
             </div>
 
@@ -154,9 +129,21 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted, computed, defineProps, defineEmits, defineExpose } from 'vue'
+import {
+  ref,
+  watch,
+  onMounted,
+  computed,
+  reactive,
+  defineProps,
+  defineEmits,
+  defineExpose,
+} from 'vue'
 import { Modal } from 'bootstrap'
 import { showToast } from '@/utilities/toast'
+import VueDatePicker from '@vuepic/vue-datepicker'
+import '@vuepic/vue-datepicker/dist/main.css'
+import 'vue-select/dist/vue-select.css'
 
 const props = defineProps({
   service: {
@@ -170,9 +157,24 @@ const emit = defineEmits(['update', 'close'])
 
 // State
 const status = ref('')
+const movedService = reactive({
+  date_out_services: new Date(),
+})
+
+// State
+const isDataChanged = ref(false)
+const changedFields = reactive({})
 const initialStatus = ref('')
 const copyContentRef = ref(null)
 let moveModal = null
+
+// Date handling
+const customDateFormat = 'dd/MM/yyyy'
+const handleDateChange = (newDate) => {
+  movedService.date_out_services = newDate
+  changedFields.date_out_services = true
+  isDataChanged.value = true
+}
 
 // Computed property for formatted copy content
 const formattedCopyContent = computed(() =>
@@ -180,21 +182,21 @@ const formattedCopyContent = computed(() =>
 ${props.service.customers}
 ${props.service.services_devices_id}
 ${props.service.serial_number}
-*Status :* ${props.service.status}
+Status : ${props.service.status}
 
-*Kerusakan :*
+Kerusakan :
 ${props.service.damage}
 
-*Perbaikan :*
+Perbaikan :
 ${props.service.repair}
 
-*No Sparepart :*
+No Sparepart :
 ${props.service.no_spareparts}
 
-*Teknisi :*
+Teknisi :
 ${props.service.technicians_id}
 
-*Catatan :*
+Catatan :
 ${props.service.note}
 `.trim(),
 )
@@ -223,6 +225,10 @@ const moveForm = async () => {
   const formData = new FormData()
   formData.append('status', status.value)
 
+  if (movedService.date_out_services) {
+    formData.append('date_out_services', movedService.date_out_services.toISOString().split('T')[0])
+  }
+
   emit('update', formData)
   hideModal()
 }
@@ -243,7 +249,6 @@ const copyText = () => {
         showToast('Failed to copy text.', 'error')
       })
   } catch (error) {
-    console.error('Failed to copy text: ', error)
     showToast('Failed to copy text.', 'error')
   }
 }
@@ -255,6 +260,13 @@ watch(
     if (newService) {
       status.value = newService.status || ''
       initialStatus.value = newService.status || ''
+
+      // Set date from service or default to today
+      if (newService.date_out_services) {
+        movedService.date_out_services = new Date(newService.date_out_services)
+      } else {
+        movedService.date_out_services = new Date()
+      }
     }
   },
   { immediate: true },
@@ -263,6 +275,10 @@ watch(
 // Lifecycle
 onMounted(() => {
   moveModal = new Modal(document.getElementById('moveForm'))
+
+  if (!movedService.date_out_services) {
+    movedService.date_out_services = new Date()
+  }
 })
 
 // Expose methods
@@ -275,16 +291,6 @@ defineExpose({
 <style scoped>
 input:focus,
 textarea:focus {
-  border-color: #d22c36;
-}
-
-.nav-tabs .nav-link.active {
-  color: #d22c36;
-  border-color: #d22c36 #d22c36 #fff;
-}
-
-.nav-tabs .nav-link:hover {
-  color: #d22c36;
   border-color: #d22c36;
 }
 </style>

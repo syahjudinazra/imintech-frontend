@@ -84,11 +84,9 @@ async function AddFirmwaresDevice() {
   try {
     isLoading.value = true
     const response = await axios.post('firmwares-device', firmwaresDevice.value)
-    console.log('Data added successfully:', response.data.message)
     showToast(response.data.message, 'success')
     closeModal()
   } catch (error) {
-    console.error('Error add data:', error)
     showToast(error.data.message, 'error')
   }
 }

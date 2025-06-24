@@ -33,18 +33,15 @@ let debounceTimeout = null
 
 const debounceSearch = () => {
   clearTimeout(debounceTimeout)
-  console.log('Input detected, search term:', searchTerm.value)
 
   debounceTimeout = setTimeout(() => {
     const trimmedTerm = searchTerm.value.trim()
-    console.log('Debounce complete, calling onSearch with:', trimmedTerm)
     props.onSearch(trimmedTerm)
   }, 300)
 }
 
 const resetSearch = () => {
   searchTerm.value = ''
-  console.log('Search reset, calling onSearch with empty string')
   props.onSearch('')
 }
 

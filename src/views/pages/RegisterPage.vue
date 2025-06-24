@@ -180,13 +180,12 @@ const toggleConfirmPasswordVisibility = () => {
 const getRegister = async () => {
   try {
     loading.value = true
-    const response = await axios.post('register', {
+    await axios.post('register', {
       name: name.value,
       email: email.value,
       password: password.value,
       password_confirmation: password_confirmation.value,
     })
-    console.log('User registered successfully:', response.data.user)
     showToast('Registration successful. Login Now!', 'success')
     router.push({ name: 'LoginPage' })
   } catch (error) {

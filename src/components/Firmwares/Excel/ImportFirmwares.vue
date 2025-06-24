@@ -57,14 +57,13 @@ const handleFileUpload = async (event) => {
     formData.append('file', file)
 
     try {
-      const response = await axios.post('firmwares-import', formData, {
+      await axios.post('firmwares-import', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           'X-CSRF-TOKEN':
             document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
         },
       })
-      console.log('Excel import successful:', response.data)
       showToast('Excel file imported successfully!', 'success')
     } catch (err) {
       error.value = err.response?.data?.data || 'An error occurred during the import process.'
@@ -90,7 +89,6 @@ const downloadTemplate = async () => {
     document.body.removeChild(link)
     showToast('Download template successfully!', 'success')
   } catch (error) {
-    console.error('Error downloading template:', error)
     showToast('Download template failed!', 'error')
   }
 }

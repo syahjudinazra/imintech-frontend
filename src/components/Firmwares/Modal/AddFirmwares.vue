@@ -140,7 +140,7 @@ const fetchAllData = async (endpoint, currentPage = 1, allData = []) => {
 
     return combinedData
   } catch (error) {
-    console.error(`Error fetching data from ${endpoint}:`, error)
+    showToast('Error fetching data', 'error')
     throw error
   }
 }
@@ -149,7 +149,7 @@ const fetchFirmwaresDevice = async () => {
   try {
     firmwaresDevice.value = await fetchAllData('firmwares-device')
   } catch (error) {
-    console.error('Data not found', error)
+    showToast('Data firmwares device not found', 'error')
   }
 }
 
@@ -157,7 +157,7 @@ const fetchAndroid = async () => {
   try {
     androids.value = await fetchAllData('android')
   } catch (error) {
-    console.error('Data not found', error)
+    showToast('Data android not found', 'error')
   }
 }
 
@@ -190,7 +190,6 @@ const addFirmwares = async () => {
         'Content-Type': 'multipart/form-data',
       },
     })
-    console.log('Data added successfully:', response.data.message)
     showToast(response.data.message, 'success')
     closeModal()
   } catch (error) {

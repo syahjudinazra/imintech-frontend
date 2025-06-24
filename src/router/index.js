@@ -310,6 +310,11 @@ const routes = [
             component: () => import('@/components/Firmwares/Swift-2-Pro.vue'),
           },
           {
+            path: '/firmwares/list/swift-2-ultra',
+            name: 'Swift 2 Ultra',
+            component: () => import('@/components/Firmwares/Swift-2-Ultra.vue'),
+          },
+          {
             path: '/firmwares/list/d1',
             name: 'D1',
             component: () => import('@/components/Firmwares/D-1.vue'),
@@ -323,6 +328,16 @@ const routes = [
             path: '/firmwares/list/falcon-1',
             name: 'Falcon 1',
             component: () => import('@/components/Firmwares/Falcon-1.vue'),
+          },
+          {
+            path: '/firmwares/list/falcon-2',
+            name: 'Falcon 2',
+            component: () => import('@/components/Firmwares/Falcon-2.vue'),
+          },
+          {
+            path: '/firmwares/list/falcon-2-max',
+            name: 'Falcon 2 Max',
+            component: () => import('@/components/Firmwares/Falcon-2-Max.vue'),
           },
           {
             path: '/firmwares/list/d2',
@@ -353,6 +368,11 @@ const routes = [
             path: '/firmwares/list/swan-1-pro',
             name: 'Swan 1 Pro',
             component: () => import('@/components/Firmwares/Swan-1-Pro.vue'),
+          },
+          {
+            path: '/firmwares/list/swan-2',
+            name: 'Swan 2',
+            component: () => import('@/components/Firmwares/Swan-2.vue'),
           },
           {
             path: '/firmwares/list/crane-1',

@@ -63,9 +63,8 @@ const exportExcel = async () => {
     window.URL.revokeObjectURL(link.href)
     showToast('Excel file exported successfully!', 'success')
   } catch (err) {
-    console.error('Error exporting Excel:', err)
+    showToast('Failed to export Excel file. Please try again.', 'error')
     error.value = err.message || 'Failed to export Excel file. Please try again.'
-    showToast(error.value, 'error')
   } finally {
     loading.value = false
   }

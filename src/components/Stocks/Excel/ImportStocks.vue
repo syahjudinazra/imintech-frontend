@@ -23,7 +23,7 @@ const handleFileUpload = async (event) => {
     formData.append('file', file)
 
     try {
-      const response = await axios.post('stocks-import', formData, {
+      await axios.post('stocks-import', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           'X-CSRF-TOKEN':
@@ -31,13 +31,10 @@ const handleFileUpload = async (event) => {
         },
         withCredentials: true,
       })
-      console.log('Excel import successful:', response.data)
       showToast('Excel file imported successfully!', 'success')
 
-      // Reset file input after successful upload
       event.target.value = ''
     } catch (err) {
-      // Get error details from response
       const errorData = err.response?.data
       const errorMessage = errorData?.message || errorData?.data || ''
       const errorCode = errorData?.code || ''

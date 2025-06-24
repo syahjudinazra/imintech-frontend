@@ -322,7 +322,6 @@ const addLoans = async () => {
         'Content-Type': 'multipart/form-data',
       },
     })
-    console.log('Data added successfully:', response.data.message)
     showToast(response.data.message, 'success')
     closeModal()
   } catch (error) {

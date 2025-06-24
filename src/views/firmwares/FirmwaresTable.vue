@@ -141,7 +141,6 @@ const loadFromServer = async () => {
     firmwares.value = serverCurrentPageItems
     serverItemsLength.value = serverTotalItemsLength
   } catch (error) {
-    console.error('Error loading data', error)
     showToast('Failed to load stocks device data.', 'error')
   } finally {
     loading.value = false
@@ -192,7 +191,6 @@ async function fetchUserPermissions() {
     const permissions = response.data.permissions || []
     userPermissions.value = permissions.map((permission) => permission.name)
   } catch (error) {
-    console.error('Error fetching user permissions:', error)
     showToast('Failed to fetch user permissions.', 'error')
   }
 }
@@ -203,7 +201,7 @@ async function fetchUserRole() {
     const roles = response.data.roles || []
     userRole.value = roles.some((role) => role.name === 'superadmin') ? 'superadmin' : 'user'
   } catch (error) {
-    console.error('Error fetching user roles:', error)
+    showToast('Failed to fetch user role.', 'error')
   }
 }
 
@@ -218,7 +216,7 @@ const checkPermission = (permissionName) => {
       (permission) => permission.name.toLowerCase() === permissionName.toLowerCase(),
     )
   } catch (error) {
-    console.error('Error checking permissions:', error)
+    showToast('Error checking permissions.', 'error')
     return false
   }
 }
@@ -254,7 +252,7 @@ const fetchAllData = async (endpoint, currentPage = 1, allData = []) => {
 
     return combinedData
   } catch (error) {
-    console.error(`Error fetching data from ${endpoint}:`, error)
+    showToast(`Error fetching data from ${endpoint}:`, 'error')
     throw error
   }
 }
@@ -263,7 +261,6 @@ const fetchFirmwaresDevice = async () => {
   try {
     firmwaresDevice.value = await fetchAllData('firmwares-device')
   } catch (error) {
-    console.error('Data not found', error)
     showToast('Failed to fetch device types.', 'error')
   }
 }
@@ -272,7 +269,7 @@ const fetchAndroid = async () => {
   try {
     androids.value = await fetchAllData('android')
   } catch (error) {
-    console.error('Data not found', error)
+    showToast('Failed to fetch android data.', 'error')
   }
 }
 
@@ -298,7 +295,6 @@ const updateFirmwares = async (updatedFirmware) => {
     closeEditModal()
     refreshList()
   } catch (error) {
-    console.error('Data failed to change', error)
     showToast(error.response?.data?.message || 'Failed to update firmware', 'error')
   }
 }
@@ -310,7 +306,6 @@ const deleteFirmwares = async (firmwareId) => {
     closeDeleteModal()
     refreshList()
   } catch (error) {
-    console.error('Data failed to delete', error)
     const errorMessage =
       error.response?.data?.message ||
       error.message ||
@@ -322,10 +317,7 @@ const deleteFirmwares = async (firmwareId) => {
 }
 
 function editModal(firmware) {
-  console.log('Firmware object received:', firmware)
-
   if (!firmware) {
-    console.error('Firmware object is null or undefined')
     showToast('Unable to edit firmware: Invalid data', 'error')
     return
   }
@@ -337,9 +329,6 @@ function editModal(firmware) {
     androids_id: firmware.androids_id,
   }
   id.value = firmware.id
-
-  console.log('editFirmwares.value set to:', editFirmwares.value)
-  console.log('id.value set to:', id.value)
 
   editModalRef.value.showModal()
 }

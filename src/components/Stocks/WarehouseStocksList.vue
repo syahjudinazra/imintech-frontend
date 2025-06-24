@@ -240,8 +240,6 @@ function viewModal(stock) {
 }
 
 function editModal(stock) {
-  console.log('Stocks object received:', stock)
-
   if (!stock) {
     console.error('Stocks object is null or undefined')
     showToast('Unable to edit stocks: Invalid data', 'error')
@@ -254,9 +252,6 @@ function editModal(stock) {
     stocks_devices_id: stock.stocks_devices_id,
   }
   id.value = stock.id
-
-  console.log('editStocks.value set to:', editStocks.value)
-  console.log('id.value set to:', id.value)
 
   editModalRef.value.showModal()
 }

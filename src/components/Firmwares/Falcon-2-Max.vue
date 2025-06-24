@@ -1,7 +1,7 @@
 <template>
   <div class="container-fluid">
     <div class="tittle-firmwares">
-      <h2>D1</h2>
+      <h2>Falcon 2 Max</h2>
     </div>
     <div class="d-flex">
       <div class="sidebar-list">
@@ -55,6 +55,14 @@
               Download
             </button>
           </template>
+          <template #item-action="item">
+            <div class="d-flex gap-2">
+              <a href="#" class="head-text text-decoration-none" @click="editModal(item)">Edit</a>
+              <a href="#" class="head-text text-decoration-none" @click="deleteModal(item)"
+                >Delete</a
+              >
+            </div>
+          </template>
         </EasyDataTable>
       </div>
     </div>
@@ -67,15 +75,15 @@ import axios from 'axios'
 import { showToast } from '@/utilities/toast'
 import SidebarItem from '../../components/Firmwares/SidebarItem.vue'
 import Search from '../../components/Layouts/SearchAll'
-import { mockServerItems } from '../../mock/listFirmwares/d1'
+import { mockServerItems } from '../../mock/listFirmwares/falcon2max'
 
 const loading = ref(true)
 const firmwares = ref([])
 const firmwaresDevice = ref([])
 const androids = ref([])
-const userPermissions = ref([])
 
 const token = localStorage.getItem('token')
+// Constants
 const baseColor = '#e55353'
 const headers = ref([
   { text: 'Devices', value: 'firmwares_devices_id' },
@@ -104,7 +112,7 @@ const loadFromServer = async () => {
     firmwares.value = serverCurrentPageItems
     serverItemsLength.value = serverTotalItemsLength
   } catch (error) {
-    showToast('Failed to load D1 firmware data.', 'error')
+    showToast('Failed to load Falcon 2 Max firmware data.', 'error')
   } finally {
     loading.value = false
   }
@@ -116,24 +124,19 @@ const updateSearch = (term) => {
   loadFromServer()
 }
 
-watch(serverOptions, loadFromServer, { deep: true })
+watch(
+  serverOptions,
+  () => {
+    loadFromServer()
+  },
+  { deep: true },
+)
 
 onMounted(() => {
   loadFromServer()
   fetchFirmwaresDevice()
   fetchAndroid()
-  fetchUserPermissions()
 })
-
-async function fetchUserPermissions() {
-  try {
-    const response = await axios.get('user')
-    const permissions = response.data.permissions || []
-    userPermissions.value = permissions.map((permission) => permission.name)
-  } catch (error) {
-    showToast('Failed to fetch user permissions.', 'error')
-  }
-}
 
 const getDeviceName = (id) => {
   const device = firmwaresDevice.value.find((d) => d.id === id)
