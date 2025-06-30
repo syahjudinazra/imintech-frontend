@@ -19,6 +19,14 @@ const SESSION_DURATION = 24 * 60 * 60 * 1000 // 24 hours in milliseconds
 const TOKEN_KEY = 'token'
 const TOKEN_EXPIRY_KEY = 'tokenExpiry'
 
+// Define public routes that don't require authentication
+const PUBLIC_ROUTES = ['login', 'register', 'forgot-password', 'reset-password']
+
+// Function to check if route is public
+const isPublicRoute = (url) => {
+  return PUBLIC_ROUTES.some((route) => url?.includes(route))
+}
+
 // Function to check if token is expired
 const isTokenExpired = () => {
   const expiryTime = localStorage.getItem(TOKEN_EXPIRY_KEY)
@@ -55,7 +63,6 @@ if (token && isTokenExpired()) {
 axios.defaults.baseURL = 'http://127.0.0.1:8000/api/v1/'
 axios.defaults.withCredentials = true
 axios.defaults.headers.common = {
-  Authorization: token ? `Bearer ${token}` : '',
   Accept: 'application/json',
   'Content-Type': 'application/json',
   'X-Requested-With': 'XMLHttpRequest',
@@ -64,23 +71,24 @@ axios.defaults.headers.common = {
 // Add axios request interceptor
 axios.interceptors.request.use(
   (config) => {
-    // Skip session check for login request
-    if (config.url === 'login') {
+    // Skip authentication and session checks for public routes
+    if (isPublicRoute(config.url)) {
       return config
     }
 
-    // Check if token is expired before each request
+    // Check if token is expired before each request (only for protected routes)
     if (isTokenExpired()) {
       clearSession()
       router.push('/pages/login')
       return Promise.reject(new Error('Session expired'))
     }
 
-    // Get latest token on each request
+    // Get latest token and add to headers for protected routes
     const currentToken = localStorage.getItem(TOKEN_KEY)
     if (currentToken) {
       config.headers.Authorization = `Bearer ${currentToken}`
     }
+
     return config
   },
   (error) => {
@@ -92,15 +100,18 @@ axios.interceptors.request.use(
 axios.interceptors.response.use(
   (response) => {
     // If request was successful and we have a token, extend the session
-    const currentToken = localStorage.getItem(TOKEN_KEY)
-    if (currentToken) {
-      setTokenWithExpiry(currentToken)
+    // Only for authenticated requests (not public routes)
+    if (!isPublicRoute(response.config.url)) {
+      const currentToken = localStorage.getItem(TOKEN_KEY)
+      if (currentToken) {
+        setTokenWithExpiry(currentToken)
+      }
     }
     return response
   },
   (error) => {
-    if (error.response?.status === 401) {
-      // Handle unauthorized access
+    // Handle unauthorized access (only for protected routes)
+    if (error.response?.status === 401 && !isPublicRoute(error.config?.url)) {
       clearSession()
       router.push('/pages/login')
     }
@@ -125,9 +136,15 @@ app.config.globalProperties.$axios = axios
 app.config.globalProperties.$auth = {
   setToken: (token) => {
     setTokenWithExpiry(token)
+    // Update axios default header after setting token
+    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
     return true
   },
-  clearSession,
+  clearSession: () => {
+    clearSession()
+    // Remove authorization header when clearing session
+    delete axios.defaults.headers.common['Authorization']
+  },
   isAuthenticated: () => {
     return !!localStorage.getItem(TOKEN_KEY) && !isTokenExpired()
   },

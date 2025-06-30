@@ -1,92 +1,3 @@
-<template>
-  <div class="bg-login d-flex flex-column min-vh-100">
-    <NavbarInfo />
-    <div class="hero-login d-flex justify-content-center align-items-center">
-      <div class="d-flex flex-column flex-md-row justify-content-between">
-        <div
-          class="col-12 col-md-6 col-lg-5 d-flex justify-content-center align-items-center mb-4 mb-md-0"
-        >
-          <img :src="loginbg3" class="iminkitLogin" alt="iminkit progress image" />
-        </div>
-        <div class="d-flex justify-content-center align-items-center">
-          <div class="login-card shadow-lg mb-5">
-            <div class="card-body">
-              <h5 class="card-title text-center mb-4">Login</h5>
-              <form @submit.prevent="handleSubmit">
-                <div class="mb-3">
-                  <div class="input-group">
-                    <input
-                      type="text"
-                      class="form-control shadow-none"
-                      :class="{ 'is-invalid': submitted && (emailError || serverErrors.email) }"
-                      placeholder="Please enter account ID/email address"
-                      v-model="email"
-                      autocomplete="email"
-                    />
-                  </div>
-                  <div class="invalid-feedback" v-if="emailError">
-                    {{ emailError }}
-                  </div>
-                  <div class="invalid-feedback" v-if="serverErrors.email">
-                    {{ serverErrors.email[0] }}
-                  </div>
-                </div>
-
-                <div class="mb-3">
-                  <div class="input-group">
-                    <input
-                      :type="passwordVisible ? 'text' : 'password'"
-                      class="form-control shadow-none"
-                      :class="{
-                        'is-invalid': submitted && (passwordError || serverErrors.password),
-                      }"
-                      placeholder="Please enter password"
-                      v-model="password"
-                    />
-                    <span
-                      class="input-group-text"
-                      @click="togglePasswordVisibility"
-                      style="cursor: pointer"
-                    >
-                      <CIcon :icon="passwordVisible ? cilLockUnlocked : cilLockLocked" />
-                    </span>
-                  </div>
-                  <div class="invalid-feedback" v-if="passwordError">
-                    {{ passwordError }}
-                  </div>
-                  <div class="invalid-feedback" v-if="serverErrors.password">
-                    {{ serverErrors.password[0] }}
-                  </div>
-                </div>
-
-                <div class="d-grid">
-                  <button type="submit" class="btn btn-danger text-white" :disabled="loading">
-                    <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
-                    <span>{{ loading ? 'Logging in...' : 'Confirm' }}</span>
-                  </button>
-                </div>
-              </form>
-
-              <div class="d-flex justify-content-between mt-3">
-                <router-link to="/pages/register" class="text-primary text-decoration-none">
-                  Register
-                </router-link>
-                <router-link to="/pages/forgotpassword" class="text-primary text-decoration-none">
-                  Forgot password
-                </router-link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <footer class="mt-4">
-      <FooterFront />
-    </footer>
-  </div>
-</template>
-
 <script setup>
 import { ref, getCurrentInstance } from 'vue'
 import axios from 'axios'
@@ -214,6 +125,95 @@ const clearInput = () => {
   submitted.value = false
 }
 </script>
+
+<template>
+  <div class="bg-login d-flex flex-column min-vh-100">
+    <NavbarInfo />
+    <div class="hero-login d-flex justify-content-center align-items-center">
+      <div class="d-flex flex-column flex-md-row justify-content-between">
+        <div
+          class="col-12 col-md-6 col-lg-5 d-flex justify-content-center align-items-center mb-4 mb-md-0"
+        >
+          <img :src="loginbg3" class="iminkitLogin" alt="iminkit progress image" />
+        </div>
+        <div class="d-flex justify-content-center align-items-center">
+          <div class="login-card shadow-lg mb-5">
+            <div class="card-body">
+              <h5 class="card-title text-center mb-4">Login</h5>
+              <form @submit.prevent="handleSubmit">
+                <div class="mb-3">
+                  <div class="input-group">
+                    <input
+                      type="text"
+                      class="form-control shadow-none"
+                      :class="{ 'is-invalid': submitted && (emailError || serverErrors.email) }"
+                      placeholder="Please enter account ID/email address"
+                      v-model="email"
+                      autocomplete="email"
+                    />
+                  </div>
+                  <div class="invalid-feedback" v-if="emailError">
+                    {{ emailError }}
+                  </div>
+                  <div class="invalid-feedback" v-if="serverErrors.email">
+                    {{ serverErrors.email[0] }}
+                  </div>
+                </div>
+
+                <div class="mb-3">
+                  <div class="input-group">
+                    <input
+                      :type="passwordVisible ? 'text' : 'password'"
+                      class="form-control shadow-none"
+                      :class="{
+                        'is-invalid': submitted && (passwordError || serverErrors.password),
+                      }"
+                      placeholder="Please enter password"
+                      v-model="password"
+                    />
+                    <span
+                      class="input-group-text"
+                      @click="togglePasswordVisibility"
+                      style="cursor: pointer"
+                    >
+                      <CIcon :icon="passwordVisible ? cilLockUnlocked : cilLockLocked" />
+                    </span>
+                  </div>
+                  <div class="invalid-feedback" v-if="passwordError">
+                    {{ passwordError }}
+                  </div>
+                  <div class="invalid-feedback" v-if="serverErrors.password">
+                    {{ serverErrors.password[0] }}
+                  </div>
+                </div>
+
+                <div class="d-grid">
+                  <button type="submit" class="btn btn-danger text-white" :disabled="loading">
+                    <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
+                    <span>{{ loading ? 'Logging in...' : 'Confirm' }}</span>
+                  </button>
+                </div>
+              </form>
+
+              <div class="d-flex justify-content-between mt-3">
+                <router-link to="/pages/register" class="text-primary text-decoration-none">
+                  Register
+                </router-link>
+                <router-link to="/pages/forgotpassword" class="text-primary text-decoration-none">
+                  Forgot password
+                </router-link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="mt-4">
+      <FooterFront />
+    </footer>
+  </div>
+</template>
 
 <style scoped>
 .bg-login {

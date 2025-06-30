@@ -1,3 +1,119 @@
+<script setup>
+import { ref } from 'vue'
+import axios from 'axios'
+import { useRouter } from 'vue-router'
+import loginbg3 from '@/assets/images/loginbg3.png'
+import { showToast } from '@/utilities/toast'
+import { cilLockLocked, cilLockUnlocked } from '@coreui/icons'
+import NavbarInfo from '../../components/LoginPage/NavbarInfo.vue'
+import FooterFront from '../../components/Layouts/FooterFront.vue'
+
+const router = useRouter()
+const name = ref('')
+const email = ref('')
+const password = ref('')
+const password_confirmation = ref('')
+const loading = ref(false)
+const submitted = ref(false)
+const passwordVisible = ref(false)
+const passwordConfirmVisible = ref(false)
+const nameError = ref('')
+const emailError = ref('')
+const passwordError = ref('')
+const passwordConfirmError = ref('')
+
+const handleSubmit = () => {
+  submitted.value = true
+  clearErrors()
+
+  let hasErrors = false
+
+  if (!validateName(name.value)) {
+    nameError.value = 'Please enter your name'
+    hasErrors = true
+  }
+
+  if (!validateEmail(email.value)) {
+    emailError.value = 'Please enter a valid email address'
+    hasErrors = true
+  }
+
+  if (!validatePassword(password.value)) {
+    passwordError.value = 'Password must be at least 6 characters long'
+    hasErrors = true
+  }
+
+  // Check if passwords match
+  if (password.value !== password_confirmation.value) {
+    passwordConfirmError.value = 'Passwords do not match'
+    hasErrors = true
+  }
+
+  if (!hasErrors) {
+    getRegister()
+  }
+}
+
+const clearErrors = () => {
+  nameError.value = ''
+  emailError.value = ''
+  passwordError.value = ''
+  passwordConfirmError.value = ''
+}
+
+const validateName = (name) => {
+  return name.trim().length > 0
+}
+
+const validateEmail = (email) => {
+  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  return re.test(email)
+}
+
+const validatePassword = (password) => {
+  return password.length >= 6
+}
+
+const togglePasswordVisibility = () => {
+  passwordVisible.value = !passwordVisible.value
+}
+
+const toggleConfirmPasswordVisibility = () => {
+  passwordConfirmVisible.value = !passwordConfirmVisible.value
+}
+
+const getRegister = async () => {
+  try {
+    loading.value = true
+
+    const response = await axios.post('register', {
+      name: name.value,
+      email: email.value,
+      password: password.value,
+      password_confirmation: password_confirmation.value,
+    })
+
+    if (response.data && response.data.message) {
+      showToast(response.data.message, 'success')
+      router.push({ name: 'LoginPage' })
+    }
+  } catch (error) {
+    showToast('Registration failed. Please try again!', 'error')
+  } finally {
+    loading.value = false
+  }
+}
+
+const clearInput = () => {
+  name.value = ''
+  email.value = ''
+  password.value = ''
+  password_confirmation.value = ''
+  submitted.value = false
+  clearErrors()
+}
+</script>
+
 <template>
   <div class="bg-register d-flex flex-column min-vh-100">
     <NavbarInfo />
@@ -30,7 +146,7 @@
                 <div class="mb-3">
                   <div class="input-group">
                     <input
-                      type="text"
+                      type="email"
                       class="form-control shadow-none"
                       :class="{ 'is-invalid': submitted && emailError }"
                       placeholder="Please input email address"
@@ -65,16 +181,16 @@
                     <input
                       :type="passwordConfirmVisible ? 'text' : 'password'"
                       class="form-control shadow-none"
-                      :class="{ 'is-invalid': submitted && passwordError }"
+                      :class="{ 'is-invalid': submitted && passwordConfirmError }"
                       placeholder="Please enter confirm password"
                       v-model="password_confirmation"
                     />
                     <span class="input-group-text" @click="toggleConfirmPasswordVisibility">
-                      <CIcon :icon="passwordVisible ? cilLockUnlocked : cilLockLocked" />
+                      <CIcon :icon="passwordConfirmVisible ? cilLockUnlocked : cilLockLocked" />
                     </span>
                   </div>
                   <div class="invalid-feedback">
-                    {{ passwordError }}
+                    {{ passwordConfirmError }}
                   </div>
                 </div>
 
@@ -87,7 +203,7 @@
                       Login</router-link
                     >
                   </p>
-                  <button type="submit" class="btn btn-danger text-white">
+                  <button type="submit" class="btn btn-danger text-white" :disabled="loading">
                     <span v-if="loading" class="loader"></span>
                     <span v-else>Register</span>
                   </button>
@@ -104,106 +220,6 @@
     </footer>
   </div>
 </template>
-
-<script setup>
-import { ref } from 'vue'
-import axios from 'axios'
-import { useRouter } from 'vue-router'
-import loginbg3 from '@/assets/images/loginbg3.png'
-import { showToast } from '@/utilities/toast'
-import { cilLockLocked, cilLockUnlocked } from '@coreui/icons'
-import NavbarInfo from '../../components/LoginPage/NavbarInfo.vue'
-import FooterFront from '../../components/Layouts/FooterFront.vue'
-
-const router = useRouter()
-const name = ref('')
-const email = ref('')
-const password = ref('')
-const password_confirmation = ref('')
-const loading = ref(false)
-const submitted = ref(false)
-const passwordVisible = ref(false)
-const passwordConfirmVisible = ref(false)
-const nameError = ref('')
-const emailError = ref('')
-const passwordError = ref('')
-
-const handleSubmit = () => {
-  submitted.value = true
-  nameError.value = ''
-  emailError.value = ''
-  passwordError.value = ''
-
-  if (!validateName(name.value)) {
-    nameError.value = 'Please enter your name'
-  }
-
-  if (!validateEmail(email.value)) {
-    emailError.value = 'Please enter a valid email address'
-  }
-
-  if (!validatePassword(password.value)) {
-    passwordError.value = 'Password must be at least 6 characters long'
-  }
-
-  // Check if passwords match
-  if (password.value !== password_confirmation.value) {
-    passwordError.value = 'Passwords do not match'
-  }
-
-  if (!emailError.value && !passwordError.value) {
-    getRegister()
-  }
-}
-
-const validateName = (name) => {
-  return name.trim().length > 0
-}
-
-const validateEmail = (email) => {
-  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  return re.test(email)
-}
-
-const validatePassword = (password) => {
-  return password.length >= 6
-}
-
-const togglePasswordVisibility = () => {
-  passwordVisible.value = !passwordVisible.value
-}
-
-const toggleConfirmPasswordVisibility = () => {
-  passwordConfirmVisible.value = !passwordConfirmVisible.value
-}
-
-const getRegister = async () => {
-  try {
-    loading.value = true
-    await axios.post('register', {
-      name: name.value,
-      email: email.value,
-      password: password.value,
-      password_confirmation: password_confirmation.value,
-    })
-    showToast('Registration successful. Login Now!', 'success')
-    router.push({ name: 'LoginPage' })
-  } catch (error) {
-    showToast('Registration failed. Please try again!', 'error')
-    console.error('Error registering user:', error.message)
-  } finally {
-    loading.value = false
-    clearInput()
-  }
-}
-
-const clearInput = () => {
-  name.value = ''
-  email.value = ''
-  password.value = ''
-  password_confirmation.value = ''
-}
-</script>
 
 <style scoped>
 .bg-register {
